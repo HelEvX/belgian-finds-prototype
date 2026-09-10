@@ -1,0 +1,69 @@
+.prototype-shell {
+  min-height: 100vh;
+  padding: var(--space-8);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.prototype-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  max-width: 1180px;
+  margin: 0 auto var(--space-8);
+}
+
+.prototype-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 430px) minmax(320px, 520px);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(48px, 9vw, 140px);
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.phone-column {
+  display: flex;
+  justify-content: center;
+}
+
+.phone-frame {
+  position: relative;
+  isolation: isolate;
+  width: min(84vw, 390px);
+  padding: 14px;
+  overflow: hidden;
+  border: 2px solid #3e443f;
+  border-radius: 44px;
+  background: #292e2a;
+  box-shadow: 0 24px 55px rgba(38, 42, 38, 0.2);
+}
+
+.phone-speaker {
+  position: absolute;
+  z-index: 2;
+  top: var(--space-5);
+  left: 50%;
+  width: 76px;
+  height: 5px;
+  border-radius: 99px;
+  background: #545b55;
+  transform: translateX(-50%);
+}
+
+.phone-screen {
+  position: relative;
+  z-index: 1;
+  height: 720px;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #515950;
+  border-radius: 31px;
+  background: var(--color-app-surface);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.notes-panel {
+  max-width: 480px;
+}

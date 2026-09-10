@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import "./App.css";
 
 type ExploreStep = 0 | 1 | 2;
 

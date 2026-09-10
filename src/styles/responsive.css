@@ -1,0 +1,24 @@
+@media (max-width: 760px) {
+  .prototype-shell {
+    padding: var(--space-5) var(--space-4) var(--space-8);
+  }
+
+  .prototype-header {
+    display: block;
+    margin-bottom: var(--space-6);
+  }
+
+  .prototype-status {
+    display: inline-block;
+    margin-top: 14px;
+  }
+
+  .prototype-workspace { display: block; }
+
+  .notes-panel {
+    max-width: 390px;
+    margin: var(--space-8) auto 0;
+  }
+
+  .phone-frame { width: min(100%, 390px); }
+}
