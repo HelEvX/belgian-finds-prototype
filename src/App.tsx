@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type ExploreStep = 0 | 1 | 2;
+type PrototypeStep = 0 | 1 | 2 | 3 | 4;
+
+type RecordKind = "fossil" | "rock-mineral" | "collection-item" | "unknown";
 
 const stepNotes = [
   {
-    label: "Learning path · Step 1 of 3",
+    label: "Explore journey · Step 1 of 3",
     title: "Welcome",
     purpose:
       "Introduce the platform as a place to explore Belgian-connected fossil finds and connect with other people.",
@@ -12,33 +14,100 @@ const stepNotes = [
     decision: "Browsing remains available to visitors. Registration is not required just to look around.",
   },
   {
-    label: "Learning path · Step 2 of 3",
+    label: "Explore journey · Step 2 of 3",
     title: "Browse finds",
     purpose: "Give visitors a simple way to explore records from the wider Belgian fossil community.",
     matters: "The public catalogue is the entry point for people who are curious but are not ready to submit a find.",
     decision: "The first filters are intentionally broad: location, identification status and type of material.",
   },
   {
-    label: "Learning path · Step 3 of 3",
+    label: "Explore journey · Step 3 of 3",
     title: "Find detail",
     purpose: "Show one record in enough detail for another person to understand it and offer useful input.",
     matters:
       "The detail page must distinguish the collector’s original statement from later community or specialist responses.",
     decision: "A help request is attached to a specific find rather than handled through a general contact form.",
   },
+  {
+    label: "Record a find · Step 1 of 2",
+    title: "Before you begin",
+    purpose: "Prepare the contributor for the information and photographs that make a find useful to other people.",
+    matters:
+      "A short introduction can improve submission quality without turning the recording process into a long scientific form.",
+    decision:
+      "The platform explains what helps, but does not require contributors to already know what they have found.",
+  },
+  {
+    label: "Record a find · Step 2 of 2",
+    title: "Choose a record type",
+    purpose: "Establish what the contributor is recording before asking for photographs and contextual information.",
+    matters:
+      "The same platform should accommodate personal finds, inherited collection material and unidentified objects.",
+    decision:
+      "The contributor can explicitly choose ‘Something unknown’ instead of being forced to make an identification.",
+  },
+];
+
+const recordKinds: Array<{
+  id: RecordKind;
+  symbol: string;
+  title: string;
+  description: string;
+}> = [
+  {
+    id: "fossil",
+    symbol: "◉",
+    title: "A fossil",
+    description: "A fossil you found, acquired or inherited.",
+  },
+  {
+    id: "rock-mineral",
+    symbol: "◆",
+    title: "A rock or mineral",
+    description: "Geological material that may need more context.",
+  },
+  {
+    id: "collection-item",
+    symbol: "▣",
+    title: "An item from a collection",
+    description: "A specimen with an existing label or collection history.",
+  },
+  {
+    id: "unknown",
+    symbol: "?",
+    title: "Something unknown",
+    description: "You are not yet sure what kind of object it is.",
+  },
 ];
 
 function App() {
-  const [step, setStep] = useState<ExploreStep>(0);
+  const [step, setStep] = useState<PrototypeStep>(0);
+  const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
 
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
   const dragStartScrollTop = useRef(0);
 
+  useEffect(() => {
+    mobileScrollRef.current?.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [step]);
+
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     const scrollElement = mobileScrollRef.current;
+    const target = event.target as HTMLElement;
 
     if (!scrollElement) {
+      return;
+    }
+
+    /*
+     * Do not start drag-scrolling when the user is pressing an
+     * interactive control. Otherwise pointer capture prevents its click.
+     */
+    if (target.closest("button, a, input, textarea, select, label")) {
       return;
     }
 
@@ -66,23 +135,42 @@ function App() {
 
     dragStartY.current = null;
 
-    if (scrollElement) {
-      scrollElement.releasePointerCapture(event.pointerId);
-      scrollElement.classList.remove("is-dragging");
+    if (!scrollElement) {
+      return;
     }
+
+    if (scrollElement.hasPointerCapture(event.pointerId)) {
+      scrollElement.releasePointerCapture(event.pointerId);
+    }
+
+    scrollElement.classList.remove("is-dragging");
   };
 
   const goToPreviousStep = () => {
-    setStep((currentStep) => Math.max(0, currentStep - 1) as ExploreStep);
+    if (step === 3) {
+      setStep(0);
+      return;
+    }
+
+    setStep((currentStep) => Math.max(0, currentStep - 1) as PrototypeStep);
   };
 
   const goToNextStep = () => {
-    setStep((currentStep) => Math.min(2, currentStep + 1) as ExploreStep);
+    if (step === 2) {
+      setStep(0);
+      return;
+    }
+
+    if (step === 4) {
+      setRecordKind(null);
+      setStep(3);
+      return;
+    }
+
+    setStep((currentStep) => Math.min(4, currentStep + 1) as PrototypeStep);
   };
 
-  const resetJourney = () => {
-    setStep(0);
-  };
+  const selectedRecordLabel = recordKinds.find((record) => record.id === recordKind)?.title;
 
   return (
     <main className="prototype-shell">
@@ -142,7 +230,9 @@ function App() {
                         Browse finds
                       </button>
 
-                      <button className="secondary-button">Log a find</button>
+                      <button className="secondary-button" onClick={() => setStep(3)}>
+                        Log a find
+                      </button>
                     </div>
 
                     <section className="mobile-section">
@@ -309,14 +399,140 @@ function App() {
                     </section>
                   </>
                 )}
+                {step === 3 && (
+                  <>
+                    <header className="mobile-header">
+                      <div>
+                        <p className="mobile-eyebrow">Record a find</p>
+                        <h2>Before you begin</h2>
+                      </div>
+
+                      <button className="icon-button" aria-label="Close recording journey" onClick={() => setStep(0)}>
+                        ×
+                      </button>
+                    </header>
+
+                    <section className="record-flow">
+                      <p className="record-progress">Step 1 of 2</p>
+
+                      <div className="record-intro-card">
+                        <p className="card-kicker">A useful record starts with evidence</p>
+
+                        <h3>You do not need to know what you have found.</h3>
+
+                        <p>
+                          Start with what you can observe. Other community members may be able to help with the rest.
+                        </p>
+                      </div>
+
+                      <ul className="record-checklist">
+                        <li>
+                          <span aria-hidden="true">1</span>
+                          <div>
+                            <strong>Take several photographs</strong>
+                            <p>Front, back, side and a close-up where possible.</p>
+                          </div>
+                        </li>
+
+                        <li>
+                          <span aria-hidden="true">2</span>
+                          <div>
+                            <strong>Include something for scale</strong>
+                            <p>A ruler or measurement makes photographs more useful.</p>
+                          </div>
+                        </li>
+
+                        <li>
+                          <span aria-hidden="true">3</span>
+                          <div>
+                            <strong>Share what you know</strong>
+                            <p>Locality, collection history and uncertainty all matter.</p>
+                          </div>
+                        </li>
+                      </ul>
+
+                      <div className="mobile-actions">
+                        <button className="primary-button" onClick={() => setStep(4)}>
+                          Start recording
+                        </button>
+
+                        <button className="secondary-button" onClick={() => setStep(0)}>
+                          Not now
+                        </button>
+                      </div>
+                    </section>
+                  </>
+                )}
+
+                {step === 4 && (
+                  <>
+                    <header className="mobile-header">
+                      <button className="back-button" onClick={() => setStep(3)}>
+                        ← Back
+                      </button>
+
+                      <p className="mobile-eyebrow">Record a find</p>
+                    </header>
+
+                    <section className="record-flow">
+                      <p className="record-progress">Step 2 of 2</p>
+
+                      <div className="record-heading">
+                        <h2>What are you recording?</h2>
+                        <p>Choose the closest option. You can change this later.</p>
+                      </div>
+
+                      <div className="record-choice-list">
+                        {recordKinds.map((record) => {
+                          const isSelected = recordKind === record.id;
+
+                          return (
+                            <button
+                              key={record.id}
+                              type="button"
+                              className={`record-choice ${isSelected ? "record-choice-active" : ""}`}
+                              aria-pressed={isSelected}
+                              onClick={() => setRecordKind(record.id)}>
+                              <span className="record-choice-symbol" aria-hidden="true">
+                                {record.symbol}
+                              </span>
+
+                              <span className="record-choice-copy">
+                                <strong>{record.title}</strong>
+                                <span>{record.description}</span>
+                              </span>
+
+                              <span className="record-choice-check" aria-hidden="true">
+                                {isSelected ? "✓" : ""}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div
+                        className={`record-selection-note ${recordKind ? "record-selection-note-active" : ""}`}
+                        aria-live="polite">
+                        {selectedRecordLabel ? (
+                          <>
+                            <strong>{selectedRecordLabel} selected</strong>
+                            <span>The next prototype step will collect photographs.</span>
+                          </>
+                        ) : (
+                          <span>Select one option to begin the record.</span>
+                        )}
+                      </div>
+                    </section>
+                  </>
+                )}
               </div>
               <nav className="mobile-navigation" aria-label="Main navigation">
-                <button className={`nav-item ${step !== 2 ? "nav-item-active" : ""}`} onClick={() => setStep(0)}>
+                <button className={`nav-item ${step <= 2 ? "nav-item-active" : ""}`} onClick={() => setStep(0)}>
                   <span>⌂</span>
                   Explore
                 </button>
 
-                <button className="nav-item">
+                <button className={`nav-item ${step >= 3 ? "nav-item-active" : ""}`} onClick={() => setStep(3)}>
                   <span>＋</span>
                   Add
                 </button>
@@ -367,8 +583,8 @@ function App() {
               Previous
             </button>
 
-            <button className="dark-button" onClick={step === 2 ? resetJourney : goToNextStep}>
-              {step === 2 ? "Restart" : "Next"}
+            <button className="dark-button" onClick={goToNextStep}>
+              {step === 2 || step === 4 ? "Restart journey" : "Next"}
             </button>
           </div>
         </aside>
