@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
+import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
+import type { RecordKind } from "./features/record-find/types";
 
 type PrototypeStep = 0 | 1 | 2 | 3 | 4;
-
-type RecordKind = "fossil" | "rock-mineral" | "collection-item" | "unknown";
 
 const stepNotes = [
   {
@@ -31,11 +32,10 @@ const stepNotes = [
   {
     label: "Record a find · Step 1 of 2",
     title: "Before you begin",
-    purpose: "Prepare the contributor for the information and photographs that make a find useful to other people.",
-    matters:
-      "A short introduction can improve submission quality without turning the recording process into a long scientific form.",
+    purpose: "Briefly prepare the contributor for the information that will make their record useful to other people.",
+    matters: "Contributors should feel welcome even when they do not know what they have found.",
     decision:
-      "The platform explains what helps, but does not require contributors to already know what they have found.",
+      "Detailed instructions are shown progressively while the user creates the record, rather than presented all at once.",
   },
   {
     label: "Record a find · Step 2 of 2",
@@ -45,38 +45,6 @@ const stepNotes = [
       "The same platform should accommodate personal finds, inherited collection material and unidentified objects.",
     decision:
       "The contributor can explicitly choose ‘Something unknown’ instead of being forced to make an identification.",
-  },
-];
-
-const recordKinds: Array<{
-  id: RecordKind;
-  symbol: string;
-  title: string;
-  description: string;
-}> = [
-  {
-    id: "fossil",
-    symbol: "◉",
-    title: "A fossil",
-    description: "A fossil you found, acquired or inherited.",
-  },
-  {
-    id: "rock-mineral",
-    symbol: "◆",
-    title: "A rock or mineral",
-    description: "Geological material that may need more context.",
-  },
-  {
-    id: "collection-item",
-    symbol: "▣",
-    title: "An item from a collection",
-    description: "A specimen with an existing label or collection history.",
-  },
-  {
-    id: "unknown",
-    symbol: "?",
-    title: "Something unknown",
-    description: "You are not yet sure what kind of object it is.",
   },
 ];
 
@@ -95,7 +63,7 @@ function App() {
     });
   }, [step]);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     const scrollElement = mobileScrollRef.current;
     const target = event.target as HTMLElement;
 
@@ -103,10 +71,6 @@ function App() {
       return;
     }
 
-    /*
-     * Do not start drag-scrolling when the user is pressing an
-     * interactive control. Otherwise pointer capture prevents its click.
-     */
     if (target.closest("button, a, input, textarea, select, label")) {
       return;
     }
@@ -118,7 +82,7 @@ function App() {
     scrollElement.classList.add("is-dragging");
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const scrollElement = mobileScrollRef.current;
 
     if (!scrollElement || dragStartY.current === null) {
@@ -130,7 +94,7 @@ function App() {
     scrollElement.scrollTop = dragStartScrollTop.current - distanceDragged;
   };
 
-  const stopDragging = (event: React.PointerEvent<HTMLDivElement>) => {
+  const stopDragging = (event: PointerEvent<HTMLDivElement>) => {
     const scrollElement = mobileScrollRef.current;
 
     dragStartY.current = null;
@@ -170,7 +134,15 @@ function App() {
     setStep((currentStep) => Math.min(4, currentStep + 1) as PrototypeStep);
   };
 
-  const selectedRecordLabel = recordKinds.find((record) => record.id === recordKind)?.title;
+  const openRecordJourney = () => {
+    setStep(3);
+  };
+
+  const returnToWelcome = () => {
+    setStep(0);
+  };
+
+  const isJourneyEnd = step === 2 || step === 4;
 
   return (
     <main className="prototype-shell">
@@ -211,26 +183,29 @@ function App() {
                     <header className="mobile-header">
                       <div>
                         <p className="mobile-eyebrow">Belgian fossil community</p>
+
                         <h2>Discover finds</h2>
                       </div>
 
-                      <button className="icon-button" aria-label="Open account">
+                      <button className="icon-button" type="button" aria-label="Open account">
                         ◎
                       </button>
                     </header>
 
                     <section className="welcome-card">
                       <p className="card-kicker">Explore · Learn · Connect</p>
+
                       <h3>Fossils have stories to tell.</h3>
+
                       <p>Browse Belgian-connected finds and share what you know.</p>
                     </section>
 
                     <div className="mobile-actions">
-                      <button className="primary-button" onClick={() => setStep(1)}>
+                      <button className="primary-button" type="button" onClick={() => setStep(1)}>
                         Browse finds
                       </button>
 
-                      <button className="secondary-button" onClick={() => setStep(3)}>
+                      <button className="secondary-button" type="button" onClick={openRecordJourney}>
                         Log a find
                       </button>
                     </div>
@@ -239,16 +214,17 @@ function App() {
                       <div className="section-heading">
                         <h3>Recent finds</h3>
 
-                        <button className="text-button" onClick={() => setStep(1)}>
+                        <button className="text-button" type="button" onClick={() => setStep(1)}>
                           See all
                         </button>
                       </div>
 
-                      <button className="find-card find-card-button" onClick={() => setStep(2)}>
+                      <button className="find-card find-card-button" type="button" onClick={() => setStep(2)}>
                         <div className="find-image-placeholder">IMAGE</div>
 
                         <div className="find-card-content">
                           <span className="status-label">Needs community input</span>
+
                           <h4>Possible ammonite</h4>
                           <p>Hainaut, Belgium</p>
                         </div>
@@ -262,10 +238,11 @@ function App() {
                     <header className="mobile-header">
                       <div>
                         <p className="mobile-eyebrow">Belgian fossil community</p>
+
                         <h2>Browse finds</h2>
                       </div>
 
-                      <button className="icon-button" aria-label="Open filters">
+                      <button className="icon-button" type="button" aria-label="Open filters">
                         ☷
                       </button>
                     </header>
@@ -276,52 +253,62 @@ function App() {
                     </div>
 
                     <div className="filter-row">
-                      <button className="filter-chip filter-chip-active">All finds</button>
+                      <button className="filter-chip filter-chip-active" type="button">
+                        All finds
+                      </button>
 
-                      <button className="filter-chip">Needs help</button>
+                      <button className="filter-chip" type="button">
+                        Needs help
+                      </button>
 
-                      <button className="filter-chip">Reviewed</button>
+                      <button className="filter-chip" type="button">
+                        Reviewed
+                      </button>
                     </div>
 
                     <section className="browse-list">
-                      <button className="browse-card" onClick={() => setStep(2)}>
+                      <button className="browse-card" type="button" onClick={() => setStep(2)}>
                         <div className="find-image-placeholder image-ammonite">IMAGE</div>
 
                         <div className="browse-card-content">
                           <span className="status-label">Needs community input</span>
+
                           <h3>Possible ammonite</h3>
                           <p>Hainaut, Belgium</p>
                           <small>3 views · Added recently</small>
                         </div>
                       </button>
 
-                      <button className="browse-card">
+                      <button className="browse-card" type="button">
                         <div className="find-image-placeholder image-shell">IMAGE</div>
 
                         <div className="browse-card-content">
                           <span className="status-label status-reviewed">Specialist reviewed</span>
+
                           <h3>Fossil shell fragment</h3>
                           <p>Limburg, Belgium</p>
                           <small>2 views · Reviewed record</small>
                         </div>
                       </button>
 
-                      <button className="browse-card">
+                      <button className="browse-card" type="button">
                         <div className="find-image-placeholder image-rock">IMAGE</div>
 
                         <div className="browse-card-content">
                           <span className="status-label">Unidentified</span>
+
                           <h3>Collection specimen</h3>
                           <p>Belgian collection</p>
                           <small>4 views · Help requested</small>
                         </div>
                       </button>
 
-                      <button className="browse-card">
+                      <button className="browse-card" type="button">
                         <div className="find-image-placeholder image-shell">IMAGE</div>
 
                         <div className="browse-card-content">
                           <span className="status-label">Community discussion</span>
+
                           <h3>Possible sea urchin</h3>
                           <p>Namur, Belgium</p>
                           <small>5 views · 2 suggestions</small>
@@ -334,11 +321,11 @@ function App() {
                 {step === 2 && (
                   <>
                     <header className="mobile-header">
-                      <button className="back-button" onClick={() => setStep(1)}>
+                      <button className="back-button" type="button" onClick={() => setStep(1)}>
                         ← Back
                       </button>
 
-                      <button className="icon-button" aria-label="More options">
+                      <button className="icon-button" type="button" aria-label="More options">
                         ···
                       </button>
                     </header>
@@ -395,154 +382,43 @@ function App() {
                         information about the geological context may help the community respond.
                       </p>
 
-                      <button className="primary-button detail-help-button">Request help with this find</button>
-                    </section>
-                  </>
-                )}
-                {step === 3 && (
-                  <>
-                    <header className="mobile-header">
-                      <div>
-                        <p className="mobile-eyebrow">Record a find</p>
-                        <h2>Before you begin</h2>
-                      </div>
-
-                      <button className="icon-button" aria-label="Close recording journey" onClick={() => setStep(0)}>
-                        ×
+                      <button className="primary-button detail-help-button" type="button">
+                        Request help with this find
                       </button>
-                    </header>
-
-                    <section className="record-flow">
-                      <p className="record-progress">Step 1 of 2</p>
-
-                      <div className="record-intro-card">
-                        <p className="card-kicker">A useful record starts with evidence</p>
-
-                        <h3>You do not need to know what you have found.</h3>
-
-                        <p>
-                          Start with what you can observe. Other community members may be able to help with the rest.
-                        </p>
-                      </div>
-
-                      <ul className="record-checklist">
-                        <li>
-                          <span aria-hidden="true">1</span>
-                          <div>
-                            <strong>Take several photographs</strong>
-                            <p>Front, back, side and a close-up where possible.</p>
-                          </div>
-                        </li>
-
-                        <li>
-                          <span aria-hidden="true">2</span>
-                          <div>
-                            <strong>Include something for scale</strong>
-                            <p>A ruler or measurement makes photographs more useful.</p>
-                          </div>
-                        </li>
-
-                        <li>
-                          <span aria-hidden="true">3</span>
-                          <div>
-                            <strong>Share what you know</strong>
-                            <p>Locality, collection history and uncertainty all matter.</p>
-                          </div>
-                        </li>
-                      </ul>
-
-                      <div className="mobile-actions">
-                        <button className="primary-button" onClick={() => setStep(4)}>
-                          Start recording
-                        </button>
-
-                        <button className="secondary-button" onClick={() => setStep(0)}>
-                          Not now
-                        </button>
-                      </div>
                     </section>
                   </>
                 )}
+
+                {step === 3 && <RecordIntroScreen onStart={() => setStep(4)} onCancel={returnToWelcome} />}
 
                 {step === 4 && (
-                  <>
-                    <header className="mobile-header">
-                      <button className="back-button" onClick={() => setStep(3)}>
-                        ← Back
-                      </button>
-
-                      <p className="mobile-eyebrow">Record a find</p>
-                    </header>
-
-                    <section className="record-flow">
-                      <p className="record-progress">Step 2 of 2</p>
-
-                      <div className="record-heading">
-                        <h2>What are you recording?</h2>
-                        <p>Choose the closest option. You can change this later.</p>
-                      </div>
-
-                      <div className="record-choice-list">
-                        {recordKinds.map((record) => {
-                          const isSelected = recordKind === record.id;
-
-                          return (
-                            <button
-                              key={record.id}
-                              type="button"
-                              className={`record-choice ${isSelected ? "record-choice-active" : ""}`}
-                              aria-pressed={isSelected}
-                              onClick={() => setRecordKind(record.id)}>
-                              <span className="record-choice-symbol" aria-hidden="true">
-                                {record.symbol}
-                              </span>
-
-                              <span className="record-choice-copy">
-                                <strong>{record.title}</strong>
-                                <span>{record.description}</span>
-                              </span>
-
-                              <span className="record-choice-check" aria-hidden="true">
-                                {isSelected ? "✓" : ""}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div
-                        className={`record-selection-note ${recordKind ? "record-selection-note-active" : ""}`}
-                        aria-live="polite">
-                        {selectedRecordLabel ? (
-                          <>
-                            <strong>{selectedRecordLabel} selected</strong>
-                            <span>The next prototype step will collect photographs.</span>
-                          </>
-                        ) : (
-                          <span>Select one option to begin the record.</span>
-                        )}
-                      </div>
-                    </section>
-                  </>
+                  <RecordTypeScreen selectedKind={recordKind} onSelect={setRecordKind} onBack={() => setStep(3)} />
                 )}
               </div>
+
               <nav className="mobile-navigation" aria-label="Main navigation">
-                <button className={`nav-item ${step <= 2 ? "nav-item-active" : ""}`} onClick={() => setStep(0)}>
+                <button
+                  className={`nav-item ${step <= 2 ? "nav-item-active" : ""}`}
+                  type="button"
+                  onClick={returnToWelcome}>
                   <span>⌂</span>
                   Explore
                 </button>
 
-                <button className={`nav-item ${step >= 3 ? "nav-item-active" : ""}`} onClick={() => setStep(3)}>
+                <button
+                  className={`nav-item ${step >= 3 ? "nav-item-active" : ""}`}
+                  type="button"
+                  onClick={openRecordJourney}>
                   <span>＋</span>
                   Add
                 </button>
 
-                <button className="nav-item">
+                <button className="nav-item" type="button">
                   <span>♡</span>
                   My finds
                 </button>
 
-                <button className="nav-item">
+                <button className="nav-item" type="button">
                   <span>?</span>
                   Help
                 </button>
@@ -572,6 +448,7 @@ function App() {
 
           <div className="note-block">
             <h3>Prototype limitation</h3>
+
             <p>
               The records and interactions are mocked locally. No account, database, image upload or help request is
               live yet.
@@ -579,12 +456,12 @@ function App() {
           </div>
 
           <div className="notes-actions">
-            <button className="outline-button" onClick={goToPreviousStep} disabled={step === 0}>
+            <button className="outline-button" type="button" onClick={goToPreviousStep} disabled={step === 0}>
               Previous
             </button>
 
-            <button className="dark-button" onClick={goToNextStep}>
-              {step === 2 || step === 4 ? "Restart journey" : "Next"}
+            <button className="dark-button" type="button" onClick={goToNextStep}>
+              {isJourneyEnd ? "Restart journey" : "Next"}
             </button>
           </div>
         </aside>
