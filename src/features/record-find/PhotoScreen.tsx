@@ -1,0 +1,269 @@
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { recordKinds } from "./recordKinds";
+import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto, type RecordKind } from "./types";
+
+type PhotoScreenProps = {
+  recordKind: RecordKind;
+  photos: LocalFindPhoto[];
+  onAddPhotos: (files: File[], source: FindPhotoSource) => void;
+  onRemovePhoto: (photoId: string) => void;
+  onBack: () => void;
+};
+
+function getPhotoGuidance(photoCount: number) {
+  if (photoCount === 0) {
+    return {
+      title: "Start with the whole object",
+      description: "Add a clear photograph showing the complete specimen.",
+    };
+  }
+
+  if (photoCount === 1) {
+    return {
+      title: "Good start. Can you add another angle?",
+      description: "A side or reverse view may reveal details that are not visible in the first photograph.",
+    };
+  }
+
+  if (photoCount === 2) {
+    return {
+      title: "One more view would help",
+      description: "If possible, include a ruler or another clear indication of scale.",
+    };
+  }
+
+  if (photoCount < MAX_FIND_PHOTOS) {
+    return {
+      title: "You have added the recommended three views",
+      description: "You can continue, or add a close-up, label or other useful detail.",
+    };
+  }
+
+  return {
+    title: "Maximum reached",
+    description: "You can remove a photograph if you would like to replace it.",
+  };
+}
+
+export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, onBack }: PhotoScreenProps) {
+  const [isReady, setIsReady] = useState(false);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const existingInputRef = useRef<HTMLInputElement>(null);
+
+  const recordLabel = recordKinds.find((record) => record.id === recordKind)?.title ?? "Selected item";
+
+  const guidance = getPhotoGuidance(photos.length);
+  const hasReachedMaximum = photos.length >= MAX_FIND_PHOTOS;
+
+  useEffect(() => {
+    setIsReady(false);
+  }, [photos.length]);
+
+  const handleFilesSelected = (event: ChangeEvent<HTMLInputElement>, source: FindPhotoSource) => {
+    const files = Array.from(event.currentTarget.files ?? []);
+
+    if (files.length > 0) {
+      onAddPhotos(files, source);
+    }
+
+    /*
+     * Reset the input so a removed file may be selected again.
+     */
+    event.currentTarget.value = "";
+  };
+
+  if (isReady) {
+    return (
+      <>
+        <header className="mobile-header">
+          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
+            ← Review photos
+          </button>
+
+          <p className="mobile-eyebrow">Record a find</p>
+        </header>
+
+        <section className="record-flow">
+          <p className="record-progress">Single find · Photographs</p>
+
+          <div className="photo-ready-card">
+            <span className="photo-ready-symbol" aria-hidden="true">
+              ✓
+            </span>
+
+            <h2>Photographs ready</h2>
+
+            <p>
+              You have added {photos.length} {photos.length === 1 ? "photograph" : "photographs"} to this draft record.
+            </p>
+          </div>
+
+          <dl className="photo-ready-summary">
+            <div>
+              <dt>Record type</dt>
+              <dd>{recordLabel}</dd>
+            </div>
+
+            <div>
+              <dt>Photographs</dt>
+              <dd>{photos.length}</dd>
+            </div>
+
+            <div>
+              <dt>Uploaded</dt>
+              <dd>No — local preview only</dd>
+            </div>
+          </dl>
+
+          <div className="record-selection-note">
+            <strong>Next planned step</strong>
+
+            <span>The contributor will add provenance, find location and collection history next.</span>
+          </div>
+
+          <div className="mobile-actions">
+            <button className="primary-button" type="button" onClick={() => setIsReady(false)}>
+              Review photographs
+            </button>
+
+            <button className="secondary-button" type="button" onClick={onBack}>
+              Back to record type
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <header className="mobile-header">
+        <button className="back-button" type="button" onClick={onBack}>
+          ← Back
+        </button>
+
+        <p className="mobile-eyebrow">Record a find</p>
+      </header>
+
+      <section className="record-flow">
+        <p className="record-progress">Single find · Photographs</p>
+
+        <div className="record-heading">
+          <h2>Add photographs</h2>
+
+          <p>Add at least one photograph. Three useful views are recommended, but they are not required.</p>
+        </div>
+
+        <div className="photo-record-type">
+          <span>Recording</span>
+          <strong>{recordLabel}</strong>
+        </div>
+
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          onChange={(event) => handleFilesSelected(event, "camera")}
+        />
+
+        <input
+          ref={existingInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={(event) => handleFilesSelected(event, "existing")}
+        />
+
+        <div className="photo-source-actions">
+          <button
+            className="photo-source-button"
+            type="button"
+            disabled={hasReachedMaximum}
+            onClick={() => cameraInputRef.current?.click()}>
+            <span className="photo-source-symbol" aria-hidden="true">
+              ◉
+            </span>
+
+            <span className="photo-source-copy">
+              <strong>Take a photo</strong>
+              <span>Use this device’s camera when supported.</span>
+            </span>
+          </button>
+
+          <button
+            className="photo-source-button"
+            type="button"
+            disabled={hasReachedMaximum}
+            onClick={() => existingInputRef.current?.click()}>
+            <span className="photo-source-symbol" aria-hidden="true">
+              ▧
+            </span>
+
+            <span className="photo-source-copy">
+              <strong>Choose existing photos</strong>
+              <span>Select one or several files from this device.</span>
+            </span>
+          </button>
+        </div>
+
+        <div className={`photo-guidance ${photos.length >= 3 ? "photo-guidance-complete" : ""}`} aria-live="polite">
+          <div className="photo-guidance-heading">
+            <strong>{guidance.title}</strong>
+
+            <span>
+              {photos.length} / {MAX_FIND_PHOTOS}
+            </span>
+          </div>
+
+          <p>{guidance.description}</p>
+        </div>
+
+        {photos.length > 0 && (
+          <div className="single-photo-grid">
+            {photos.map((photo, index) => (
+              <article className="single-photo-card" key={photo.id}>
+                <div className="single-photo-preview">
+                  <img src={photo.previewUrl} alt="" loading="lazy" />
+
+                  <span className="single-photo-number">{index + 1}</span>
+
+                  <button
+                    className="single-photo-remove"
+                    type="button"
+                    aria-label={`Remove ${photo.file.name}`}
+                    onClick={() => onRemovePhoto(photo.id)}>
+                    ×
+                  </button>
+                </div>
+
+                <div className="single-photo-copy">
+                  <strong title={photo.file.name}>{photo.file.name}</strong>
+
+                  <span>{photo.source === "camera" ? "New camera image" : "Existing image"}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <div className="record-selection-note">
+          <strong>Local prototype only</strong>
+
+          <span>These photographs are previewed in this browser. They are not uploaded, saved or published.</span>
+        </div>
+
+        <button
+          className="primary-button photo-continue-button"
+          type="button"
+          disabled={photos.length === 0}
+          onClick={() => setIsReady(true)}>
+          Use these photographs
+        </button>
+      </section>
+    </>
+  );
+}

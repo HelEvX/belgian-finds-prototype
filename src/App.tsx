@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BottomNavigation } from "./components/BottomNavigation";
 import { NotesPanel } from "./components/NotesPanel";
 import { PhoneFrame } from "./components/PhoneFrame";
@@ -8,18 +8,114 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
+import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
-import type { RecordKind } from "./features/record-find/types";
+import {
+  MAX_FIND_PHOTOS,
+  type FindPhotoSource,
+  type LocalFindPhoto,
+  type RecordKind,
+} from "./features/record-find/types";
 import type { PrototypeStep } from "./prototype/types";
 
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
+  const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+
+  const findPhotosRef = useRef<LocalFindPhoto[]>([]);
+
+  useEffect(() => {
+    findPhotosRef.current = findPhotos;
+  }, [findPhotos]);
+
+  useEffect(() => {
+    return () => {
+      findPhotosRef.current.forEach((photo) => {
+        URL.revokeObjectURL(photo.previewUrl);
+      });
+    };
+  }, []);
+
+  const addFindPhotos = (files: File[], source: FindPhotoSource) => {
+    setFindPhotos((currentPhotos) => {
+      const remainingSlots = MAX_FIND_PHOTOS - currentPhotos.length;
+
+      if (remainingSlots <= 0) {
+        return currentPhotos;
+      }
+
+      const existingSignatures = new Set(
+        currentPhotos.map((photo) => `${photo.file.name}-${photo.file.size}-${photo.file.lastModified}`),
+      );
+
+      const newPhotos: LocalFindPhoto[] = [];
+
+      for (const file of files) {
+        if (!file.type.startsWith("image/") || newPhotos.length >= remainingSlots) {
+          continue;
+        }
+
+        const signature = `${file.name}-${file.size}-${file.lastModified}`;
+
+        if (existingSignatures.has(signature)) {
+          continue;
+        }
+
+        existingSignatures.add(signature);
+
+        newPhotos.push({
+          id: crypto.randomUUID(),
+          file,
+          previewUrl: URL.createObjectURL(file),
+          source,
+        });
+      }
+
+      const nextPhotos = [...currentPhotos, ...newPhotos];
+
+      findPhotosRef.current = nextPhotos;
+
+      return nextPhotos;
+    });
+  };
+
+  const removeFindPhoto = (photoId: string) => {
+    setFindPhotos((currentPhotos) => {
+      const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
+
+      if (photoToRemove) {
+        URL.revokeObjectURL(photoToRemove.previewUrl);
+      }
+
+      const remainingPhotos = currentPhotos.filter((photo) => photo.id !== photoId);
+
+      findPhotosRef.current = remainingPhotos;
+
+      return remainingPhotos;
+    });
+  };
+
+  const clearSingleFind = () => {
+    findPhotosRef.current.forEach((photo) => {
+      URL.revokeObjectURL(photo.previewUrl);
+    });
+
+    findPhotosRef.current = [];
+
+    setFindPhotos([]);
+    setRecordKind(null);
+  };
 
   const closeBulkImport = () => {
     setIsBulkImportOpen(false);
+  };
+
+  const startSingleFindJourney = () => {
+    clearSingleFind();
+    setStep(4);
   };
 
   const goToPreviousStep = () => {
@@ -52,6 +148,10 @@ function App() {
       case 6:
         setStep(3);
         return;
+
+      case 7:
+        setStep(5);
+        return;
     }
   };
 
@@ -80,11 +180,17 @@ function App() {
         return;
 
       case 5:
-        setRecordKind(null);
-        setStep(3);
+        if (recordKind) {
+          setStep(7);
+        }
         return;
 
       case 6:
+        setStep(3);
+        return;
+
+      case 7:
+        clearSingleFind();
         setStep(3);
         return;
     }
@@ -126,7 +232,7 @@ function App() {
 
           {step === 3 && (
             <AddMethodScreen
-              onRecordOne={() => setStep(4)}
+              onRecordOne={startSingleFindJourney}
               onImportCollection={() => setStep(6)}
               onCancel={showWelcome}
             />
@@ -135,7 +241,12 @@ function App() {
           {step === 4 && <RecordIntroScreen onStart={() => setStep(5)} onCancel={() => setStep(3)} />}
 
           {step === 5 && (
-            <RecordTypeScreen selectedKind={recordKind} onSelect={setRecordKind} onBack={() => setStep(4)} />
+            <RecordTypeScreen
+              selectedKind={recordKind}
+              onSelect={setRecordKind}
+              onBack={() => setStep(4)}
+              onContinue={() => setStep(7)}
+            />
           )}
 
           {step === 6 && (
@@ -145,9 +256,24 @@ function App() {
               onOpenImport={() => setIsBulkImportOpen(true)}
             />
           )}
+
+          {step === 7 && recordKind && (
+            <PhotoScreen
+              recordKind={recordKind}
+              photos={findPhotos}
+              onAddPhotos={addFindPhotos}
+              onRemovePhoto={removeFindPhoto}
+              onBack={() => setStep(5)}
+            />
+          )}
         </PhoneFrame>
 
-        <NotesPanel step={step} onPrevious={goToPreviousStep} onNext={goToNextStep} />
+        <NotesPanel
+          step={step}
+          onPrevious={goToPreviousStep}
+          onNext={goToNextStep}
+          nextDisabled={step === 5 && recordKind === null}
+        />
       </section>
     </main>
   );

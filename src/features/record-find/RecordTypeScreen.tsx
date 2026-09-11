@@ -5,9 +5,10 @@ type RecordTypeScreenProps = {
   selectedKind: RecordKind | null;
   onSelect: (recordKind: RecordKind) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
-export function RecordTypeScreen({ selectedKind, onSelect, onBack }: RecordTypeScreenProps) {
+export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }: RecordTypeScreenProps) {
   const selectedRecordLabel = recordKinds.find((record) => record.id === selectedKind)?.title;
 
   return (
@@ -64,12 +65,20 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack }: RecordTypeS
             <>
               <strong>{selectedRecordLabel} selected</strong>
 
-              <span>The next prototype step will collect photographs.</span>
+              <span>Next, add new or existing photographs.</span>
             </>
           ) : (
-            <span>Select one option to begin the record.</span>
+            <span>Select one option before continuing.</span>
           )}
         </div>
+
+        <button
+          className="primary-button record-continue-button"
+          type="button"
+          disabled={!selectedKind}
+          onClick={onContinue}>
+          Continue to photographs
+        </button>
       </section>
     </>
   );

@@ -60,4 +60,12 @@ export const stepNotes: StepNote[] = [
     decision:
       "Bulk imports create draft specimen records for review. They do not publish hundreds of records automatically.",
   },
+  {
+    label: "Single find · Photographs",
+    title: "Add photographs",
+    purpose: "Let a contributor add new camera images, existing files or a combination of both to one find record.",
+    matters: "New finds benefit from guided photography, while existing and inherited collections must remain welcome.",
+    decision:
+      "One photograph is sufficient to continue, three useful views are recommended, and five is the prototype maximum.",
+  },
 ];
