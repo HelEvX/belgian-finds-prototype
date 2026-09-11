@@ -1,9 +1,10 @@
 type CollectionImportIntroScreenProps = {
   onBack: () => void;
   onExplore: () => void;
+  onOpenImport: () => void;
 };
 
-export function CollectionImportIntroScreen({ onBack, onExplore }: CollectionImportIntroScreenProps) {
+export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }: CollectionImportIntroScreenProps) {
   return (
     <>
       <header className="mobile-header">
@@ -23,8 +24,8 @@ export function CollectionImportIntroScreen({ onBack, onExplore }: CollectionImp
           <h3>Bring in a folder of photographs.</h3>
 
           <p>
-            Instead of repeating the single-find process hundreds of times, collectors will be able to prepare several
-            specimen records together.
+            Instead of repeating the single-find process hundreds of times, collectors can prepare several specimen
+            records together.
           </p>
         </div>
 
@@ -67,17 +68,17 @@ export function CollectionImportIntroScreen({ onBack, onExplore }: CollectionImp
         </ul>
 
         <div className="record-selection-note">
-          <strong>Prototype limitation</strong>
+          <strong>Prototype behaviour</strong>
 
           <span>
-            This screen explains the intended workflow. Bulk file selection, grouping and import are not implemented in
-            this prototype.
+            You can select real local images in the next mockup. They will only be previewed in your browser and will
+            not be uploaded.
           </span>
         </div>
 
         <div className="mobile-actions">
-          <button className="primary-button" type="button" onClick={onBack}>
-            Back to add options
+          <button className="primary-button" type="button" onClick={onOpenImport}>
+            Choose collection images
           </button>
 
           <button className="secondary-button" type="button" onClick={onExplore}>

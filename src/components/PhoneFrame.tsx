@@ -4,9 +4,10 @@ type PhoneFrameProps = {
   screenKey: number;
   children: ReactNode;
   navigation: ReactNode;
+  overlay?: ReactNode;
 };
 
-export function PhoneFrame({ screenKey, children, navigation }: PhoneFrameProps) {
+export function PhoneFrame({ screenKey, children, navigation, overlay }: PhoneFrameProps) {
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
   const dragStartScrollTop = useRef(0);
@@ -92,6 +93,7 @@ export function PhoneFrame({ screenKey, children, navigation }: PhoneFrameProps)
           </div>
 
           {navigation}
+          {overlay}
         </div>
       </div>
     </div>

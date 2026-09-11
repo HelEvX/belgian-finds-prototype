@@ -6,6 +6,7 @@ import { BrowseScreen } from "./features/explore/BrowseScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
+import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
@@ -15,8 +16,15 @@ import type { PrototypeStep } from "./prototype/types";
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+
+  const closeBulkImport = () => {
+    setIsBulkImportOpen(false);
+  };
 
   const goToPreviousStep = () => {
+    setIsBulkImportOpen(false);
+
     switch (step) {
       case 0:
         return;
@@ -48,6 +56,8 @@ function App() {
   };
 
   const goToNextStep = () => {
+    setIsBulkImportOpen(false);
+
     switch (step) {
       case 0:
         setStep(1);
@@ -81,10 +91,12 @@ function App() {
   };
 
   const showWelcome = () => {
+    setIsBulkImportOpen(false);
     setStep(0);
   };
 
   const openAddJourney = () => {
+    setIsBulkImportOpen(false);
     setStep(3);
   };
 
@@ -102,7 +114,8 @@ function App() {
       <section className="prototype-workspace">
         <PhoneFrame
           screenKey={step}
-          navigation={<BottomNavigation step={step} onExplore={showWelcome} onAdd={openAddJourney} />}>
+          navigation={<BottomNavigation step={step} onExplore={showWelcome} onAdd={openAddJourney} />}
+          overlay={isBulkImportOpen ? <BulkImportModal onClose={closeBulkImport} /> : null}>
           {step === 0 && (
             <WelcomeScreen onBrowse={() => setStep(1)} onOpenFind={() => setStep(2)} onLogFind={openAddJourney} />
           )}
@@ -125,7 +138,13 @@ function App() {
             <RecordTypeScreen selectedKind={recordKind} onSelect={setRecordKind} onBack={() => setStep(4)} />
           )}
 
-          {step === 6 && <CollectionImportIntroScreen onBack={() => setStep(3)} onExplore={showWelcome} />}
+          {step === 6 && (
+            <CollectionImportIntroScreen
+              onBack={() => setStep(3)}
+              onExplore={showWelcome}
+              onOpenImport={() => setIsBulkImportOpen(true)}
+            />
+          )}
         </PhoneFrame>
 
         <NotesPanel step={step} onPrevious={goToPreviousStep} onNext={goToNextStep} />
