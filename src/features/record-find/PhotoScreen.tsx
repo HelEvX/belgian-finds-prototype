@@ -47,6 +47,7 @@ function getPhotoGuidance(photoCount: number) {
 
 export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, onBack }: PhotoScreenProps) {
   const [isReady, setIsReady] = useState(false);
+  const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const existingInputRef = useRef<HTMLInputElement>(null);
@@ -57,18 +58,94 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
   const hasReachedMaximum = photos.length >= MAX_FIND_PHOTOS;
 
   useEffect(() => {
-    setIsReady(false);
-  }, [photos.length]);
+    if (!feedback) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(
+      () => {
+        setFeedback(null);
+      },
+      feedback.tone === "warning" ? 5000 : 3000,
+    );
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [feedback]);
 
   const handleFilesSelected = (event: ChangeEvent<HTMLInputElement>, source: FindPhotoSource) => {
-    const files = Array.from(event.currentTarget.files ?? []);
+    const selectedFiles = Array.from(event.currentTarget.files ?? []);
 
-    if (files.length > 0) {
-      onAddPhotos(files, source);
+    const imageFiles = selectedFiles.filter((file) => file.type.startsWith("image/"));
+
+    const existingSignatures = new Set(
+      photos.map((photo) => `${photo.file.name}-${photo.file.size}-${photo.file.lastModified}`),
+    );
+
+    const acceptedFiles: File[] = [];
+    let duplicateCount = 0;
+
+    for (const file of imageFiles) {
+      const signature = `${file.name}-${file.size}-${file.lastModified}`;
+
+      if (existingSignatures.has(signature)) {
+        duplicateCount += 1;
+        continue;
+      }
+
+      existingSignatures.add(signature);
+      acceptedFiles.push(file);
+    }
+
+    const availableSlots = MAX_FIND_PHOTOS - photos.length;
+
+    const filesToAdd = acceptedFiles.slice(0, availableSlots);
+
+    const maximumSkippedCount = acceptedFiles.length - filesToAdd.length;
+
+    const unsupportedCount = selectedFiles.length - imageFiles.length;
+
+    if (filesToAdd.length > 0) {
+      onAddPhotos(filesToAdd, source);
+    }
+
+    const feedbackParts: string[] = [];
+
+    if (filesToAdd.length > 0) {
+      feedbackParts.push(
+        `${filesToAdd.length} ${filesToAdd.length === 1 ? "photograph was" : "photographs were"} added.`,
+      );
+    }
+
+    if (duplicateCount > 0) {
+      feedbackParts.push(`${duplicateCount} ${duplicateCount === 1 ? "duplicate was" : "duplicates were"} skipped.`);
+    }
+
+    if (maximumSkippedCount > 0) {
+      feedbackParts.push(
+        `${maximumSkippedCount} ${
+          maximumSkippedCount === 1 ? "image was" : "images were"
+        } skipped because this prototype allows five photographs.`,
+      );
+    }
+
+    if (unsupportedCount > 0) {
+      feedbackParts.push(
+        `${unsupportedCount} unsupported ${unsupportedCount === 1 ? "file was" : "files were"} skipped.`,
+      );
+    }
+
+    if (feedbackParts.length > 0) {
+      setFeedback({
+        tone: duplicateCount > 0 || maximumSkippedCount > 0 || unsupportedCount > 0 ? "warning" : "success",
+        message: feedbackParts.join(" "),
+      });
     }
 
     /*
-     * Reset the input so a removed file may be selected again.
+     * Reset the input so the same file can trigger another selection
+     * event. Duplicate protection is handled above.
      */
     event.currentTarget.value = "";
   };
@@ -210,6 +287,17 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
           </button>
         </div>
 
+        {feedback && (
+          <div
+            className={`photo-feedback photo-feedback-${feedback.tone}`}
+            role={feedback.tone === "warning" ? "alert" : "status"}
+            aria-live={feedback.tone === "warning" ? "assertive" : "polite"}>
+            <span aria-hidden="true">{feedback.tone === "warning" ? "!" : "✓"}</span>
+
+            <p>{feedback.message}</p>
+          </div>
+        )}
+
         <div className={`photo-guidance ${photos.length >= 3 ? "photo-guidance-complete" : ""}`} aria-live="polite">
           <div className="photo-guidance-heading">
             <strong>{guidance.title}</strong>
@@ -235,7 +323,13 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
                     className="single-photo-remove"
                     type="button"
                     aria-label={`Remove ${photo.file.name}`}
-                    onClick={() => onRemovePhoto(photo.id)}>
+                    onClick={() => {
+                      onRemovePhoto(photo.id);
+                      setFeedback({
+                        tone: "success",
+                        message: "Photograph removed. You can select it again if needed.",
+                      });
+                    }}>
                     ×
                   </button>
                 </div>
@@ -267,3 +361,8 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
     </>
   );
 }
+
+type PhotoFeedback = {
+  tone: "success" | "warning";
+  message: string;
+};

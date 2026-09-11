@@ -1478,3 +1478,53 @@
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
+
+/* Single-find photo feedback */
+.photo-feedback {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.photo-feedback > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.photo-feedback p {
+  margin: 2px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.photo-feedback-success {
+  border-color: var(--color-determination-border);
+  background: var(--color-determination-surface);
+  color: var(--color-determination-text);
+}
+
+.photo-feedback-success > span {
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-foreground);
+}
+
+.photo-feedback-warning {
+  border-color: var(--primary-orange-400);
+  background: var(--primary-orange-50);
+  color: var(--primary-orange-700);
+}
+
+.photo-feedback-warning > span {
+  background: var(--primary-orange-500);
+  color: var(--primary-stone-0);
+}
