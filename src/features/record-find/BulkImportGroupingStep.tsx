@@ -1,47 +1,32 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
 
 type BulkImportGroupingStepProps = {
   images: LocalImportImage[];
+  groups: SpecimenDraftGroup[];
+  selectedIds: string[];
+  onToggleImage: (imageId: string) => void;
+  onCreateGroup: () => void;
+  onUndoGroup: (groupId: number) => void;
+  onAddImages: () => void;
   onBack: () => void;
   onFinish: (groupCount: number) => void;
 };
 
-export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportGroupingStepProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [groups, setGroups] = useState<SpecimenDraftGroup[]>([]);
-
+export function BulkImportGroupingStep({
+  images,
+  groups,
+  selectedIds,
+  onToggleImage,
+  onCreateGroup,
+  onUndoGroup,
+  onAddImages,
+  onBack,
+  onFinish,
+}: BulkImportGroupingStepProps) {
   const groupedImageIds = useMemo(() => new Set(groups.flatMap((group) => group.imageIds)), [groups]);
 
   const unassignedImages = images.filter((image) => !groupedImageIds.has(image.id));
-
-  const toggleImage = (imageId: string) => {
-    setSelectedIds((currentIds) =>
-      currentIds.includes(imageId) ? currentIds.filter((id) => id !== imageId) : [...currentIds, imageId],
-    );
-  };
-
-  const createSpecimenDraft = () => {
-    if (selectedIds.length === 0) {
-      return;
-    }
-
-    setGroups((currentGroups) => [
-      ...currentGroups,
-      {
-        id: currentGroups.length + 1,
-        imageIds: selectedIds,
-      },
-    ]);
-
-    setSelectedIds([]);
-  };
-
-  const undoGroup = (groupId: number) => {
-    setGroups((currentGroups) => currentGroups.filter((group) => group.id !== groupId));
-
-    setSelectedIds([]);
-  };
 
   const getGroupImages = (group: SpecimenDraftGroup) =>
     group.imageIds
@@ -67,6 +52,10 @@ export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportG
         grouped.
       </p>
 
+      <button className="secondary-button bulk-grouping-add-images" type="button" onClick={onAddImages}>
+        Add missing images
+      </button>
+
       {unassignedImages.length > 0 ? (
         <>
           <div className="bulk-grouping-grid">
@@ -79,7 +68,7 @@ export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportG
                   className={`bulk-grouping-image ${isSelected ? "bulk-grouping-image-selected" : ""}`}
                   type="button"
                   aria-pressed={isSelected}
-                  onClick={() => toggleImage(image.id)}>
+                  onClick={() => onToggleImage(image.id)}>
                   <img src={image.previewUrl} alt="" loading="lazy" />
 
                   <span className="bulk-grouping-selection">{isSelected ? "✓" : ""}</span>
@@ -114,7 +103,7 @@ export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportG
             className="primary-button bulk-grouping-create"
             type="button"
             disabled={selectedIds.length === 0}
-            onClick={createSpecimenDraft}>
+            onClick={onCreateGroup}>
             Create specimen draft
           </button>
         </>
@@ -125,7 +114,7 @@ export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportG
           <div>
             <strong>Every image has been grouped</strong>
 
-            <p>Review the specimen drafts below before finishing.</p>
+            <p>Review the specimen drafts below, or add any photographs you have missed.</p>
           </div>
         </div>
       )}
@@ -151,7 +140,7 @@ export function BulkImportGroupingStep({ images, onBack, onFinish }: BulkImportG
                     <strong>{index + 1}</strong>
                   </div>
 
-                  <button type="button" onClick={() => undoGroup(group.id)}>
+                  <button type="button" onClick={() => onUndoGroup(group.id)}>
                     Undo group
                   </button>
                 </div>

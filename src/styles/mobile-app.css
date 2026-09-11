@@ -1095,6 +1095,11 @@
   line-height: 1.4;
 }
 
+.bulk-grouping-add-images {
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
 .bulk-draft-list {
   display: grid;
   gap: var(--space-3);

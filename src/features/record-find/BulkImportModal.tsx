@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { BulkImportGroupingStep } from "./BulkImportGroupingStep";
-import type { LocalImportImage } from "./bulkImportTypes";
+import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
 
 type BulkImportModalProps = {
   onClose: () => void;
@@ -18,11 +18,14 @@ function formatFileSize(bytes: number) {
 
 export function BulkImportModal({ onClose }: BulkImportModalProps) {
   const [images, setImages] = useState<LocalImportImage[]>([]);
+  const [groups, setGroups] = useState<SpecimenDraftGroup[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [stage, setStage] = useState<ImportStage>("select");
   const [draftCount, setDraftCount] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesRef = useRef<LocalImportImage[]>([]);
+  const nextGroupIdRef = useRef(1);
 
   useEffect(() => {
     imagesRef.current = images;
@@ -79,7 +82,12 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
       return nextImages;
     });
 
-    setStage("select");
+    /*
+     * If the picker was opened from the grouping screen, stay there.
+     * Otherwise return to the normal image-selection stage.
+     */
+    setStage((currentStage) => (currentStage === "group" ? "group" : "select"));
+
     setDraftCount(0);
     event.currentTarget.value = "";
   };
@@ -99,7 +107,21 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
       return remainingImages;
     });
 
-    setStage("select");
+    /*
+     * If the removed image was already grouped, remove it from that
+     * group. Remove the group entirely if it becomes empty.
+     */
+    setGroups((currentGroups) =>
+      currentGroups
+        .map((group) => ({
+          ...group,
+          imageIds: group.imageIds.filter((id) => id !== imageId),
+        }))
+        .filter((group) => group.imageIds.length > 0),
+    );
+
+    setSelectedIds((currentIds) => currentIds.filter((id) => id !== imageId));
+
     setDraftCount(0);
   };
 
@@ -109,7 +131,11 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
     });
 
     imagesRef.current = [];
+    nextGroupIdRef.current = 1;
+
     setImages([]);
+    setGroups([]);
+    setSelectedIds([]);
     setStage("select");
     setDraftCount(0);
 
@@ -120,6 +146,46 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const toggleGroupingImage = (imageId: string) => {
+    setSelectedIds((currentIds) =>
+      currentIds.includes(imageId) ? currentIds.filter((id) => id !== imageId) : [...currentIds, imageId],
+    );
+  };
+
+  const createSpecimenDraft = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    const groupedImageIds = new Set(groups.flatMap((group) => group.imageIds));
+
+    const validSelectedIds = selectedIds.filter(
+      (imageId) => images.some((image) => image.id === imageId) && !groupedImageIds.has(imageId),
+    );
+
+    if (validSelectedIds.length === 0) {
+      setSelectedIds([]);
+      return;
+    }
+
+    const newGroup: SpecimenDraftGroup = {
+      id: nextGroupIdRef.current,
+      imageIds: validSelectedIds,
+    };
+
+    nextGroupIdRef.current += 1;
+
+    setGroups((currentGroups) => [...currentGroups, newGroup]);
+
+    setSelectedIds([]);
+  };
+
+  const undoGroup = (groupId: number) => {
+    setGroups((currentGroups) => currentGroups.filter((group) => group.id !== groupId));
+
+    setDraftCount(0);
   };
 
   const totalSize = images.reduce((total, image) => total + image.file.size, 0);
@@ -231,8 +297,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
                   </div>
 
                   <div>
-                    <dt>Published</dt>
-                    <dd>Nothing</dd>
+                    <dt>Specimen groups</dt>
+                    <dd>{groups.length}</dd>
                   </div>
                 </dl>
               </>
@@ -250,7 +316,7 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
                 type="button"
                 disabled={images.length === 0}
                 onClick={() => setStage("ready")}>
-                Create draft workspace
+                {groups.length > 0 ? "Return to draft workspace" : "Create draft workspace"}
               </button>
 
               <button className="secondary-button" type="button" onClick={onClose}>
@@ -280,8 +346,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
               </div>
 
               <div>
-                <dt>Draft records</dt>
-                <dd>Created after grouping</dd>
+                <dt>Specimen groups</dt>
+                <dd>{groups.length}</dd>
               </div>
 
               <div>
@@ -293,12 +359,15 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
             <div className="bulk-import-local-note">
               <strong>Nothing has been published</strong>
 
-              <span>The next step groups photographs belonging to the same physical specimen.</span>
+              <span>
+                The next step groups photographs belonging to the same physical specimen. Your existing groups will be
+                preserved if you return to image selection.
+              </span>
             </div>
 
             <div className="bulk-import-actions">
               <button className="primary-button" type="button" onClick={() => setStage("group")}>
-                Start grouping images
+                {groups.length > 0 ? "Continue grouping images" : "Start grouping images"}
               </button>
 
               <button className="secondary-button" type="button" onClick={() => setStage("select")}>
@@ -311,6 +380,12 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
         {stage === "group" && (
           <BulkImportGroupingStep
             images={images}
+            groups={groups}
+            selectedIds={selectedIds}
+            onToggleImage={toggleGroupingImage}
+            onCreateGroup={createSpecimenDraft}
+            onUndoGroup={undoGroup}
+            onAddImages={openFilePicker}
             onBack={() => setStage("ready")}
             onFinish={(groupCount) => {
               setDraftCount(groupCount);
