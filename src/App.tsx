@@ -5,6 +5,8 @@ import { PhoneFrame } from "./components/PhoneFrame";
 import { BrowseScreen } from "./features/explore/BrowseScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
+import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
+import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import type { RecordKind } from "./features/record-find/types";
@@ -15,34 +17,74 @@ function App() {
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
 
   const goToPreviousStep = () => {
-    if (step === 3) {
-      setStep(0);
-      return;
-    }
+    switch (step) {
+      case 0:
+        return;
 
-    setStep((currentStep) => Math.max(0, currentStep - 1) as PrototypeStep);
+      case 1:
+        setStep(0);
+        return;
+
+      case 2:
+        setStep(1);
+        return;
+
+      case 3:
+        setStep(0);
+        return;
+
+      case 4:
+        setStep(3);
+        return;
+
+      case 5:
+        setStep(4);
+        return;
+
+      case 6:
+        setStep(3);
+        return;
+    }
   };
 
   const goToNextStep = () => {
-    if (step === 2) {
-      setStep(0);
-      return;
-    }
+    switch (step) {
+      case 0:
+        setStep(1);
+        return;
 
-    if (step === 4) {
-      setRecordKind(null);
-      setStep(3);
-      return;
-    }
+      case 1:
+        setStep(2);
+        return;
 
-    setStep((currentStep) => Math.min(4, currentStep + 1) as PrototypeStep);
+      case 2:
+        setStep(0);
+        return;
+
+      case 3:
+        setStep(4);
+        return;
+
+      case 4:
+        setStep(5);
+        return;
+
+      case 5:
+        setRecordKind(null);
+        setStep(3);
+        return;
+
+      case 6:
+        setStep(3);
+        return;
+    }
   };
 
   const showWelcome = () => {
     setStep(0);
   };
 
-  const startRecordJourney = () => {
+  const openAddJourney = () => {
     setStep(3);
   };
 
@@ -60,20 +102,30 @@ function App() {
       <section className="prototype-workspace">
         <PhoneFrame
           screenKey={step}
-          navigation={<BottomNavigation step={step} onExplore={showWelcome} onAdd={startRecordJourney} />}>
+          navigation={<BottomNavigation step={step} onExplore={showWelcome} onAdd={openAddJourney} />}>
           {step === 0 && (
-            <WelcomeScreen onBrowse={() => setStep(1)} onOpenFind={() => setStep(2)} onLogFind={startRecordJourney} />
+            <WelcomeScreen onBrowse={() => setStep(1)} onOpenFind={() => setStep(2)} onLogFind={openAddJourney} />
           )}
 
           {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
 
           {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
 
-          {step === 3 && <RecordIntroScreen onStart={() => setStep(4)} onCancel={showWelcome} />}
-
-          {step === 4 && (
-            <RecordTypeScreen selectedKind={recordKind} onSelect={setRecordKind} onBack={() => setStep(3)} />
+          {step === 3 && (
+            <AddMethodScreen
+              onRecordOne={() => setStep(4)}
+              onImportCollection={() => setStep(6)}
+              onCancel={showWelcome}
+            />
           )}
+
+          {step === 4 && <RecordIntroScreen onStart={() => setStep(5)} onCancel={() => setStep(3)} />}
+
+          {step === 5 && (
+            <RecordTypeScreen selectedKind={recordKind} onSelect={setRecordKind} onBack={() => setStep(4)} />
+          )}
+
+          {step === 6 && <CollectionImportIntroScreen onBack={() => setStep(3)} onExplore={showWelcome} />}
         </PhoneFrame>
 
         <NotesPanel step={step} onPrevious={goToPreviousStep} onNext={goToNextStep} />

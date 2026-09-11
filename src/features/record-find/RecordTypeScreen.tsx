@@ -21,7 +21,7 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack }: RecordTypeS
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Step 2 of 2</p>
+        <p className="record-progress">Single find · About the item</p>
 
         <div className="record-heading">
           <h2>What are you recording?</h2>

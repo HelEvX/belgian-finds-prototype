@@ -9,7 +9,7 @@ type NotesPanelProps = {
 
 export function NotesPanel({ step, onPrevious, onNext }: NotesPanelProps) {
   const note = stepNotes[step];
-  const isJourneyEnd = step === 2 || step === 4;
+  const isJourneyEnd = step === 2 || step === 5 || step === 6;
 
   return (
     <aside className="notes-panel">

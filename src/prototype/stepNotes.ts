@@ -25,21 +25,39 @@ export const stepNotes: StepNote[] = [
     decision: "A help request is attached to a specific find rather than handled through a general contact form.",
   },
   {
-    label: "Record a find · Step 1 of 2",
-    title: "Before you begin",
-    purpose: "Prepare the contributor for the information and photographs that make a find useful to other people.",
+    label: "Add material · Choose a path",
+    title: "How would you like to begin?",
+    purpose: "Let contributors choose between documenting one specimen and importing an existing collection.",
     matters:
-      "A short introduction can improve submission quality without turning the recording process into a long scientific form.",
+      "A guided mobile flow is useful for a new find, but forcing an established collector through it hundreds of times would be frustrating.",
     decision:
-      "The platform explains what helps, but does not require contributors to already know what they have found.",
+      "Single-record entry and collection import are separate workflows that can share the same underlying record structure.",
   },
   {
-    label: "Record a find · Step 2 of 2",
+    label: "Single find · Introduction",
+    title: "Before you begin",
+    purpose: "Briefly prepare the contributor for the information that will make their record useful to other people.",
+    matters: "Contributors should feel welcome even when they do not know what they have found.",
+    decision:
+      "Detailed instructions are shown progressively while the user creates the record, rather than presented all at once.",
+  },
+  {
+    label: "Single find · About the item",
     title: "Choose a record type",
     purpose: "Establish what the contributor is recording before asking for photographs and contextual information.",
     matters:
       "The same platform should accommodate personal finds, inherited collection material and unidentified objects.",
     decision:
       "The contributor can explicitly choose ‘Something unknown’ instead of being forced to make an identification.",
+  },
+  {
+    label: "Collection import · Overview",
+    title: "Import an existing collection",
+    purpose:
+      "Show how collectors could add many existing photographs without creating every record through the mobile wizard.",
+    matters:
+      "Established and inherited collections may already contain hundreds of images, labels and catalogue references.",
+    decision:
+      "Bulk imports create draft specimen records for review. They do not publish hundreds of records automatically.",
   },
 ];

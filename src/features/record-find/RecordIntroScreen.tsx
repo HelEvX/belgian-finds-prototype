@@ -18,7 +18,7 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Step 1 of 2</p>
+        <p className="record-progress">Single find · Introduction</p>
 
         <div className="record-intro-card">
           <p className="card-kicker">A useful record starts with evidence</p>
