@@ -1,24 +1,80 @@
+/*
+ * Mobile presentation mode
+ *
+ * On a real phone, the device itself becomes the frame. Hide the
+ * desktop prototype chrome and let the app fill the viewport.
+ */
 @media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
   .prototype-shell {
-    padding: var(--space-5) var(--space-4) var(--space-8);
+    width: 100%;
+    min-height: 100dvh;
+    padding: 0;
   }
 
-  .prototype-header {
-    display: block;
-    margin-bottom: var(--space-6);
-  }
-
-  .prototype-status {
-    display: inline-block;
-    margin-top: 14px;
-  }
-
-  .prototype-workspace { display: block; }
-
+  .prototype-header,
   .notes-panel {
-    max-width: 390px;
-    margin: var(--space-8) auto 0;
+    display: none;
   }
 
-  .phone-frame { width: min(100%, 390px); }
+  .prototype-workspace {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .phone-column {
+    display: block;
+    width: 100%;
+  }
+
+  .phone-frame {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .phone-speaker {
+    display: none;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mobile-status-bar {
+    display: none;
+  }
+
+  /*
+   * Leave enough room for the fixed navigation and the safe area
+   * found on devices with a home indicator.
+   */
+  .mobile-app {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-navigation {
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
 }
