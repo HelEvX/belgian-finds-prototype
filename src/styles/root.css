@@ -1,99 +1,196 @@
 :root {
-  /* Primaries: raw swatches only. A supplied palette should replace values here. */
-  --primary-ink-950: #1e2620;
-  --primary-ink-800: #344037;
-  --primary-ink-700: #465148;
-  --primary-ink-600: #5c675d;
-  --primary-ink-500: #737d74;
-  --primary-ink-400: #929a90;
-  --primary-stone-0: #ffffff;
-  --primary-stone-50: #faf9f6;
-  --primary-stone-100: #f2efe9;
-  --primary-stone-200: #e4dfd6;
-  --primary-stone-300: #d1c9be;
-  --primary-stone-400: #aca397;
-  --primary-sage-50: #f0f4ed;
-  --primary-sage-100: #e1e9dc;
-  --primary-sage-200: #c8d5c3;
-  --primary-sage-300: #aabda5;
-  --primary-sand-100: #eadcc6;
-  --primary-sand-200: #dbc7a8;
-  --primary-sand-300: #c4ad89;
-  --primary-accent-700: #435843;
+  /*
+   * Raw palette
+   *
+   * Direction:
+   * - shale/carbon ink for authority and legibility
+   * - chalk/limestone neutrals for the main environment
+   * - quarry blue for trust, science and interaction
+   * - excavation orange for discovery, participation and energy
+   */
 
-  /* Tokens: reusable visual roles, independent of components. */
+  /* Shale and carbon */
+  --primary-ink-950: #172229;
+  --primary-ink-800: #293841;
+  --primary-ink-700: #40515a;
+  --primary-ink-600: #5a6870;
+  --primary-ink-500: #748087;
+  --primary-ink-400: #98a1a5;
+
+  /* Chalk and limestone */
+  --primary-stone-0: #ffffff;
+  --primary-stone-50: #fbfaf6;
+  --primary-stone-100: #f3efe7;
+  --primary-stone-200: #e5ded2;
+  --primary-stone-300: #cec3b4;
+  --primary-stone-400: #a99c8c;
+
+  /* Quarry water and scientific blue */
+  --primary-blue-50: #edf5f8;
+  --primary-blue-100: #d8e9f0;
+  --primary-blue-200: #afd1df;
+  --primary-blue-300: #7db4ca;
+  --primary-blue-400: #4f99b7;
+  --primary-blue-500: #2d81a2;
+  --primary-blue-600: #176b8b;
+  --primary-blue-700: #10546f;
+  --primary-blue-800: #123f51;
+
+  /* Excavation and discovery orange */
+  --primary-orange-50: #fff4eb;
+  --primary-orange-100: #fbe5d3;
+  --primary-orange-200: #f4c59f;
+  --primary-orange-300: #eba66f;
+  --primary-orange-400: #e88946;
+  --primary-orange-500: #d96f2d;
+  --primary-orange-600: #b95621;
+  --primary-orange-700: #914117;
+
+  /*
+   * Compatibility aliases
+   *
+   * These preserve any existing references in the other stylesheets.
+   * New semantic mappings below use the new palette names directly.
+   */
+
+  --primary-sage-50: var(--primary-blue-50);
+  --primary-sage-100: var(--primary-blue-100);
+  --primary-sage-200: var(--primary-blue-200);
+  --primary-sage-300: var(--primary-blue-300);
+
+  --primary-sand-100: var(--primary-orange-100);
+  --primary-sand-200: var(--primary-orange-200);
+  --primary-sand-300: var(--primary-orange-300);
+
+  --primary-accent-700: var(--primary-blue-700);
+
+  /*
+   * Reusable visual roles
+   *
+   * Components should consume these variables rather than raw swatches.
+   */
+
   --color-canvas: var(--primary-stone-100);
   --color-surface: var(--primary-stone-0);
   --color-app-surface: var(--primary-stone-50);
-  --color-surface-subtle: var(--primary-sage-50);
-  --color-surface-emphasis: var(--primary-sage-100);
+
+  --color-surface-subtle: var(--primary-blue-50);
+  --color-surface-emphasis: var(--primary-blue-100);
+
   --color-text: var(--primary-ink-950);
   --color-text-muted: var(--primary-ink-600);
   --color-text-subtle: var(--primary-ink-500);
   --color-text-disabled: var(--primary-ink-400);
+
   --color-border: var(--primary-stone-300);
   --color-border-subtle: var(--primary-stone-200);
   --color-border-strong: var(--primary-stone-400);
-  --color-accent: var(--primary-accent-700);
+
+  --color-accent: var(--primary-blue-700);
   --color-on-accent: var(--primary-stone-0);
+
   --color-accent-subtle: color-mix(in srgb, var(--color-accent), transparent 82%);
+
   --color-accent-surface: color-mix(in srgb, var(--color-accent), var(--color-surface) 91%);
+
   --color-app-surface-translucent: color-mix(in srgb, var(--color-app-surface), transparent 2%);
+
   --color-app-surface-hint: color-mix(in srgb, var(--color-app-surface), transparent 6%);
 
-  /* Semantics: component and state intent. Consume these outside this file. */
-  --color-action-primary: var(--color-accent);
-  --color-action-primary-foreground: var(--color-on-accent);
-  --color-action-primary-surface: var(--color-accent-surface);
-  --color-action-primary-border: var(--color-accent);
-  --color-action-hover-border: var(--primary-sage-300);
-  --color-action-focus-ring: color-mix(in srgb, var(--color-accent), var(--color-surface) 58%);
-  --color-status-text: var(--color-text-subtle);
-  --color-scrollbar: var(--primary-sage-300);
+  /*
+   * Component and state semantics
+   */
+
+  /* Primary actions and interaction states */
+  --color-action-primary: var(--primary-blue-700);
+  --color-action-primary-foreground: var(--primary-stone-0);
+  --color-action-primary-surface: var(--primary-blue-50);
+  --color-action-primary-border: var(--primary-blue-700);
+  --color-action-hover-border: var(--primary-blue-300);
+
+  --color-action-focus-ring: color-mix(in srgb, var(--primary-blue-500), var(--color-surface) 58%);
+
+  /* General status and interface details */
+  --color-status-text: var(--primary-blue-700);
+  --color-scrollbar: var(--primary-blue-200);
+  --color-icon: var(--primary-blue-700);
+
+  /* Cards and form controls */
   --color-card-border: var(--color-border-subtle);
-  --color-input-border: var(--color-border-subtle);
-  --color-filter-border: var(--primary-sage-200);
-  --color-filter-text: var(--color-text-muted);
-  --color-placeholder-muted: var(--color-text-disabled);
-  --color-icon: var(--color-action-primary);
-  --color-welcome-surface: var(--primary-sage-100);
-  --color-welcome-text: var(--primary-ink-700);
-  --color-record-intro-surface: var(--primary-sage-100);
-  --color-record-intro-text: var(--primary-ink-700);
-  --color-placeholder-surface: var(--primary-sand-200);
-  --color-placeholder-text: var(--primary-ink-600);
   --color-card-text: var(--color-text-muted);
-  --color-image-ammonite: var(--primary-sand-200);
-  --color-image-shell: var(--primary-sage-200);
+
+  --color-input-border: var(--color-border-subtle);
+
+  --color-filter-border: var(--primary-blue-200);
+  --color-filter-text: var(--color-text-muted);
+
+  --color-placeholder-muted: var(--color-text-disabled);
+
+  /* Welcome and introductory surfaces */
+  --color-welcome-surface: var(--primary-blue-100);
+  --color-welcome-text: var(--primary-ink-800);
+
+  --color-record-intro-surface: var(--primary-orange-100);
+  --color-record-intro-text: var(--primary-ink-800);
+
+  /* Image placeholders */
+  --color-placeholder-surface: var(--primary-orange-200);
+  --color-placeholder-text: var(--primary-ink-700);
+
+  --color-image-ammonite: var(--primary-orange-200);
+  --color-image-shell: var(--primary-blue-100);
   --color-image-rock: var(--primary-stone-300);
+
+  /* Detail gallery */
   --color-thumbnail-border: var(--color-border-subtle);
   --color-thumbnail-surface: var(--primary-stone-200);
+
+  /* Record metadata */
   --color-location-text: var(--color-text-muted);
-  --color-fact-surface: var(--color-surface-subtle);
+
+  --color-fact-surface: var(--primary-blue-50);
   --color-fact-label: var(--color-text-subtle);
-  --color-determination-border: var(--primary-sage-300);
-  --color-determination-surface: var(--color-surface-subtle);
+
+  /* Determination history */
+  --color-determination-border: var(--primary-blue-300);
+  --color-determination-surface: var(--primary-blue-50);
   --color-determination-text: var(--primary-ink-700);
   --color-empty-text: var(--color-text-disabled);
+
+  /* Persistent mobile navigation */
   --color-navigation-border: var(--color-border-subtle);
   --color-navigation-text: var(--color-text-disabled);
-  --color-choice-active-surface: var(--color-action-primary-surface);
-  --color-choice-symbol-surface: var(--color-surface-emphasis);
+
+  /* Record-type choices */
+  --color-choice-active-surface: var(--primary-blue-50);
+  --color-choice-symbol-surface: var(--primary-orange-100);
+
   --color-selection-note-text: var(--color-text-subtle);
-  --color-selection-note-active-border: var(--color-action-primary-border);
+  --color-selection-note-active-border: var(--primary-blue-700);
   --color-selection-note-active-text: var(--primary-ink-700);
+
+  /* Smartphone frame */
   --color-frame-border: var(--primary-ink-800);
   --color-frame-surface: var(--primary-ink-950);
   --color-frame-detail: var(--primary-ink-700);
   --color-frame-screen-border: var(--primary-ink-600);
+
   --color-frame-shadow: color-mix(in srgb, var(--primary-ink-950), transparent 80%);
+
   --color-frame-highlight: color-mix(in srgb, var(--primary-stone-0), transparent 65%);
-  --color-button-secondary-border: var(--primary-sage-200);
+
+  /* Secondary and presentation buttons */
+  --color-button-secondary-border: var(--primary-orange-400);
   --color-button-outline-border: var(--color-border-strong);
   --color-button-dark: var(--primary-ink-800);
   --color-button-text: var(--primary-ink-700);
 
+  /*
+   * Typography, spacing and geometry
+   */
+
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -102,9 +199,12 @@
   --space-6: 24px;
   --space-7: 28px;
   --space-8: 32px;
+
   --radius-control: 12px;
   --radius-card: 16px;
+
   --focus-ring: var(--color-action-focus-ring);
+
   font-family: var(--font-sans);
   color: var(--color-text);
   background: var(--color-canvas);
@@ -112,7 +212,9 @@
   text-rendering: optimizeLegibility;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 html {
   min-width: 320px;
@@ -130,6 +232,10 @@ body {
 button,
 input,
 textarea,
-select { font: inherit; }
+select {
+  font: inherit;
+}
 
-#root { min-height: 100vh; }
+#root {
+  min-height: 100vh;
+}
