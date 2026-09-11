@@ -805,7 +805,7 @@
   border-radius: 50%;
   background: var(--color-app-surface-translucent);
   color: var(--color-text);
-  font-size: 0.9rem;
+  line-height: 0.2em;
   cursor: pointer;
   backdrop-filter: blur(6px);
 }
@@ -928,6 +928,271 @@
 .bulk-import-close:focus-visible,
 .bulk-import-clear:focus-visible,
 .bulk-import-remove:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Collection image grouping */
+.bulk-grouping-step {
+  padding-top: var(--space-4);
+}
+
+.bulk-grouping-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.bulk-grouping-heading h3 {
+  margin: var(--space-1) 0 0;
+  font-size: 1rem;
+}
+
+.bulk-grouping-count {
+  flex: 0 0 auto;
+  padding: 5px var(--space-2);
+  border-radius: 999px;
+  background: var(--color-choice-active-surface);
+  color: var(--color-action-primary);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.bulk-grouping-description {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.bulk-grouping-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.bulk-grouping-image {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.bulk-grouping-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 0.78;
+  object-fit: cover;
+  background: var(--color-thumbnail-surface);
+}
+
+.bulk-grouping-image-selected {
+  border-color: var(--color-action-primary-border);
+  background: var(--color-choice-active-surface);
+}
+
+.bulk-grouping-selection {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-app-surface-translucent);
+  color: var(--color-action-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+
+.bulk-grouping-image-selected .bulk-grouping-selection {
+  border-color: var(--color-action-primary);
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-foreground);
+}
+
+.bulk-grouping-filename {
+  display: block;
+  overflow: hidden;
+  padding: var(--space-2);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bulk-grouping-selection-note {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-subtle);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.bulk-grouping-selection-note-active {
+  border-style: solid;
+  border-color: var(--color-selection-note-active-border);
+  background: var(--color-choice-active-surface);
+  color: var(--color-selection-note-active-text);
+}
+
+.bulk-grouping-create {
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+.bulk-grouping-create:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.bulk-grouping-all-assigned {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-action-primary-border);
+  border-radius: var(--radius-card);
+  background: var(--color-choice-active-surface);
+}
+
+.bulk-grouping-all-assigned > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-foreground);
+  font-weight: 700;
+}
+
+.bulk-grouping-all-assigned strong {
+  font-size: 0.78rem;
+}
+
+.bulk-grouping-all-assigned p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.bulk-draft-list {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.bulk-draft-list-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.bulk-draft-list-heading h4 {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.bulk-draft-list-heading > span {
+  color: var(--color-text-subtle);
+  font-size: 0.65rem;
+}
+
+.bulk-draft-card {
+  padding: var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.bulk-draft-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.bulk-draft-card-header > div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.bulk-draft-card-header span {
+  color: var(--color-text-subtle);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+}
+
+.bulk-draft-card-header strong {
+  font-size: 0.78rem;
+}
+
+.bulk-draft-card-header button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary-orange-700);
+  font-size: 0.64rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bulk-draft-thumbnails {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.bulk-draft-thumbnails img,
+.bulk-draft-thumbnails > span {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--space-2);
+}
+
+.bulk-draft-thumbnails img {
+  object-fit: cover;
+  background: var(--color-thumbnail-surface);
+}
+
+.bulk-draft-thumbnails > span {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-emphasis);
+  color: var(--color-action-primary);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.bulk-draft-card > p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+}
+
+.bulk-grouping-image:focus-visible,
+.bulk-draft-card-header button:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }

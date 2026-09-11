@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { BulkImportGroupingStep } from "./BulkImportGroupingStep";
+import type { LocalImportImage } from "./bulkImportTypes";
 
 type BulkImportModalProps = {
   onClose: () => void;
 };
 
-type LocalImportImage = {
-  id: string;
-  file: File;
-  previewUrl: string;
-};
+type ImportStage = "select" | "ready" | "group" | "finished";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) {
@@ -20,7 +18,8 @@ function formatFileSize(bytes: number) {
 
 export function BulkImportModal({ onClose }: BulkImportModalProps) {
   const [images, setImages] = useState<LocalImportImage[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
+  const [stage, setStage] = useState<ImportStage>("select");
+  const [draftCount, setDraftCount] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesRef = useRef<LocalImportImage[]>([]);
@@ -80,12 +79,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
       return nextImages;
     });
 
-    setIsComplete(false);
-
-    /*
-     * Reset the input so the same file can be selected again after
-     * being removed.
-     */
+    setStage("select");
+    setDraftCount(0);
     event.currentTarget.value = "";
   };
 
@@ -104,7 +99,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
       return remainingImages;
     });
 
-    setIsComplete(false);
+    setStage("select");
+    setDraftCount(0);
   };
 
   const clearImages = () => {
@@ -114,7 +110,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
 
     imagesRef.current = [];
     setImages([]);
-    setIsComplete(false);
+    setStage("select");
+    setDraftCount(0);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -125,15 +122,14 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
     fileInputRef.current?.click();
   };
 
-  const createDraftWorkspace = () => {
-    if (images.length === 0) {
-      return;
-    }
-
-    setIsComplete(true);
-  };
-
   const totalSize = images.reduce((total, image) => total + image.file.size, 0);
+
+  const modalTitle = {
+    select: "Choose collection images",
+    ready: "Draft workspace ready",
+    group: "Group collection images",
+    finished: "Specimen drafts prepared",
+  }[stage];
 
   return (
     <div
@@ -148,7 +144,7 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
           <div>
             <p className="mobile-eyebrow">Collection import</p>
 
-            <h2 id="bulk-import-title">{isComplete ? "Draft workspace ready" : "Choose collection images"}</h2>
+            <h2 id="bulk-import-title">{modalTitle}</h2>
           </div>
 
           <button
@@ -161,14 +157,14 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
           </button>
         </header>
 
-        {!isComplete ? (
+        <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFilesSelected} />
+
+        {stage === "select" && (
           <>
             <p className="bulk-import-description">
               Select photographs for several specimens. You will group related images into specimen drafts in the next
-              stage of the import workflow.
+              stage.
             </p>
-
-            <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFilesSelected} />
 
             <button
               className={
@@ -253,7 +249,7 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
                 className="primary-button"
                 type="button"
                 disabled={images.length === 0}
-                onClick={createDraftWorkspace}>
+                onClick={() => setStage("ready")}>
                 Create draft workspace
               </button>
 
@@ -262,7 +258,9 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
               </button>
             </div>
           </>
-        ) : (
+        )}
+
+        {stage === "ready" && (
           <div className="bulk-import-complete">
             <div className="bulk-import-complete-symbol" aria-hidden="true">
               ✓
@@ -295,9 +293,64 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
             <div className="bulk-import-local-note">
               <strong>Nothing has been published</strong>
 
+              <span>The next step groups photographs belonging to the same physical specimen.</span>
+            </div>
+
+            <div className="bulk-import-actions">
+              <button className="primary-button" type="button" onClick={() => setStage("group")}>
+                Start grouping images
+              </button>
+
+              <button className="secondary-button" type="button" onClick={() => setStage("select")}>
+                Back to image selection
+              </button>
+            </div>
+          </div>
+        )}
+
+        {stage === "group" && (
+          <BulkImportGroupingStep
+            images={images}
+            onBack={() => setStage("ready")}
+            onFinish={(groupCount) => {
+              setDraftCount(groupCount);
+              setStage("finished");
+            }}
+          />
+        )}
+
+        {stage === "finished" && (
+          <div className="bulk-import-complete">
+            <div className="bulk-import-complete-symbol" aria-hidden="true">
+              ✓
+            </div>
+
+            <h3>{draftCount} specimen drafts prepared</h3>
+
+            <p>Every selected image now belongs to a specimen draft.</p>
+
+            <dl className="bulk-import-summary">
+              <div>
+                <dt>Images grouped</dt>
+                <dd>{images.length}</dd>
+              </div>
+
+              <div>
+                <dt>Specimen drafts</dt>
+                <dd>{draftCount}</dd>
+              </div>
+
+              <div>
+                <dt>Visibility</dt>
+                <dd>Private</dd>
+              </div>
+            </dl>
+
+            <div className="bulk-import-local-note">
+              <strong>Next planned step</strong>
+
               <span>
-                In the real application, this workspace would be saved to the contributor’s account as a private import
-                batch.
+                A real import would now apply shared collection metadata and let the contributor review each draft.
               </span>
             </div>
 
