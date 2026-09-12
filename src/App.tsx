@@ -11,10 +11,13 @@ import { CollectionImportIntroScreen } from "./features/record-find/CollectionIm
 import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
+import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
+
 import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
   type LocalFindPhoto,
+  type ProvenanceKind,
   type RecordKind,
 } from "./features/record-find/types";
 import type { PrototypeStep } from "./prototype/types";
@@ -22,6 +25,7 @@ import type { PrototypeStep } from "./prototype/types";
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
+  const [provenance, setProvenance] = useState<ProvenanceKind | null>(null);
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
@@ -107,6 +111,7 @@ function App() {
 
     setFindPhotos([]);
     setRecordKind(null);
+    setProvenance(null);
   };
 
   const closeBulkImport = () => {
@@ -152,6 +157,10 @@ function App() {
       case 7:
         setStep(5);
         return;
+
+      case 8:
+        setStep(7);
+        return;
     }
   };
 
@@ -190,6 +199,12 @@ function App() {
         return;
 
       case 7:
+        if (findPhotos.length > 0) {
+          setStep(8);
+        }
+        return;
+
+      case 8:
         clearSingleFind();
         setStep(3);
         return;
@@ -264,7 +279,12 @@ function App() {
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
               onBack={() => setStep(5)}
+              onContinue={() => setStep(8)}
             />
+          )}
+
+          {step === 8 && (
+            <ProvenanceScreen selectedProvenance={provenance} onSelect={setProvenance} onBack={() => setStep(7)} />
           )}
         </PhoneFrame>
 
@@ -272,7 +292,11 @@ function App() {
           step={step}
           onPrevious={goToPreviousStep}
           onNext={goToNextStep}
-          nextDisabled={step === 5 && recordKind === null}
+          nextDisabled={
+            (step === 5 && recordKind === null) ||
+            (step === 7 && findPhotos.length === 0) ||
+            (step === 8 && provenance === null)
+          }
         />
       </section>
     </main>

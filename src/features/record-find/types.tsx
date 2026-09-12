@@ -17,3 +17,12 @@ export type LocalFindPhoto = {
   previewUrl: string;
   source: FindPhotoSource;
 };
+
+export type ProvenanceKind = "self-found" | "known-collector" | "inherited" | "documented-collection" | "uncertain";
+
+export type ProvenanceOption = {
+  id: ProvenanceKind;
+  symbol: string;
+  title: string;
+  description: string;
+};

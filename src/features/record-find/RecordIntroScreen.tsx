@@ -28,6 +28,16 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
           <p>Start with what you can observe. Other community members may be able to help with the rest.</p>
         </div>
 
+        <div className="record-selection-note">
+          <strong>What belongs here?</strong>
+
+          <span>
+            Fossils collected in Belgium, and inherited or older amateur collections with useful Belgian locality
+            information, labels or notes. Shop-bought souvenirs, decorative fossils, commercial stock and valuation
+            requests are outside this platform’s purpose.
+          </span>
+        </div>
+
         <ul className="record-checklist">
           <li>
             <span aria-hidden="true">1</span>

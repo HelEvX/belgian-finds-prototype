@@ -68,4 +68,14 @@ export const stepNotes: StepNote[] = [
     decision:
       "One photograph is sufficient to continue, three useful views are recommended, and five is the prototype maximum.",
   },
+  {
+    label: "Single find · Provenance",
+    title: "Who originally found it?",
+    purpose:
+      "Record the original field collector or collection history separately from the current owner or custodian.",
+    matters:
+      "A specimen’s locality and collecting history often contribute more scientific meaning than its appearance alone.",
+    decision:
+      "The flow does not offer a generic purchase route. Uncertainty remains available for inherited or older collections whose documentation is incomplete.",
+  },
 ];

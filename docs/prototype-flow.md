@@ -20,8 +20,11 @@ flowchart TD
 
     %% Planned single-find flow
     RECORD_TYPE --> PHOTOS["Add photos
-Camera or existing files"]
+    Camera or existing files"]
     PHOTOS --> CONTEXT["Add provenance and location"]
+    PHOTOS --> PROVENANCE["Who originally found it?"]
+    PROVENANCE --> CONTEXT["Add find location and collecting context"]
+
     CONTEXT --> DETAILS["Add size and geological context"]
     DETAILS --> QUESTION["Describe find / ask for help"]
     QUESTION --> PRIVACY["Choose visibility and location privacy"]
@@ -54,9 +57,9 @@ Camera or existing files"]
     %% Planned styles
     classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.58;
 
-    class START,HOME,BROWSE,DETAIL,ADD,SINGLE_INTRO,RECORD_TYPE,COLLECTION_INTRO,BULK_MODAL,LOCAL_IMAGES,BATCH_READY done;
+    class START,HOME,BROWSE,DETAIL,ADD,SINGLE_INTRO,RECORD_TYPE,COLLECTION_INTRO,BULK_MODAL,LOCAL_IMAGES,BATCH_READY,PHOTOS,CONTEXT,PROVENANCE done;
     class METHOD doneDecision;
-    class PHOTOS,CONTEXT,DETAILS,QUESTION,PRIVACY,REVIEW,SAVE_DRAFT,COLLECTION_META,GROUP_IMAGES,REVIEW_BATCH,SAVE_BATCH,MY_FINDS,EDIT_FIND,PUBLISH,HELP_REQUEST,HELP_QUEUE,RESPONSE,UPDATED_FIND planned;
+    class DETAILS,QUESTION,PRIVACY,REVIEW,SAVE_DRAFT,COLLECTION_META,GROUP_IMAGES,REVIEW_BATCH,SAVE_BATCH,MY_FINDS,EDIT_FIND,PUBLISH,HELP_REQUEST,HELP_QUEUE,RESPONSE,UPDATED_FIND planned;
 ```
 
 ## Legend

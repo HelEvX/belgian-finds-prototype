@@ -8,6 +8,7 @@ type PhotoScreenProps = {
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
 function getPhotoGuidance(photoCount: number) {
@@ -45,7 +46,7 @@ function getPhotoGuidance(photoCount: number) {
   };
 }
 
-export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, onBack }: PhotoScreenProps) {
+export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, onBack, onContinue }: PhotoScreenProps) {
   const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
@@ -200,8 +201,8 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
           </div>
 
           <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={() => setIsReady(false)}>
-              Review photographs
+            <button className="primary-button" type="button" onClick={onContinue}>
+              Continue to provenance
             </button>
 
             <button className="secondary-button" type="button" onClick={onBack}>
