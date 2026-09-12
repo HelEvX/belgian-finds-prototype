@@ -6,9 +6,10 @@ type ProvenanceScreenProps = {
   selectedProvenance: ProvenanceKind | null;
   onSelect: (provenance: ProvenanceKind) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
-export function ProvenanceScreen({ selectedProvenance, onSelect, onBack }: ProvenanceScreenProps) {
+export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onContinue }: ProvenanceScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const selectedOption = provenanceOptions.find((option) => option.id === selectedProvenance);
@@ -49,8 +50,8 @@ export function ProvenanceScreen({ selectedProvenance, onSelect, onBack }: Prove
           </div>
 
           <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={() => setIsReady(false)}>
-              Review provenance
+            <button className="primary-button" type="button" onClick={onContinue}>
+              Continue to location
             </button>
 
             <button className="secondary-button" type="button" onClick={onBack}>

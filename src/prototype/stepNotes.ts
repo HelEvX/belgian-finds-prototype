@@ -78,4 +78,13 @@ export const stepNotes: StepNote[] = [
     decision:
       "The flow does not offer a generic purchase route. Uncertainty remains available for inherited or older collections whose documentation is incomplete.",
   },
+  {
+    label: "Single find · Location and context",
+    title: "Where was it found?",
+    purpose: "Record the best available Belgian find location and any surviving geological or collecting context.",
+    matters:
+      "Locality, geological layer and collecting documentation can give an otherwise ordinary specimen scientific meaning.",
+    decision:
+      "The wording adapts to the selected provenance. Individual fields remain optional, but the contributor explicitly marks the location as known, partial or unknown.",
+  },
 ];

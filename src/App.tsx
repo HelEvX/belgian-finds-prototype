@@ -12,20 +12,33 @@ import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
+import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
 
 import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
   type LocalFindPhoto,
+  type LocationContext,
   type ProvenanceKind,
   type RecordKind,
 } from "./features/record-find/types";
 import type { PrototypeStep } from "./prototype/types";
 
+const createEmptyLocationContext = (): LocationContext => ({
+  knowledge: null,
+  municipality: "",
+  province: "",
+  siteDescription: "",
+  geologicalContext: "",
+  approximateDate: "",
+  sourceNotes: "",
+});
+
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
   const [provenance, setProvenance] = useState<ProvenanceKind | null>(null);
+  const [locationContext, setLocationContext] = useState<LocationContext>(createEmptyLocationContext);
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
@@ -112,6 +125,7 @@ function App() {
     setFindPhotos([]);
     setRecordKind(null);
     setProvenance(null);
+    setLocationContext(createEmptyLocationContext());
   };
 
   const closeBulkImport = () => {
@@ -161,6 +175,10 @@ function App() {
       case 8:
         setStep(7);
         return;
+
+      case 9:
+        setStep(8);
+        return;
     }
   };
 
@@ -205,6 +223,12 @@ function App() {
         return;
 
       case 8:
+        if (provenance) {
+          setStep(9);
+        }
+        return;
+
+      case 9:
         clearSingleFind();
         setStep(3);
         return;
@@ -284,7 +308,21 @@ function App() {
           )}
 
           {step === 8 && (
-            <ProvenanceScreen selectedProvenance={provenance} onSelect={setProvenance} onBack={() => setStep(7)} />
+            <ProvenanceScreen
+              selectedProvenance={provenance}
+              onSelect={setProvenance}
+              onBack={() => setStep(7)}
+              onContinue={() => setStep(9)}
+            />
+          )}
+
+          {step === 9 && provenance && (
+            <LocationContextScreen
+              provenance={provenance}
+              value={locationContext}
+              onChange={setLocationContext}
+              onBack={() => setStep(8)}
+            />
           )}
         </PhoneFrame>
 
@@ -295,7 +333,8 @@ function App() {
           nextDisabled={
             (step === 5 && recordKind === null) ||
             (step === 7 && findPhotos.length === 0) ||
-            (step === 8 && provenance === null)
+            (step === 8 && provenance === null) ||
+            (step === 9 && locationContext.knowledge === null)
           }
         />
       </section>

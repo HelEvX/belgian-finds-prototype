@@ -26,3 +26,15 @@ export type ProvenanceOption = {
   title: string;
   description: string;
 };
+
+export type LocationKnowledge = "known" | "partial" | "unknown";
+
+export type LocationContext = {
+  knowledge: LocationKnowledge | null;
+  municipality: string;
+  province: string;
+  siteDescription: string;
+  geologicalContext: string;
+  approximateDate: string;
+  sourceNotes: string;
+};
