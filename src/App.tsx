@@ -13,12 +13,14 @@ import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
+import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
 
 import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
   type LocalFindPhoto,
   type LocationContext,
+  type PhysicalDetails,
   type ProvenanceKind,
   type RecordKind,
 } from "./features/record-find/types";
@@ -34,11 +36,21 @@ const createEmptyLocationContext = (): LocationContext => ({
   sourceNotes: "",
 });
 
+const createEmptyPhysicalDetails = (): PhysicalDetails => ({
+  measurementStatus: null,
+  lengthCm: "",
+  widthCm: "",
+  heightCm: "",
+  weightG: "",
+  condition: null,
+});
+
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
   const [provenance, setProvenance] = useState<ProvenanceKind | null>(null);
   const [locationContext, setLocationContext] = useState<LocationContext>(createEmptyLocationContext);
+  const [physicalDetails, setPhysicalDetails] = useState<PhysicalDetails>(createEmptyPhysicalDetails);
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
@@ -126,6 +138,7 @@ function App() {
     setRecordKind(null);
     setProvenance(null);
     setLocationContext(createEmptyLocationContext());
+    setPhysicalDetails(createEmptyPhysicalDetails());
   };
 
   const closeBulkImport = () => {
@@ -179,6 +192,10 @@ function App() {
       case 9:
         setStep(8);
         return;
+
+      case 10:
+        setStep(9);
+        return;
     }
   };
 
@@ -229,6 +246,12 @@ function App() {
         return;
 
       case 9:
+        if (locationContext.knowledge) {
+          setStep(10);
+        }
+        return;
+
+      case 10:
         clearSingleFind();
         setStep(3);
         return;
@@ -322,6 +345,16 @@ function App() {
               value={locationContext}
               onChange={setLocationContext}
               onBack={() => setStep(8)}
+              onContinue={() => setStep(10)}
+            />
+          )}
+
+          {step === 10 && recordKind && (
+            <PhysicalDetailsScreen
+              recordKind={recordKind}
+              value={physicalDetails}
+              onChange={setPhysicalDetails}
+              onBack={() => setStep(9)}
             />
           )}
         </PhoneFrame>
@@ -334,7 +367,8 @@ function App() {
             (step === 5 && recordKind === null) ||
             (step === 7 && findPhotos.length === 0) ||
             (step === 8 && provenance === null) ||
-            (step === 9 && locationContext.knowledge === null)
+            (step === 9 && locationContext.knowledge === null) ||
+            (step === 10 && physicalDetails.measurementStatus === null)
           }
         />
       </section>

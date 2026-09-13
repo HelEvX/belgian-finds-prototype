@@ -6,6 +6,7 @@ type LocationContextScreenProps = {
   value: LocationContext;
   onChange: (value: LocationContext) => void;
   onBack: () => void;
+  onContinue: () => void;
 };
 
 type LocationTextField = Exclude<keyof LocationContext, "knowledge">;
@@ -110,7 +111,7 @@ const knowledgeOptions: Array<{
   },
 ];
 
-export function LocationContextScreen({ provenance, value, onChange, onBack }: LocationContextScreenProps) {
+export function LocationContextScreen({ provenance, value, onChange, onBack, onContinue }: LocationContextScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const copy = provenanceLocationCopy[provenance];
@@ -223,8 +224,8 @@ export function LocationContextScreen({ provenance, value, onChange, onBack }: L
           </div>
 
           <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={() => setIsReady(false)}>
-              Review location context
+            <button className="primary-button" type="button" onClick={onContinue}>
+              Continue to physical details
             </button>
 
             <button className="secondary-button" type="button" onClick={onBack}>

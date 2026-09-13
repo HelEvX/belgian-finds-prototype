@@ -87,4 +87,13 @@ export const stepNotes: StepNote[] = [
     decision:
       "The wording adapts to the selected provenance. Individual fields remain optional, but the contributor explicitly marks the location as known, partial or unknown.",
   },
+  {
+    label: "Single find · Physical details",
+    title: "Measure the specimen",
+    purpose: "Capture the physical dimensions, weight and condition that give photographs a useful sense of scale.",
+    matters:
+      "Even simple measurements can make comparison and later determination more reliable, especially when the specimen is incomplete or photographed without a scale.",
+    decision:
+      "Measurements are encouraged rather than required. Contributors explicitly distinguish measured dimensions, estimates and information that is not yet available.",
+  },
 ];

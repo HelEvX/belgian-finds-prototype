@@ -38,3 +38,16 @@ export type LocationContext = {
   approximateDate: string;
   sourceNotes: string;
 };
+
+export type MeasurementStatus = "measured" | "estimated" | "not-measured";
+
+export type SpecimenCondition = "whole" | "fragment" | "multiple-pieces" | "unknown";
+
+export type PhysicalDetails = {
+  measurementStatus: MeasurementStatus | null;
+  lengthCm: string;
+  widthCm: string;
+  heightCm: string;
+  weightG: string;
+  condition: SpecimenCondition | null;
+};
