@@ -29,13 +29,16 @@ export type ProvenanceOption = {
 
 export type LocationKnowledge = "known" | "partial" | "unknown";
 
+export type CollectionDateQualifier = "on" | "around" | "known-by";
+
 export type LocationContext = {
   knowledge: LocationKnowledge | null;
   municipality: string;
   province: string;
   siteDescription: string;
   geologicalContext: string;
-  approximateDate: string;
+  collectionDateQualifier: CollectionDateQualifier | null;
+  collectionDateValue: string;
   sourceNotes: string;
 };
 

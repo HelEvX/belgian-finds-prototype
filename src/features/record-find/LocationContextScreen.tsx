@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LocationContext, LocationKnowledge, ProvenanceKind } from "./types";
+import type { CollectionDateQualifier, LocationContext, LocationKnowledge, ProvenanceKind } from "./types";
 
 type LocationContextScreenProps = {
   provenance: ProvenanceKind;
@@ -9,7 +9,10 @@ type LocationContextScreenProps = {
   onContinue: () => void;
 };
 
-type LocationTextField = Exclude<keyof LocationContext, "knowledge">;
+type LocationTextField = Exclude<
+  keyof LocationContext,
+  "knowledge" | "collectionDateQualifier" | "collectionDateValue"
+>;
 
 type ProvenanceLocationCopy = {
   heading: string;
@@ -18,7 +21,7 @@ type ProvenanceLocationCopy = {
   provinceLabel: string;
   siteLabel: string;
   geologyLabel: string;
-  dateLabel: string;
+  dateHeading: string;
   notesLabel: string;
   notesPlaceholder: string;
 };
@@ -32,10 +35,11 @@ const provenanceLocationCopy: Record<ProvenanceKind, ProvenanceLocationCopy> = {
     provinceLabel: "Province or region",
     siteLabel: "Site or locality",
     geologyLabel: "Formation, rock layer or sediment",
-    dateLabel: "When did you find it?",
+    dateHeading: "When did you find it?",
     notesLabel: "Field notes",
     notesPlaceholder: "For example: conditions, depth, nearby features or notes made during the visit.",
   },
+
   "known-collector": {
     heading: "Where was it found?",
     introduction: "Use information supplied by the original collector, association member or accompanying notes.",
@@ -43,10 +47,11 @@ const provenanceLocationCopy: Record<ProvenanceKind, ProvenanceLocationCopy> = {
     provinceLabel: "Province or region recorded",
     siteLabel: "Site or locality recorded",
     geologyLabel: "Formation, rock layer or sediment recorded",
-    dateLabel: "When was it found?",
+    dateHeading: "When was it found?",
     notesLabel: "Collector’s notes",
     notesPlaceholder: "Add what the original collector said or wrote about the find.",
   },
+
   inherited: {
     heading: "What location information came with it?",
     introduction:
@@ -55,10 +60,11 @@ const provenanceLocationCopy: Record<ProvenanceKind, ProvenanceLocationCopy> = {
     provinceLabel: "Province or region on the label",
     siteLabel: "Site or locality on the label",
     geologyLabel: "Formation, rock layer or sediment, if recorded",
-    dateLabel: "Approximate collecting date",
+    dateHeading: "When was it collected?",
     notesLabel: "Label or notebook information",
     notesPlaceholder: "Copy relevant wording, catalogue references or abbreviations as accurately as possible.",
   },
+
   "documented-collection": {
     heading: "What does the documentation say?",
     introduction:
@@ -67,10 +73,11 @@ const provenanceLocationCopy: Record<ProvenanceKind, ProvenanceLocationCopy> = {
     provinceLabel: "Province or region documented",
     siteLabel: "Site or locality documented",
     geologyLabel: "Formation, rock layer or sediment documented",
-    dateLabel: "Approximate collecting date",
+    dateHeading: "When was it collected?",
     notesLabel: "Documentation or catalogue notes",
     notesPlaceholder: "Copy label text, catalogue references or relevant notebook information.",
   },
+
   uncertain: {
     heading: "Is any find location still known?",
     introduction:
@@ -79,7 +86,7 @@ const provenanceLocationCopy: Record<ProvenanceKind, ProvenanceLocationCopy> = {
     provinceLabel: "Possible province or region",
     siteLabel: "Possible site or locality",
     geologyLabel: "Possible formation, rock layer or sediment",
-    dateLabel: "Possible collecting period",
+    dateHeading: "When might it have been collected?",
     notesLabel: "Surviving clues",
     notesPlaceholder: "Describe any names, abbreviations, labels or other clues that might help recover the context.",
   },
@@ -111,12 +118,74 @@ const knowledgeOptions: Array<{
   },
 ];
 
+const collectionDateOptions: Array<{
+  id: CollectionDateQualifier;
+  symbol: string;
+  title: string;
+  description: string;
+}> = [
+  {
+    id: "on",
+    symbol: "●",
+    title: "On",
+    description: "The exact collection date is known.",
+  },
+  {
+    id: "around",
+    symbol: "≈",
+    title: "Around",
+    description: "The closest known month is available, but the exact day is not.",
+  },
+  {
+    id: "known-by",
+    symbol: "≤",
+    title: "Known by",
+    description: "The specimen was already in the collection by this month.",
+  },
+];
+
+function formatCollectionDate(qualifier: CollectionDateQualifier | null, value: string) {
+  if (!qualifier || !value) {
+    return null;
+  }
+
+  if (qualifier === "on") {
+    return `On ${value}`;
+  }
+
+  if (qualifier === "around") {
+    return `Around ${value}`;
+  }
+
+  return `Known to be in the collection by ${value}`;
+}
+
+function getCompatibleDateValue(currentValue: string, qualifier: CollectionDateQualifier) {
+  const isExactDate = /^\d{4}-\d{2}-\d{2}$/.test(currentValue);
+
+  const isMonth = /^\d{4}-\d{2}$/.test(currentValue);
+
+  if (qualifier === "on") {
+    return isExactDate ? currentValue : "";
+  }
+
+  if (isExactDate) {
+    return currentValue.slice(0, 7);
+  }
+
+  return isMonth ? currentValue : "";
+}
+
 export function LocationContextScreen({ provenance, value, onChange, onBack, onContinue }: LocationContextScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const copy = provenanceLocationCopy[provenance];
 
   const selectedKnowledge = knowledgeOptions.find((option) => option.id === value.knowledge);
+
+  const selectedDateQualifier = collectionDateOptions.find((option) => option.id === value.collectionDateQualifier);
+
+  const collectionDateSummary = formatCollectionDate(value.collectionDateQualifier, value.collectionDateValue);
 
   const updateKnowledge = (knowledge: LocationKnowledge) => {
     onChange({
@@ -129,6 +198,21 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
     onChange({
       ...value,
       [field]: fieldValue,
+    });
+  };
+
+  const updateDateQualifier = (collectionDateQualifier: CollectionDateQualifier) => {
+    onChange({
+      ...value,
+      collectionDateQualifier,
+      collectionDateValue: getCompatibleDateValue(value.collectionDateValue, collectionDateQualifier),
+    });
+  };
+
+  const updateCollectionDateValue = (collectionDateValue: string) => {
+    onChange({
+      ...value,
+      collectionDateValue,
     });
   };
 
@@ -193,10 +277,10 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
               </div>
             )}
 
-            {value.approximateDate.trim() && (
+            {collectionDateSummary && (
               <div>
-                <dt>Date or period</dt>
-                <dd>{value.approximateDate}</dd>
+                <dt>Collection date</dt>
+                <dd>{collectionDateSummary}</dd>
               </div>
             )}
           </dl>
@@ -266,6 +350,7 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
 
         <div className="location-section-heading">
           <h3>How much location information is available?</h3>
+
           <p>Choose one option. The individual fields below are not required.</p>
         </div>
 
@@ -354,19 +439,78 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
                 onChange={(event) => updateTextField("geologicalContext", event.currentTarget.value)}
               />
             </label>
+          </div>
+        )}
 
-            <label className="location-field">
-              <span>{copy.dateLabel}</span>
+        {value.knowledge && (
+          <div className="location-fields">
+            <div className="location-section-heading">
+              <h3>{copy.dateHeading}</h3>
 
-              <input
-                type="text"
-                value={value.approximateDate}
-                placeholder="Exact date, year or approximate period"
-                autoComplete="off"
-                onChange={(event) => updateTextField("approximateDate", event.currentTarget.value)}
-              />
-            </label>
+              <p>Optional. Choose the level of certainty that best matches the available evidence.</p>
+            </div>
 
+            <div className="record-choice-list" role="radiogroup" aria-label={copy.dateHeading}>
+              {collectionDateOptions.map((option) => {
+                const isSelected = value.collectionDateQualifier === option.id;
+
+                return (
+                  <button
+                    key={option.id}
+                    className={`record-choice ${isSelected ? "record-choice-active" : ""}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => updateDateQualifier(option.id)}>
+                    <span className="record-choice-symbol" aria-hidden="true">
+                      {option.symbol}
+                    </span>
+
+                    <span className="record-choice-copy">
+                      <strong>{option.title}</strong>
+                      <span>{option.description}</span>
+                    </span>
+
+                    <span className="record-choice-check" aria-hidden="true">
+                      {isSelected ? "✓" : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedDateQualifier && (
+              <label className="location-field">
+                <span>
+                  {selectedDateQualifier.id === "on"
+                    ? "Collection date"
+                    : selectedDateQualifier.id === "around"
+                      ? "Approximate month"
+                      : "Known to be in the collection by"}
+                </span>
+
+                <input
+                  type={selectedDateQualifier.id === "on" ? "date" : "month"}
+                  value={value.collectionDateValue}
+                  onChange={(event) => updateCollectionDateValue(event.currentTarget.value)}
+                />
+
+                <small>
+                  {selectedDateQualifier.id === "on" && "Use this only when the exact day is known."}
+
+                  {selectedDateQualifier.id === "around" &&
+                    "Choose the closest known month. It remains marked as approximate."}
+
+                  {selectedDateQualifier.id === "known-by" &&
+                    "This means the specimen was already in the collection by this month, so it was found earlier."}
+                </small>
+              </label>
+            )}
+          </div>
+        )}
+
+        {value.knowledge && (
+          <div className="location-fields">
             <label className="location-field">
               <span>{copy.notesLabel}</span>
 

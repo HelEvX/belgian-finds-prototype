@@ -32,7 +32,8 @@ const createEmptyLocationContext = (): LocationContext => ({
   province: "",
   siteDescription: "",
   geologicalContext: "",
-  approximateDate: "",
+  collectionDateQualifier: null,
+  collectionDateValue: "",
   sourceNotes: "",
 });
 
