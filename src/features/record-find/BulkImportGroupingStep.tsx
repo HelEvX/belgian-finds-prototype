@@ -39,7 +39,7 @@ export function BulkImportGroupingStep({
     <div className="bulk-grouping-step">
       <header className="bulk-grouping-heading">
         <div>
-          <p className="mobile-eyebrow">Group collection images</p>
+          <p className="mobile-eyebrow">Group imported images</p>
 
           <h3>Create specimen drafts</h3>
         </div>

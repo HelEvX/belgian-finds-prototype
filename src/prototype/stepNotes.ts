@@ -25,13 +25,14 @@ export const stepNotes: StepNote[] = [
     decision: "A help request is attached to a specific find rather than handled through a general contact form.",
   },
   {
-    label: "Add material · Choose a path",
-    title: "How would you like to begin?",
-    purpose: "Let contributors choose between documenting one specimen and importing an existing collection.",
+    label: "Contribute · Add material",
+    title: "Start with images",
+    purpose:
+      "Set the platform’s contribution scope and let a contributor choose between adding images for one specimen or importing a batch of existing images.",
     matters:
-      "A guided mobile flow is useful for a new find, but forcing an established collector through it hundreds of times would be frustrating.",
+      "Image intake and later specimen documentation are separate concerns. The contributor should not need to decide a taxonomic type or a collection structure before images are associated with a specimen.",
     decision:
-      "Single-record entry and collection import are separate workflows that can share the same underlying record structure.",
+      "The eligibility boundary applies to both intake routes: Belgian field finds and documented amateur collection material are welcome; commercial souvenirs, stock and valuation requests are outside scope.",
   },
   {
     label: "Single find · Introduction",
@@ -51,14 +52,13 @@ export const stepNotes: StepNote[] = [
       "The contributor can explicitly choose ‘Something unknown’ instead of being forced to make an identification.",
   },
   {
-    label: "Collection import · Overview",
-    title: "Import an existing collection",
-    purpose:
-      "Show how collectors could add many existing photographs without creating every record through the mobile wizard.",
+    label: "Batch import · Image intake",
+    title: "Import a batch of images",
+    purpose: "Let contributors select many existing images and group those that depict the same physical specimen.",
     matters:
-      "Established and inherited collections may already contain hundreds of images, labels and catalogue references.",
+      "Existing and inherited collections may contain many useful photographs, but imported files do not automatically reveal which images belong to the same specimen.",
     decision:
-      "Bulk imports create draft specimen records for review. They do not publish hundreds of records automatically.",
+      "A batch is an image-intake method, not a collection. After grouping, each resulting specimen draft will eventually enter the same annotation queue as a one-specimen draft.",
   },
   {
     label: "Single find · Photographs",
@@ -95,5 +95,15 @@ export const stepNotes: StepNote[] = [
       "Even simple measurements can make comparison and later determination more reliable, especially when the specimen is incomplete or photographed without a scale.",
     decision:
       "Measurements are encouraged rather than required. Contributors explicitly distinguish measured dimensions, estimates and information that is not yet available.",
+  },
+  {
+    label: "Contributor area · My workspace",
+    title: "My workspace",
+    purpose:
+      "Give returning contributors one clear home for specimen drafts, the future annotation queue and saved records.",
+    matters:
+      "The platform must support gradual documentation. A contributor may add images now and complete contextual information later.",
+    decision:
+      "The workspace is mocked locally in this phase. It establishes the correct product structure before accounts, persistent drafts or a database are introduced.",
   },
 ];

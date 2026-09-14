@@ -191,9 +191,9 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
   const totalSize = images.reduce((total, image) => total + image.file.size, 0);
 
   const modalTitle = {
-    select: "Choose collection images",
-    ready: "Draft workspace ready",
-    group: "Group collection images",
+    select: "Choose images",
+    ready: "Images ready to group",
+    group: "Group imported images",
     finished: "Specimen drafts prepared",
   }[stage];
 
@@ -208,7 +208,7 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
       <section className="bulk-import-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-import-title">
         <header className="bulk-import-header">
           <div>
-            <p className="mobile-eyebrow">Collection import</p>
+            <p className="mobile-eyebrow">Batch import</p>
 
             <h2 id="bulk-import-title">{modalTitle}</h2>
           </div>
@@ -228,8 +228,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
         {stage === "select" && (
           <>
             <p className="bulk-import-description">
-              Select photographs for several specimens. You will group related images into specimen drafts in the next
-              stage.
+              Select existing images for several specimens. In the next stage, you will group images that show the same
+              physical specimen.
             </p>
 
             <button
@@ -332,7 +332,7 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
               ✓
             </div>
 
-            <h3>Import batch prepared</h3>
+            <h3>Images ready to group</h3>
 
             <p>
               {images.length} {images.length === 1 ? "image is" : "images are"} ready to be grouped into specimen
@@ -425,7 +425,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
               <strong>Next planned step</strong>
 
               <span>
-                A real import would now apply shared collection metadata and let the contributor review each draft.
+                The next prototype phase will place these grouped drafts in the shared specimen annotation queue, ready
+                for individual documentation.
               </span>
             </div>
 

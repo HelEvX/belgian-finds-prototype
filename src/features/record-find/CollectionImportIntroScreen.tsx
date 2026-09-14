@@ -12,20 +12,20 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
           ← Back
         </button>
 
-        <p className="mobile-eyebrow">Collection import</p>
+        <p className="mobile-eyebrow">Batch import</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Workflow preview</p>
+        <p className="record-progress">Image intake</p>
 
         <div className="record-intro-card">
-          <p className="card-kicker">Designed for existing collections</p>
+          <p className="card-kicker">Designed for existing image sets</p>
 
-          <h3>Bring in a folder of photographs.</h3>
+          <h3>Bring in a group of existing images.</h3>
 
           <p>
-            Instead of repeating the single-find process hundreds of times, collectors can prepare several specimen
-            records together.
+            Instead of repeating the one-specimen image process many times, you can select several files and group
+            related views into specimen drafts.
           </p>
         </div>
 
@@ -34,8 +34,8 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
             <span aria-hidden="true">1</span>
 
             <div>
-              <strong>Create or choose a collection</strong>
-              <p>Add shared information such as owner, history, storage location and default visibility once.</p>
+              <strong>Select existing images</strong>
+              <p>Choose photographs from a folder, phone, tablet or other available storage.</p>
             </div>
           </li>
 
@@ -43,8 +43,8 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
             <span aria-hidden="true">2</span>
 
             <div>
-              <strong>Select several existing images</strong>
-              <p>Choose photographs from a folder, phone, tablet or other available storage.</p>
+              <strong>Group images by specimen</strong>
+              <p>Front, reverse, detail and label images can be assigned to the same specimen draft.</p>
             </div>
           </li>
 
@@ -52,17 +52,11 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
             <span aria-hidden="true">3</span>
 
             <div>
-              <strong>Group images by specimen</strong>
-              <p>Front, side, detail and label images can be assigned to the same draft record.</p>
-            </div>
-          </li>
-
-          <li>
-            <span aria-hidden="true">4</span>
-
-            <div>
-              <strong>Review the resulting drafts</strong>
-              <p>Nothing is published automatically. Records can be completed and checked gradually.</p>
+              <strong>Review grouped drafts</strong>
+              <p>
+                Nothing is published automatically. Each specimen can be documented gradually after its images are
+                grouped.
+              </p>
             </div>
           </li>
         </ul>
@@ -71,14 +65,14 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
           <strong>Prototype behaviour</strong>
 
           <span>
-            You can select real local images in the next mockup. They will only be previewed in your browser and will
-            not be uploaded.
+            You can select real local images in the next mockup. They are previewed only in your browser and are not
+            uploaded, saved or published.
           </span>
         </div>
 
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onOpenImport}>
-            Choose collection images
+            Choose images
           </button>
 
           <button className="secondary-button" type="button" onClick={onExplore}>

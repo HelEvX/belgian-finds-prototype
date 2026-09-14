@@ -14,6 +14,7 @@ import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
+import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
 
 import {
   MAX_FIND_PHOTOS,
@@ -54,6 +55,7 @@ function App() {
   const [physicalDetails, setPhysicalDetails] = useState<PhysicalDetails>(createEmptyPhysicalDetails);
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [addReturnStep, setAddReturnStep] = useState<0 | 11>(0);
 
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
 
@@ -167,7 +169,7 @@ function App() {
         return;
 
       case 3:
-        setStep(0);
+        setStep(addReturnStep);
         return;
 
       case 4:
@@ -196,6 +198,10 @@ function App() {
 
       case 10:
         setStep(9);
+        return;
+
+      case 11:
+        setStep(0);
         return;
     }
   };
@@ -256,6 +262,11 @@ function App() {
         clearSingleFind();
         setStep(3);
         return;
+
+      case 11:
+        setAddReturnStep(11);
+        setStep(3);
+        return;
     }
   };
 
@@ -266,6 +277,13 @@ function App() {
 
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
+    setAddReturnStep(step === 11 ? 11 : 0);
+    setStep(3);
+  };
+
+  const openAddFromWorkspace = () => {
+    setIsBulkImportOpen(false);
+    setAddReturnStep(11);
     setStep(3);
   };
 
@@ -283,21 +301,34 @@ function App() {
       <section className="prototype-workspace">
         <PhoneFrame
           screenKey={step}
-          navigation={<BottomNavigation step={step} onExplore={showWelcome} onAdd={openAddJourney} />}
+          navigation={
+            <BottomNavigation
+              step={step}
+              onExplore={showWelcome}
+              onAdd={openAddJourney}
+              onWorkspace={() => setStep(11)}
+            />
+          }
           overlay={isBulkImportOpen ? <BulkImportModal onClose={closeBulkImport} /> : null}>
           {step === 0 && (
-            <WelcomeScreen onBrowse={() => setStep(1)} onOpenFind={() => setStep(2)} onLogFind={openAddJourney} />
+            <WelcomeScreen
+              onBrowse={() => setStep(1)}
+              onOpenFind={() => setStep(2)}
+              onOpenWorkspace={() => setStep(11)}
+            />
           )}
 
           {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
 
           {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
 
+          {step === 11 && <WorkspaceScreen onAddMaterial={openAddFromWorkspace} onExplore={showWelcome} />}
+
           {step === 3 && (
             <AddMethodScreen
               onRecordOne={startSingleFindJourney}
-              onImportCollection={() => setStep(6)}
-              onCancel={showWelcome}
+              onImportBatch={() => setStep(6)}
+              onCancel={() => setStep(addReturnStep)}
             />
           )}
 

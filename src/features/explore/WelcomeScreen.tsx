@@ -1,10 +1,10 @@
 type WelcomeScreenProps = {
   onBrowse: () => void;
   onOpenFind: () => void;
-  onLogFind: () => void;
+  onOpenWorkspace: () => void;
 };
 
-export function WelcomeScreen({ onBrowse, onOpenFind, onLogFind }: WelcomeScreenProps) {
+export function WelcomeScreen({ onBrowse, onOpenFind, onOpenWorkspace }: WelcomeScreenProps) {
   return (
     <>
       <header className="mobile-header">
@@ -13,7 +13,7 @@ export function WelcomeScreen({ onBrowse, onOpenFind, onLogFind }: WelcomeScreen
           <h2>Discover finds</h2>
         </div>
 
-        <button className="icon-button" aria-label="Open account">
+        <button className="icon-button" type="button" aria-label="Open my workspace" onClick={onOpenWorkspace}>
           ◎
         </button>
       </header>
@@ -21,16 +21,16 @@ export function WelcomeScreen({ onBrowse, onOpenFind, onLogFind }: WelcomeScreen
       <section className="welcome-card">
         <p className="card-kicker">Explore · Learn · Connect</p>
         <h3>Fossils have stories to tell.</h3>
-        <p>Browse Belgian-connected finds and share what you know.</p>
+        <p>Browse Belgian-connected specimen records and share useful context when you are ready.</p>
       </section>
 
       <div className="mobile-actions">
-        <button className="primary-button" onClick={onBrowse}>
+        <button className="primary-button" type="button" onClick={onBrowse}>
           Browse finds
         </button>
 
-        <button className="secondary-button" onClick={onLogFind}>
-          Log a find
+        <button className="secondary-button" type="button" onClick={onOpenWorkspace}>
+          Open my workspace
         </button>
       </div>
 
@@ -38,12 +38,12 @@ export function WelcomeScreen({ onBrowse, onOpenFind, onLogFind }: WelcomeScreen
         <div className="section-heading">
           <h3>Recent finds</h3>
 
-          <button className="text-button" onClick={onBrowse}>
+          <button className="text-button" type="button" onClick={onBrowse}>
             See all
           </button>
         </div>
 
-        <button className="find-card find-card-button" onClick={onOpenFind}>
+        <button className="find-card find-card-button" type="button" onClick={onOpenFind}>
           <div className="find-image-placeholder">IMAGE</div>
 
           <div className="find-card-content">
