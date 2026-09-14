@@ -1,64 +1,57 @@
 ```mermaid
 flowchart TD
-    START["Open app"] --> HOME["Explore / welcome"]
+    OPEN["Open app"] --> EXPLORE["Welcome / Explore"]
 
-    %% Explore journey
-    HOME --> BROWSE["Browse finds"]
-    BROWSE --> DETAIL["View find detail"]
-    HOME --> ADD["Add material"]
+    EXPLORE --> BROWSE["Browse public Belgian-connected records"]
+    BROWSE --> DETAIL["View specimen record
+images, context and determination history"]
 
-    %% Add journey
-    ADD --> METHOD{"Choose a path"}
+    EXPLORE --> WORKSPACE["My workspace"]
+    WORKSPACE --> ADD["Add material
+Mission and eligibility guidance"]
 
-    METHOD --> SINGLE_INTRO["Single find introduction"]
-    SINGLE_INTRO --> RECORD_TYPE["Choose record type"]
+    ADD --> ONE["Add one specimen"]
+    ADD --> BATCH["Import a batch of existing images"]
 
-    METHOD --> COLLECTION_INTRO["Collection import overview"]
-    COLLECTION_INTRO --> BULK_MODAL["Open bulk image importer"]
-    BULK_MODAL --> LOCAL_IMAGES["Select and preview local images"]
-    LOCAL_IMAGES --> BATCH_READY["Draft workspace ready"]
+    ONE --> ONE_IMAGES["Take new photos
+or choose existing images"]
+    ONE_IMAGES --> ONE_DRAFT["Create one specimen draft"]
 
-    %% Planned single-find flow
-    RECORD_TYPE --> PHOTOS["Add photos
-    Camera or existing files"]
-    PHOTOS --> CONTEXT["Add provenance and location"]
-    PHOTOS --> PROVENANCE["Who originally found it?"]
-    PROVENANCE --> CONTEXT["Add find location and collecting context"]
-    CONTEXT --> DETAILS["Add size and geological context"]
-    DETAILS --> QUESTION["Describe find / ask for help"]
-    QUESTION --> PRIVACY["Choose visibility and location privacy"]
-    PRIVACY --> REVIEW["Review record"]
-    REVIEW --> SAVE_DRAFT["Save find as draft"]
+    BATCH --> BATCH_IMAGES["Select existing images"]
+    BATCH_IMAGES --> GROUP["Group images by specimen"]
+    GROUP --> BATCH_DRAFTS["Review grouped specimen drafts"]
 
-    %% Planned collection flow
-    BATCH_READY --> COLLECTION_META["Create or choose collection"]
-    COLLECTION_META --> GROUP_IMAGES["Group images by specimen"]
-    GROUP_IMAGES --> REVIEW_BATCH["Review specimen drafts"]
-    REVIEW_BATCH --> SAVE_BATCH["Save private draft records"]
+    ONE_DRAFT --> QUEUE["Annotation queue"]
+    BATCH_DRAFTS --> QUEUE
 
-    %% Planned personal collection area
-    SAVE_DRAFT --> MY_FINDS["My finds"]
-    SAVE_BATCH --> MY_FINDS
-    MY_FINDS --> EDIT_FIND["View or edit a draft"]
-    EDIT_FIND --> PUBLISH["Publish or request community help"]
+    QUEUE --> RECORD_TYPE["Broad material type"]
+    RECORD_TYPE --> PROVENANCE["Provenance"]
+    PROVENANCE --> CONTEXT["Locality, date and geological context"]
+    CONTEXT --> MEASURE["Optional measurements and condition"]
+    MEASURE --> DESCRIPTION["Description and optional help request"]
+    DESCRIPTION --> PRIVACY["Visibility and locality privacy"]
+    PRIVACY --> REVIEW["Review and save private draft"]
+    REVIEW --> WORKSPACE
 
-    %% Planned human determination flow
-    PUBLISH --> HELP_REQUEST["Open help request"]
-    HELP_REQUEST --> HELP_QUEUE["Community / specialist help queue"]
-    HELP_QUEUE --> RESPONSE["Add attributed determination"]
-    RESPONSE --> UPDATED_FIND["Updated find with determination history"]
-    UPDATED_FIND --> DETAIL
+    WORKSPACE --> PUBLISH["Publish a suitable record"]
+    PUBLISH --> DETAIL
 
-    %% Implemented styles
-    classDef done fill:#d8e9f0,stroke:#10546f,color:#172229,stroke-width:2px;
-    classDef doneDecision fill:#fbe5d3,stroke:#d96f2d,color:#172229,stroke-width:2px;
+    PUBLISH --> HELP["Request community or verified-specialist help"]
+    HELP --> RESPONSE["Attributed response or determination"]
+    RESPONSE --> DETAIL
 
-    %% Planned styles
-    classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.58;
+    OPTIONAL_REF["Optional: add your own catalogue reference
+from Trilobase, labels, a notebook or a spreadsheet"] -.-> QUEUE
+    CSV_LATER["Later: spreadsheet import for experienced users"] -.-> QUEUE
 
-    class START,HOME,BROWSE,DETAIL,ADD,SINGLE_INTRO,RECORD_TYPE,COLLECTION_INTRO,BULK_MODAL,LOCAL_IMAGES,BATCH_READY,GROUP_IMAGES,REVIEW_BATCH,PHOTOS,CONTEXT,PROVENANCE,DETAILS done;
-    class METHOD doneDecision;
-    class COLLECTION_META,QUESTION,PRIVACY,REVIEW,SAVE_DRAFT,SAVE_BATCH,MY_FINDS,EDIT_FIND,PUBLISH,HELP_REQUEST,HELP_QUEUE,RESPONSE,UPDATED_FIND planned;
+    classDef core fill:#d8e9f0,stroke:#10546f,color:#172229,stroke-width:2px;
+    classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.64;
+    classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3;
+
+    class OPEN,EXPLORE,BROWSE,DETAIL,ONE_IMAGES,BATCH_IMAGES,GROUP core;
+    class WORKSPACE,ADD,ONE,BATCH,ONE_DRAFT,BATCH_DRAFTS,QUEUE,RECORD_TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,PUBLISH,HELP,RESPONSE planned;
+    class OPTIONAL_REF,CSV_LATER future;
+
 ```
 
 ## Legend
@@ -66,6 +59,35 @@ flowchart TD
 - Blue, solid: implemented in the interactive prototype
 - Orange, solid: implemented decision point
 - Faded, dashed: planned for the frontend MVP
+
+# Model
+
+```text
+ENTRY METHOD
+│
+├── Record one find
+│   ├── Create one specimen draft
+│   └── Take new photos or use existing photos
+│
+└── Batch import
+    ├── Describe or choose a collection
+    ├── Select existing images
+    ├── Group images by specimen
+    └── Review specimen drafts
+                │
+                ▼
+SHARED SPECIMEN COMPLETION
+│
+├── Record type, where not known
+├── Provenance
+├── Find location and collecting context
+├── Physical details
+├── Description / request help
+├── Privacy and visibility
+├── Review
+└── Save as draft
+
+```
 
 ## Note
 
