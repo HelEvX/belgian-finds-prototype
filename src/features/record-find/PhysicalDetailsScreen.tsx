@@ -236,16 +236,17 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onF
           )}
 
           <div className="record-selection-note">
-            <strong>Next prototype phase</strong>
+            <strong>Next step</strong>
 
             <span>
-              Description, help requests, privacy and review will be added after the shared annotation flow is complete.
+              Add your observations, an optional suggested identification and a preference for community or
+              verified-specialist help.
             </span>
           </div>
 
           <div className="mobile-actions">
             <button className="primary-button" type="button" onClick={onFinish}>
-              Return to annotation queue
+              Continue to description
             </button>
 
             <button className="secondary-button" type="button" onClick={onBack}>
@@ -393,9 +394,7 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onF
             <p>Optional, but helpful when the item is incomplete or consists of several pieces.</p>
           </div>
 
-          <label className="physical-field">
-            <span>{copy.conditionLabel}</span>
-
+          <label className="physical-field physical-fields">
             <select
               value={value.condition ?? ""}
               onChange={(event) =>

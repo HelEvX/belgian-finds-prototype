@@ -15,14 +15,16 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
 
   const nextLabel =
     step === 10
-      ? "Back to queue"
-      : step === 11
-        ? "Add material"
-        : step === 12
-          ? "Back to workspace"
-          : isJourneyEnd
-            ? "Restart journey"
-            : "Next";
+      ? "Continue to description"
+      : step === 13
+        ? "Back to queue"
+        : step === 11
+          ? "Add material"
+          : step === 12
+            ? "Back to workspace"
+            : isJourneyEnd
+              ? "Restart journey"
+              : "Next";
 
   return (
     <aside className="notes-panel">

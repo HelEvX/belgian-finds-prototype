@@ -116,4 +116,14 @@ export const stepNotes: StepNote[] = [
     decision:
       "Selecting a draft opens the shared type, provenance, locality and physical-details sequence. Draft data remains in local browser state for this prototype.",
   },
+  {
+    label: "Specimen annotation · Description",
+    title: "Observations and help preference",
+    purpose:
+      "Capture the contributor’s own observations, an optional suggested identification and an optional preference for human input.",
+    matters:
+      "A contributor who knows a specimen can record a useful scientific name, while an uncertain contributor can still document observable evidence and ask for help.",
+    decision:
+      "Suggested identifications remain free text and are explicitly separated from later community suggestions or verified determinations. A large taxonomic index or autocomplete service is outside this MVP.",
+  },
 ];

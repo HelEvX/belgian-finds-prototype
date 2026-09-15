@@ -443,7 +443,7 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
         )}
 
         {value.knowledge && (
-          <div className="location-fields">
+          <div className="location-radios">
             <div className="location-section-heading">
               <h3>{copy.dateHeading}</h3>
 
@@ -480,7 +480,7 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
             </div>
 
             {selectedDateQualifier && (
-              <label className="location-field">
+              <label className="location-field location-fields">
                 <span>
                   {selectedDateQualifier.id === "on"
                     ? "Collection date"

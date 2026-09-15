@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+// components
 import { BottomNavigation } from "./components/BottomNavigation";
 import { NotesPanel } from "./components/NotesPanel";
 import { PhoneFrame } from "./components/PhoneFrame";
+// explore
 import { BrowseScreen } from "./features/explore/BrowseScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
+// features/workspace
+import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
+import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
+// features/record-find
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
@@ -14,8 +20,8 @@ import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScr
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
-import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
-import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
+import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
+
 import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
@@ -23,6 +29,7 @@ import {
   type LocationContext,
   type PhysicalDetails,
   type RecordKind,
+  type SpecimenDescription,
   type SpecimenDraft,
   type SpecimenDraftImage,
   type SpecimenDraftSource,
@@ -49,6 +56,13 @@ const createEmptyPhysicalDetails = (): PhysicalDetails => ({
   condition: null,
 });
 
+const createEmptySpecimenDescription = (): SpecimenDescription => ({
+  suggestedIdentification: "",
+  identificationConfidence: null,
+  observations: "",
+  helpRequest: null,
+});
+
 const createSpecimenDraft = ({
   source,
   images,
@@ -67,6 +81,7 @@ const createSpecimenDraft = ({
   provenance: null,
   locationContext: createEmptyLocationContext(),
   physicalDetails: createEmptyPhysicalDetails(),
+  description: createEmptySpecimenDescription(),
 });
 
 function App() {
@@ -178,7 +193,10 @@ function App() {
 
   const updateActiveSpecimenDraft = (
     updates: Partial<
-      Pick<SpecimenDraft, "recordKind" | "provenance" | "locationContext" | "physicalDetails" | "status">
+      Pick<
+        SpecimenDraft,
+        "recordKind" | "provenance" | "locationContext" | "physicalDetails" | "description" | "status"
+      >
     >,
   ) => {
     if (!activeSpecimenDraftId) {
@@ -317,6 +335,10 @@ function App() {
       case 12:
         setStep(11);
         return;
+
+      case 13:
+        setStep(10);
+        return;
     }
   };
 
@@ -371,6 +393,10 @@ function App() {
         return;
 
       case 10:
+        setStep(13);
+        return;
+
+      case 13:
         setStep(12);
         return;
 
@@ -539,6 +565,19 @@ function App() {
                 })
               }
               onBack={() => setStep(9)}
+              onFinish={() => setStep(13)}
+            />
+          )}
+
+          {step === 13 && activeSpecimenDraft && (
+            <DescriptionHelpScreen
+              value={activeSpecimenDraft.description}
+              onChange={(description) =>
+                updateActiveSpecimenDraft({
+                  description,
+                })
+              }
+              onBack={() => setStep(10)}
               onFinish={() => setStep(12)}
             />
           )}

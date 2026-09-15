@@ -1698,6 +1698,10 @@
   gap: var(--space-3);
 }
 
+.physical-fields {
+  margin-top: var(--space-5);
+}
+
 .physical-field {
   display: grid;
   gap: 6px;

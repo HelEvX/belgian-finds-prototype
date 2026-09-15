@@ -55,6 +55,17 @@ export type PhysicalDetails = {
   condition: SpecimenCondition | null;
 };
 
+export type IdentificationConfidence = "confident" | "likely" | "unsure";
+
+export type HelpRequestPreference = "none" | "community" | "verified-specialist";
+
+export type SpecimenDescription = {
+  suggestedIdentification: string;
+  identificationConfidence: IdentificationConfidence | null;
+  observations: string;
+  helpRequest: HelpRequestPreference | null;
+};
+
 /*
  * A specimen draft is the shared hand-off between image intake and
  * later information completion. A single-specimen image flow creates
@@ -86,4 +97,5 @@ export type SpecimenDraft = {
   provenance: ProvenanceKind | null;
   locationContext: LocationContext;
   physicalDetails: PhysicalDetails;
+  description: SpecimenDescription;
 };
