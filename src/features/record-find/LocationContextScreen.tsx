@@ -224,11 +224,11 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
             ← Review location
           </button>
 
-          <p className="mobile-eyebrow">Record a find</p>
+          <p className="mobile-eyebrow">Document specimen</p>
         </header>
 
         <section className="record-flow">
-          <p className="record-progress">Single find · Location and context</p>
+          <p className="record-progress">Specimen annotation · Location and context</p>
 
           <div className="record-intro-card">
             <p className="card-kicker">Collecting context</p>
@@ -325,14 +325,14 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back
+          ← Provenance
         </button>
 
         <p className="mobile-eyebrow">Record a find</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · Location and context</p>
+        <p className="record-progress">Specimen annotation · Location and context</p>
 
         <div className="record-heading">
           <h2>{copy.heading}</h2>

@@ -15,14 +15,14 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back
+          ← Annotation queue
         </button>
 
-        <p className="mobile-eyebrow">Record a find</p>
+        <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · About the item</p>
+        <p className="record-progress">Specimen annotation · Material type</p>
 
         <div className="record-heading">
           <h2>What are you recording?</h2>
@@ -65,7 +65,7 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
             <>
               <strong>{selectedRecordLabel} selected</strong>
 
-              <span>Next, add new or existing photographs.</span>
+              <span>Next, record what is known about its provenance.</span>
             </>
           ) : (
             <span>Select one option before continuing.</span>
@@ -77,7 +77,7 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
           type="button"
           disabled={!selectedKind}
           onClick={onContinue}>
-          Continue to photographs
+          Continue to provenance
         </button>
       </section>
     </>

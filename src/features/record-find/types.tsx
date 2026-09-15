@@ -69,7 +69,7 @@ export type SpecimenDraftImage = {
 
 export type SpecimenDraftSource = "single-specimen" | "batch-import";
 
-export type SpecimenDraftStatus = "ready-to-annotate";
+export type SpecimenDraftStatus = "ready-to-annotate" | "annotation-in-progress";
 
 export type SpecimenDraft = {
   id: string;

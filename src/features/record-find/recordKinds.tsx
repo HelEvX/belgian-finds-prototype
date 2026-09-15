@@ -5,7 +5,7 @@ export const recordKinds: RecordKindOption[] = [
     id: "fossil",
     symbol: "◉",
     title: "A fossil",
-    description: "A fossil found in the field or documented in an amateur collection.",
+    description: "A fossil from a field find or documented collection.",
   },
   {
     id: "rock-mineral",

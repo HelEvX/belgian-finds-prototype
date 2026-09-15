@@ -5,6 +5,7 @@ type SpecimenQueueScreenProps = {
   drafts: SpecimenDraft[];
   activeDraftId: string | null;
   onSelectDraft: (draftId: string) => void;
+  onStartAnnotation: () => void;
   onBack: () => void;
   onAddMaterial: () => void;
 };
@@ -17,10 +18,15 @@ function getDraftOriginLabel(draft: SpecimenDraft) {
   return draft.source === "batch-import" ? "Batch-imported specimen" : "Single specimen";
 }
 
+function getDraftStatusLabel(draft: SpecimenDraft) {
+  return draft.status === "annotation-in-progress" ? "Annotation in progress" : "Ready to document";
+}
+
 export function SpecimenQueueScreen({
   drafts,
   activeDraftId,
   onSelectDraft,
+  onStartAnnotation,
   onBack,
   onAddMaterial,
 }: SpecimenQueueScreenProps) {
@@ -43,8 +49,8 @@ export function SpecimenQueueScreen({
           <h2>Specimen drafts ready to document</h2>
 
           <p>
-            Images are now associated with the physical specimens they depict. Select a draft to prepare it for the
-            shared documentation workflow.
+            Images are now associated with the physical specimens they depict. Select a draft to add its type,
+            provenance and collecting context.
           </p>
         </div>
 
@@ -70,7 +76,7 @@ export function SpecimenQueueScreen({
           <>
             <section className="bulk-draft-list">
               <div className="bulk-draft-list-heading">
-                <h3>Ready to annotate</h3>
+                <h3>My specimen drafts</h3>
 
                 <span>
                   {drafts.length} {drafts.length === 1 ? "draft" : "drafts"}
@@ -102,7 +108,8 @@ export function SpecimenQueueScreen({
 
                     <p>
                       {draft.images.length} {draft.images.length === 1 ? "associated image" : "associated images"}
-                      {draft.recordKind ? " · record type selected" : " · record type not yet selected"}
+                      {" · "}
+                      {getDraftStatusLabel(draft)}
                     </p>
 
                     <div className="mobile-actions">
@@ -123,19 +130,20 @@ export function SpecimenQueueScreen({
               aria-live="polite">
               {activeDraft ? (
                 <>
-                  <strong>Draft selected for annotation</strong>
+                  <strong>{getDraftTitle(activeDraft)} selected</strong>
 
-                  <span>
-                    The next prototype step will connect this selected draft to the existing record-type, provenance,
-                    location and physical-details screens.
-                  </span>
+                  <span>Its images are already associated. Continue to document the specimen itself.</span>
                 </>
               ) : (
-                <span>Select one draft to prepare it for annotation.</span>
+                <span>Select one draft to begin documentation.</span>
               )}
             </div>
 
             <div className="mobile-actions">
+              <button className="primary-button" type="button" disabled={!activeDraft} onClick={onStartAnnotation}>
+                {activeDraft?.status === "annotation-in-progress" ? "Continue documentation" : "Start documentation"}
+              </button>
+
               <button className="secondary-button" type="button" onClick={onAddMaterial}>
                 Add more material
               </button>

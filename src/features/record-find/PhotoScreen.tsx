@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { recordKinds } from "./recordKinds";
-import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto, type RecordKind } from "./types";
+import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto } from "./types";
 
 type PhotoScreenProps = {
-  recordKind: RecordKind;
   photos: LocalFindPhoto[];
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
   onAddToQueue: () => void;
+};
+
+type PhotoFeedback = {
+  tone: "success" | "warning";
+  message: string;
 };
 
 function getPhotoGuidance(photoCount: number) {
@@ -46,21 +49,12 @@ function getPhotoGuidance(photoCount: number) {
   };
 }
 
-export function PhotoScreen({
-  recordKind,
-  photos,
-  onAddPhotos,
-  onRemovePhoto,
-  onBack,
-  onAddToQueue,
-}: PhotoScreenProps) {
+export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddToQueue }: PhotoScreenProps) {
   const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const existingInputRef = useRef<HTMLInputElement>(null);
-
-  const recordLabel = recordKinds.find((record) => record.id === recordKind)?.title ?? "Selected item";
 
   const guidance = getPhotoGuidance(photos.length);
   const hasReachedMaximum = photos.length >= MAX_FIND_PHOTOS;
@@ -151,10 +145,6 @@ export function PhotoScreen({
       });
     }
 
-    /*
-     * Reset the input so the same file can trigger another selection
-     * event. Duplicate protection is handled above.
-     */
     event.currentTarget.value = "";
   };
 
@@ -163,14 +153,14 @@ export function PhotoScreen({
       <>
         <header className="mobile-header">
           <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review photos
+            ← Review images
           </button>
 
           <p className="mobile-eyebrow">Add one specimen</p>
         </header>
 
         <section className="record-flow">
-          <p className="record-progress">Single specimen · Images ready</p>
+          <p className="record-progress">One specimen · Images ready</p>
 
           <div className="photo-ready-card">
             <span className="photo-ready-symbol" aria-hidden="true">
@@ -186,13 +176,13 @@ export function PhotoScreen({
 
           <dl className="photo-ready-summary">
             <div>
-              <dt>Record type</dt>
-              <dd>{recordLabel}</dd>
+              <dt>Associated images</dt>
+              <dd>{photos.length}</dd>
             </div>
 
             <div>
-              <dt>Associated images</dt>
-              <dd>{photos.length}</dd>
+              <dt>Record type</dt>
+              <dd>To be selected later</dd>
             </div>
 
             <div>
@@ -210,8 +200,8 @@ export function PhotoScreen({
             <strong>Next step</strong>
 
             <span>
-              Add this image-associated specimen draft to the shared annotation queue. Its detailed documentation can
-              then be completed later.
+              Add this image-associated specimen draft to the shared annotation queue. Its type, history and context can
+              be documented later.
             </span>
           </div>
 
@@ -221,7 +211,7 @@ export function PhotoScreen({
             </button>
 
             <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>
-              Review photographs
+              Review images
             </button>
           </div>
         </section>
@@ -236,21 +226,16 @@ export function PhotoScreen({
           ← Back
         </button>
 
-        <p className="mobile-eyebrow">Record a find</p>
+        <p className="mobile-eyebrow">Add one specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · Photographs</p>
+        <p className="record-progress">One specimen · Images</p>
 
         <div className="record-heading">
-          <h2>Add photographs</h2>
+          <h2>Add images for one specimen</h2>
 
           <p>Add at least one photograph. Three useful views are recommended, but they are not required.</p>
-        </div>
-
-        <div className="photo-record-type">
-          <span>Recording</span>
-          <strong>{recordLabel}</strong>
         </div>
 
         <input
@@ -341,6 +326,7 @@ export function PhotoScreen({
                     aria-label={`Remove ${photo.file.name}`}
                     onClick={() => {
                       onRemovePhoto(photo.id);
+
                       setFeedback({
                         tone: "success",
                         message: "Photograph removed. You can select it again if needed.",
@@ -371,14 +357,9 @@ export function PhotoScreen({
           type="button"
           disabled={photos.length === 0}
           onClick={() => setIsReady(true)}>
-          Use these photographs
+          Use these images
         </button>
       </section>
     </>
   );
 }
-
-type PhotoFeedback = {
-  tone: "success" | "warning";
-  message: string;
-};

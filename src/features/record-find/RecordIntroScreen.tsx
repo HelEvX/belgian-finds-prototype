@@ -8,17 +8,17 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
     <>
       <header className="mobile-header">
         <div>
-          <p className="mobile-eyebrow">Record a find</p>
+          <p className="mobile-eyebrow">Add one specimen</p>
           <h2>Before you begin</h2>
         </div>
 
-        <button className="icon-button" type="button" aria-label="Close recording journey" onClick={onCancel}>
+        <button className="icon-button" type="button" aria-label="Close one-specimen journey" onClick={onCancel}>
           ×
         </button>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · Introduction</p>
+        <p className="record-progress">One specimen · Introduction</p>
 
         <div className="record-intro-card">
           <p className="card-kicker">A useful record starts with evidence</p>
@@ -43,8 +43,8 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
             <span aria-hidden="true">1</span>
 
             <div>
-              <strong>Take several photographs</strong>
-              <p>We will guide you through useful views as you create the record.</p>
+              <strong>Take or choose photographs</strong>
+              <p>We will guide you through useful views as you create the specimen draft.</p>
             </div>
           </li>
 
@@ -52,8 +52,8 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
             <span aria-hidden="true">2</span>
 
             <div>
-              <strong>Share what you know</strong>
-              <p>Locality, collection history and uncertainty can all be useful.</p>
+              <strong>Associate the images with one specimen</strong>
+              <p>Your image set will enter the shared annotation queue.</p>
             </div>
           </li>
 
@@ -61,15 +61,15 @@ export function RecordIntroScreen({ onStart, onCancel }: RecordIntroScreenProps)
             <span aria-hidden="true">3</span>
 
             <div>
-              <strong>Ask people for help</strong>
-              <p>Community members and specialists can respond when they are available.</p>
+              <strong>Document it when you are ready</strong>
+              <p>Type, locality, history and uncertainty can all be added later.</p>
             </div>
           </li>
         </ul>
 
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onStart}>
-            Start recording
+            Add images
           </button>
 
           <button className="secondary-button" type="button" onClick={onCancel}>

@@ -43,13 +43,13 @@ export const stepNotes: StepNote[] = [
       "Detailed instructions are shown progressively while the user creates the record, rather than presented all at once.",
   },
   {
-    label: "Single find · About the item",
-    title: "Choose a record type",
-    purpose: "Establish what the contributor is recording before asking for photographs and contextual information.",
+    label: "Specimen annotation · Material type",
+    title: "What are you recording?",
+    purpose: "Establish a broad material type after images have already been associated with one physical specimen.",
     matters:
-      "The same platform should accommodate personal finds, inherited collection material and unidentified objects.",
+      "The image-intake route no longer matters at this point. A one-specimen draft and a batch-imported draft should use the same documentation workflow.",
     decision:
-      "The contributor can explicitly choose ‘Something unknown’ instead of being forced to make an identification.",
+      "A contributor can explicitly choose ‘Something unknown’ rather than being forced to identify the specimen before asking for help.",
   },
   {
     label: "Batch import · Image intake",
@@ -61,15 +61,16 @@ export const stepNotes: StepNote[] = [
       "A batch is an image-intake method, not a collection. After grouping, each resulting specimen draft will eventually enter the same annotation queue as a one-specimen draft.",
   },
   {
-    label: "Single find · Photographs",
-    title: "Add photographs",
-    purpose: "Let a contributor add new camera images, existing files or a combination of both to one find record.",
-    matters: "New finds benefit from guided photography, while existing and inherited collections must remain welcome.",
+    label: "One specimen · Images",
+    title: "Add images for one specimen",
+    purpose:
+      "Associate one or more new or existing images with a single physical specimen before its detailed documentation begins.",
+    matters: "New finds benefit from guided photography, while existing and inherited material must remain welcome.",
     decision:
-      "One photograph is sufficient to continue, three useful views are recommended, and five is the prototype maximum.",
+      "One image is sufficient to create a specimen draft, three useful views are recommended, and five is the prototype maximum.",
   },
   {
-    label: "Single find · Provenance",
+    label: "Specimen annotation · Provenance",
     title: "Who originally found it?",
     purpose:
       "Record the original field collector or collection history separately from the current owner or custodian.",
@@ -79,22 +80,21 @@ export const stepNotes: StepNote[] = [
       "The flow does not offer a generic purchase route. Uncertainty remains available for inherited or older collections whose documentation is incomplete.",
   },
   {
-    label: "Single find · Location and context",
+    label: "Specimen annotation · Location and context",
     title: "Where was it found?",
     purpose: "Record the best available Belgian find location and any surviving geological or collecting context.",
     matters:
       "Locality, geological layer and collecting documentation can give an otherwise ordinary specimen scientific meaning.",
     decision:
-      "The wording adapts to the selected provenance. Individual fields remain optional, but the contributor explicitly marks the location as known, partial or unknown.",
+      "The wording adapts to provenance. Individual fields remain optional, but the contributor explicitly marks the location as known, partial or unknown.",
   },
   {
-    label: "Single find · Physical details",
+    label: "Specimen annotation · Physical details",
     title: "Measure the specimen",
-    purpose: "Capture the physical dimensions, weight and condition that give photographs a useful sense of scale.",
-    matters:
-      "Even simple measurements can make comparison and later determination more reliable, especially when the specimen is incomplete or photographed without a scale.",
+    purpose: "Capture dimensions, weight and condition that give the associated images a useful sense of scale.",
+    matters: "Even simple measurements can make comparison and later human determination more reliable.",
     decision:
-      "Measurements are encouraged rather than required. Contributors explicitly distinguish measured dimensions, estimates and information that is not yet available.",
+      "Measurements are encouraged rather than required. Contributors distinguish measured dimensions, estimates and information that is not yet available.",
   },
   {
     label: "Contributor area · My workspace",
@@ -110,10 +110,10 @@ export const stepNotes: StepNote[] = [
     label: "Contributor area · Annotation queue",
     title: "Specimen drafts ready to document",
     purpose:
-      "Hold image-associated specimen drafts until the contributor is ready to complete their individual record information.",
+      "Hold image-associated specimen drafts until the contributor is ready to document each individual specimen.",
     matters:
-      "A specimen created from one image sequence and a specimen created through batch grouping need the same documentation workflow once their images are correctly associated.",
+      "A specimen created from one image sequence and a specimen created through batch grouping need the same annotation workflow once their images are correctly associated.",
     decision:
-      "The queue stores a reusable local specimen-draft model and an active selected draft. The next prototype phase will connect that draft to the existing annotation screens.",
+      "Selecting a draft opens the shared type, provenance, locality and physical-details sequence. Draft data remains in local browser state for this prototype.",
   },
 ];

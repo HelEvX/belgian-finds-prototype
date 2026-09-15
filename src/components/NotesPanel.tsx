@@ -11,10 +11,18 @@ type NotesPanelProps = {
 export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: NotesPanelProps) {
   const note = stepNotes[step];
 
-  const isJourneyEnd = step === 2 || step === 6 || step === 10;
+  const isJourneyEnd = step === 2 || step === 6;
 
   const nextLabel =
-    step === 11 ? "Add material" : step === 12 ? "Back to workspace" : isJourneyEnd ? "Restart journey" : "Next";
+    step === 10
+      ? "Back to queue"
+      : step === 11
+        ? "Add material"
+        : step === 12
+          ? "Back to workspace"
+          : isJourneyEnd
+            ? "Restart journey"
+            : "Next";
 
   return (
     <aside className="notes-panel">

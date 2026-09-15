@@ -26,7 +26,7 @@ export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onConti
         </header>
 
         <section className="record-flow">
-          <p className="record-progress">Single find · Provenance</p>
+          <p className="record-progress">Specimen annotation · Provenance</p>
 
           <div className="record-intro-card">
             <p className="card-kicker">Collection context</p>
@@ -67,14 +67,14 @@ export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onConti
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back
+          ← Annotation queue
         </button>
 
-        <p className="mobile-eyebrow">Record a find</p>
+        <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · Provenance</p>
+        <p className="record-progress">Specimen annotation · Provenance</p>
 
         <div className="record-heading">
           <h2>Who originally found this specimen?</h2>

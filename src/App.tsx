@@ -16,14 +16,12 @@ import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
 import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
-
 import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
   type LocalFindPhoto,
   type LocationContext,
   type PhysicalDetails,
-  type ProvenanceKind,
   type RecordKind,
   type SpecimenDraft,
   type SpecimenDraftImage,
@@ -73,18 +71,21 @@ const createSpecimenDraft = ({
 
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
-  const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
-  const [provenance, setProvenance] = useState<ProvenanceKind | null>(null);
-  const [locationContext, setLocationContext] = useState<LocationContext>(createEmptyLocationContext);
-  const [physicalDetails, setPhysicalDetails] = useState<PhysicalDetails>(createEmptyPhysicalDetails);
+
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
+
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
+
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
+
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+
   const [addReturnStep, setAddReturnStep] = useState<0 | 11>(0);
 
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
+
+  const activeSpecimenDraft = specimenDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
   useEffect(() => {
     findPhotosRef.current = findPhotos;
@@ -166,13 +167,6 @@ function App() {
     });
   };
 
-  const resetSingleFindMetadata = () => {
-    setRecordKind(null);
-    setProvenance(null);
-    setLocationContext(createEmptyLocationContext());
-    setPhysicalDetails(createEmptyPhysicalDetails());
-  };
-
   const clearSingleFind = () => {
     findPhotosRef.current.forEach((photo) => {
       URL.revokeObjectURL(photo.previewUrl);
@@ -180,7 +174,27 @@ function App() {
 
     findPhotosRef.current = [];
     setFindPhotos([]);
-    resetSingleFindMetadata();
+  };
+
+  const updateActiveSpecimenDraft = (
+    updates: Partial<
+      Pick<SpecimenDraft, "recordKind" | "provenance" | "locationContext" | "physicalDetails" | "status">
+    >,
+  ) => {
+    if (!activeSpecimenDraftId) {
+      return;
+    }
+
+    setSpecimenDrafts((currentDrafts) =>
+      currentDrafts.map((draft) =>
+        draft.id === activeSpecimenDraftId
+          ? {
+              ...draft,
+              ...updates,
+            }
+          : draft,
+      ),
+    );
   };
 
   const addSingleFindToQueue = () => {
@@ -191,7 +205,6 @@ function App() {
     const draft = createSpecimenDraft({
       source: "single-specimen",
       images: findPhotos,
-      recordKind,
     });
 
     setSpecimenDrafts((currentDrafts) => [...currentDrafts, draft]);
@@ -199,12 +212,11 @@ function App() {
     setActiveSpecimenDraftId(draft.id);
 
     /*
-     * Ownership of these preview URLs is transferred from the
-     * temporary single-find flow to the persistent local draft.
+     * Ownership of these preview URLs transfers from the temporary
+     * image-intake flow to the local specimen draft.
      */
     findPhotosRef.current = [];
     setFindPhotos([]);
-    resetSingleFindMetadata();
 
     setStep(12);
   };
@@ -228,6 +240,18 @@ function App() {
     setActiveSpecimenDraftId(newDrafts[0].id);
     setIsBulkImportOpen(false);
     setStep(12);
+  };
+
+  const startAnnotation = () => {
+    if (!activeSpecimenDraft) {
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      status: "annotation-in-progress",
+    });
+
+    setStep(5);
   };
 
   const closeBulkImport = () => {
@@ -263,7 +287,7 @@ function App() {
         return;
 
       case 5:
-        setStep(4);
+        setStep(12);
         return;
 
       case 6:
@@ -271,11 +295,11 @@ function App() {
         return;
 
       case 7:
-        setStep(5);
+        setStep(4);
         return;
 
       case 8:
-        setStep(7);
+        setStep(5);
         return;
 
       case 9:
@@ -317,12 +341,12 @@ function App() {
         return;
 
       case 4:
-        setStep(5);
+        setStep(7);
         return;
 
       case 5:
-        if (recordKind) {
-          setStep(7);
+        if (activeSpecimenDraft?.recordKind) {
+          setStep(8);
         }
         return;
 
@@ -335,20 +359,19 @@ function App() {
         return;
 
       case 8:
-        if (provenance) {
+        if (activeSpecimenDraft?.provenance) {
           setStep(9);
         }
         return;
 
       case 9:
-        if (locationContext.knowledge) {
+        if (activeSpecimenDraft?.locationContext.knowledge) {
           setStep(10);
         }
         return;
 
       case 10:
-        clearSingleFind();
-        setStep(3);
+        setStep(12);
         return;
 
       case 11:
@@ -369,7 +392,9 @@ function App() {
 
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
+
     setAddReturnStep(step === 11 || step === 12 ? 11 : 0);
+
     setStep(3);
   };
 
@@ -430,6 +455,7 @@ function App() {
               drafts={specimenDrafts}
               activeDraftId={activeSpecimenDraftId}
               onSelectDraft={setActiveSpecimenDraftId}
+              onStartAnnotation={startAnnotation}
               onBack={() => setStep(11)}
               onAddMaterial={openAddFromWorkspace}
             />
@@ -443,14 +469,18 @@ function App() {
             />
           )}
 
-          {step === 4 && <RecordIntroScreen onStart={() => setStep(5)} onCancel={() => setStep(3)} />}
+          {step === 4 && <RecordIntroScreen onStart={() => setStep(7)} onCancel={() => setStep(3)} />}
 
-          {step === 5 && (
+          {step === 5 && activeSpecimenDraft && (
             <RecordTypeScreen
-              selectedKind={recordKind}
-              onSelect={setRecordKind}
-              onBack={() => setStep(4)}
-              onContinue={() => setStep(7)}
+              selectedKind={activeSpecimenDraft.recordKind}
+              onSelect={(recordKind) =>
+                updateActiveSpecimenDraft({
+                  recordKind,
+                })
+              }
+              onBack={() => setStep(12)}
+              onContinue={() => setStep(8)}
             />
           )}
 
@@ -462,42 +492,54 @@ function App() {
             />
           )}
 
-          {step === 7 && recordKind && (
+          {step === 7 && (
             <PhotoScreen
-              recordKind={recordKind}
               photos={findPhotos}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
-              onBack={() => setStep(5)}
+              onBack={() => setStep(4)}
               onAddToQueue={addSingleFindToQueue}
             />
           )}
 
-          {step === 8 && (
+          {step === 8 && activeSpecimenDraft && (
             <ProvenanceScreen
-              selectedProvenance={provenance}
-              onSelect={setProvenance}
-              onBack={() => setStep(7)}
+              selectedProvenance={activeSpecimenDraft.provenance}
+              onSelect={(provenance) =>
+                updateActiveSpecimenDraft({
+                  provenance,
+                })
+              }
+              onBack={() => setStep(5)}
               onContinue={() => setStep(9)}
             />
           )}
 
-          {step === 9 && provenance && (
+          {step === 9 && activeSpecimenDraft && activeSpecimenDraft.provenance && (
             <LocationContextScreen
-              provenance={provenance}
-              value={locationContext}
-              onChange={setLocationContext}
+              provenance={activeSpecimenDraft.provenance}
+              value={activeSpecimenDraft.locationContext}
+              onChange={(locationContext) =>
+                updateActiveSpecimenDraft({
+                  locationContext,
+                })
+              }
               onBack={() => setStep(8)}
               onContinue={() => setStep(10)}
             />
           )}
 
-          {step === 10 && recordKind && (
+          {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
             <PhysicalDetailsScreen
-              recordKind={recordKind}
-              value={physicalDetails}
-              onChange={setPhysicalDetails}
+              recordKind={activeSpecimenDraft.recordKind}
+              value={activeSpecimenDraft.physicalDetails}
+              onChange={(physicalDetails) =>
+                updateActiveSpecimenDraft({
+                  physicalDetails,
+                })
+              }
               onBack={() => setStep(9)}
+              onFinish={() => setStep(12)}
             />
           )}
         </PhoneFrame>
@@ -507,11 +549,11 @@ function App() {
           onPrevious={goToPreviousStep}
           onNext={goToNextStep}
           nextDisabled={
-            (step === 5 && recordKind === null) ||
+            (step === 5 && activeSpecimenDraft?.recordKind === null) ||
             (step === 7 && findPhotos.length === 0) ||
-            (step === 8 && provenance === null) ||
-            (step === 9 && locationContext.knowledge === null) ||
-            (step === 10 && physicalDetails.measurementStatus === null)
+            (step === 8 && activeSpecimenDraft?.provenance === null) ||
+            (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
+            (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null)
           }
         />
       </section>

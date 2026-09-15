@@ -6,6 +6,7 @@ type PhysicalDetailsScreenProps = {
   value: PhysicalDetails;
   onChange: (value: PhysicalDetails) => void;
   onBack: () => void;
+  onFinish: () => void;
 };
 
 type PhysicalTextField = Exclude<keyof PhysicalDetails, "measurementStatus" | "condition">;
@@ -125,7 +126,7 @@ function formatMeasurement(value: string, unit: string) {
   return value.trim() ? `${value.trim()} ${unit}` : null;
 }
 
-export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack }: PhysicalDetailsScreenProps) {
+export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onFinish }: PhysicalDetailsScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const copy = physicalDetailsCopy[recordKind];
@@ -189,11 +190,11 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack }: P
             ← Review physical details
           </button>
 
-          <p className="mobile-eyebrow">Record a find</p>
+          <p className="mobile-eyebrow">Document specimen</p>
         </header>
 
         <section className="record-flow">
-          <p className="record-progress">Single find · Physical details</p>
+          <p className="record-progress">Specimen annotation · Physical details</p>
 
           <div className="record-intro-card">
             <p className="card-kicker">Specimen information</p>
@@ -235,17 +236,16 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack }: P
           )}
 
           <div className="record-selection-note">
-            <strong>Next planned step</strong>
+            <strong>Next prototype phase</strong>
 
             <span>
-              The contributor will describe the specimen and choose whether to request help from the community or a
-              validated scientist.
+              Description, help requests, privacy and review will be added after the shared annotation flow is complete.
             </span>
           </div>
 
           <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={() => setIsReady(false)}>
-              Review physical details
+            <button className="primary-button" type="button" onClick={onFinish}>
+              Return to annotation queue
             </button>
 
             <button className="secondary-button" type="button" onClick={onBack}>
@@ -264,11 +264,11 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack }: P
           ← Back
         </button>
 
-        <p className="mobile-eyebrow">Record a find</p>
+        <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Single find · Physical details</p>
+        <p className="record-progress">Specimen annotation · Physical details</p>
 
         <div className="record-heading">
           <h2>{copy.heading}</h2>
