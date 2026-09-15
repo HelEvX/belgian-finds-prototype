@@ -1,9 +1,11 @@
 type WorkspaceScreenProps = {
+  queueCount: number;
+  onOpenQueue: () => void;
   onAddMaterial: () => void;
   onExplore: () => void;
 };
 
-export function WorkspaceScreen({ onAddMaterial, onExplore }: WorkspaceScreenProps) {
+export function WorkspaceScreen({ queueCount, onOpenQueue, onAddMaterial, onExplore }: WorkspaceScreenProps) {
   return (
     <>
       <header className="mobile-header">
@@ -27,23 +29,45 @@ export function WorkspaceScreen({ onAddMaterial, onExplore }: WorkspaceScreenPro
 
           <p>
             Add one specimen or import a group of existing images. Once images are correctly associated with specimens,
-            they will be ready for documentation.
+            they are placed in your annotation queue.
           </p>
         </div>
 
         <section className="mobile-section">
           <div className="section-heading">
             <h3>Annotation queue</h3>
-            <span className="status-label">0 ready</span>
+
+            <span className="status-label">
+              {queueCount} {queueCount === 1 ? "ready" : "ready"}
+            </span>
           </div>
 
-          <div className="record-selection-note">
-            <strong>No specimen drafts yet</strong>
+          {queueCount === 0 ? (
+            <div className="record-selection-note">
+              <strong>No specimen drafts yet</strong>
 
-            <span>
-              Add images for one specimen, or import a batch and group them by specimen. The shared annotation queue
-              will be added in the next prototype phase.
-            </span>
+              <span>Add images for one specimen, or import a batch and group them by specimen.</span>
+            </div>
+          ) : (
+            <div className="record-selection-note record-selection-note-active">
+              <strong>
+                {queueCount} {queueCount === 1 ? "specimen draft is" : "specimen drafts are"} ready to document
+              </strong>
+
+              <span>
+                The image association is complete. Select a specimen draft when you are ready to begin its
+                documentation.
+              </span>
+            </div>
+          )}
+
+          <div className="mobile-actions">
+            <button
+              className={queueCount > 0 ? "primary-button" : "secondary-button"}
+              type="button"
+              onClick={onOpenQueue}>
+              View annotation queue
+            </button>
           </div>
         </section>
 
@@ -76,3 +100,20 @@ export function WorkspaceScreen({ onAddMaterial, onExplore }: WorkspaceScreenPro
     </>
   );
 }
+
+/* 
+My workspace: future implementation (notes)
+
+Annotation queue
+Image-associated specimen drafts waiting for documentation.
+
+My records
+Private drafts, published records and records needing updates.
+
+My following
+Published records from other contributors that I chose to follow.
+
+My contributions
+Responses I have made where input was invited.
+
+*/

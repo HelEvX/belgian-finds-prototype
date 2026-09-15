@@ -54,3 +54,36 @@ export type PhysicalDetails = {
   weightG: string;
   condition: SpecimenCondition | null;
 };
+
+/*
+ * A specimen draft is the shared hand-off between image intake and
+ * later information completion. A single-specimen image flow creates
+ * one draft; batch grouping can create many drafts.
+ */
+export type SpecimenDraftImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+  source: FindPhotoSource | "batch-import";
+};
+
+export type SpecimenDraftSource = "single-specimen" | "batch-import";
+
+export type SpecimenDraftStatus = "ready-to-annotate";
+
+export type SpecimenDraft = {
+  id: string;
+  createdAt: string;
+  source: SpecimenDraftSource;
+  status: SpecimenDraftStatus;
+  images: SpecimenDraftImage[];
+
+  /*
+   * These fields are deliberately part of the draft now, even though
+   * the existing screens will only be connected to them next.
+   */
+  recordKind: RecordKind | null;
+  provenance: ProvenanceKind | null;
+  locationContext: LocationContext;
+  physicalDetails: PhysicalDetails;
+};

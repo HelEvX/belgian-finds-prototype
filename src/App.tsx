@@ -8,12 +8,13 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
+import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
 import { PhotoScreen } from "./features/record-find/PhotoScreen";
+import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
+import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
-import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
-import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
-import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
+import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
 import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
 
 import {
@@ -24,6 +25,9 @@ import {
   type PhysicalDetails,
   type ProvenanceKind,
   type RecordKind,
+  type SpecimenDraft,
+  type SpecimenDraftImage,
+  type SpecimenDraftSource,
 } from "./features/record-find/types";
 import type { PrototypeStep } from "./prototype/types";
 
@@ -47,6 +51,26 @@ const createEmptyPhysicalDetails = (): PhysicalDetails => ({
   condition: null,
 });
 
+const createSpecimenDraft = ({
+  source,
+  images,
+  recordKind = null,
+}: {
+  source: SpecimenDraftSource;
+  images: SpecimenDraftImage[];
+  recordKind?: RecordKind | null;
+}): SpecimenDraft => ({
+  id: crypto.randomUUID(),
+  createdAt: new Date().toISOString(),
+  source,
+  status: "ready-to-annotate",
+  images,
+  recordKind,
+  provenance: null,
+  locationContext: createEmptyLocationContext(),
+  physicalDetails: createEmptyPhysicalDetails(),
+});
+
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
   const [recordKind, setRecordKind] = useState<RecordKind | null>(null);
@@ -54,19 +78,31 @@ function App() {
   const [locationContext, setLocationContext] = useState<LocationContext>(createEmptyLocationContext);
   const [physicalDetails, setPhysicalDetails] = useState<PhysicalDetails>(createEmptyPhysicalDetails);
   const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
+  const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
+  const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [addReturnStep, setAddReturnStep] = useState<0 | 11>(0);
 
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
+  const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
 
   useEffect(() => {
     findPhotosRef.current = findPhotos;
   }, [findPhotos]);
 
   useEffect(() => {
+    specimenDraftsRef.current = specimenDrafts;
+  }, [specimenDrafts]);
+
+  useEffect(() => {
     return () => {
-      findPhotosRef.current.forEach((photo) => {
-        URL.revokeObjectURL(photo.previewUrl);
+      const previewUrls = new Set([
+        ...findPhotosRef.current.map((photo) => photo.previewUrl),
+        ...specimenDraftsRef.current.flatMap((draft) => draft.images.map((image) => image.previewUrl)),
+      ]);
+
+      previewUrls.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
       });
     };
   }, []);
@@ -130,18 +166,68 @@ function App() {
     });
   };
 
+  const resetSingleFindMetadata = () => {
+    setRecordKind(null);
+    setProvenance(null);
+    setLocationContext(createEmptyLocationContext());
+    setPhysicalDetails(createEmptyPhysicalDetails());
+  };
+
   const clearSingleFind = () => {
     findPhotosRef.current.forEach((photo) => {
       URL.revokeObjectURL(photo.previewUrl);
     });
 
     findPhotosRef.current = [];
-
     setFindPhotos([]);
-    setRecordKind(null);
-    setProvenance(null);
-    setLocationContext(createEmptyLocationContext());
-    setPhysicalDetails(createEmptyPhysicalDetails());
+    resetSingleFindMetadata();
+  };
+
+  const addSingleFindToQueue = () => {
+    if (findPhotos.length === 0) {
+      return;
+    }
+
+    const draft = createSpecimenDraft({
+      source: "single-specimen",
+      images: findPhotos,
+      recordKind,
+    });
+
+    setSpecimenDrafts((currentDrafts) => [...currentDrafts, draft]);
+
+    setActiveSpecimenDraftId(draft.id);
+
+    /*
+     * Ownership of these preview URLs is transferred from the
+     * temporary single-find flow to the persistent local draft.
+     */
+    findPhotosRef.current = [];
+    setFindPhotos([]);
+    resetSingleFindMetadata();
+
+    setStep(12);
+  };
+
+  const addBatchDraftsToQueue = (draftImageSets: SpecimenDraftImage[][]) => {
+    const newDrafts = draftImageSets
+      .filter((imageSet) => imageSet.length > 0)
+      .map((images) =>
+        createSpecimenDraft({
+          source: "batch-import",
+          images,
+        }),
+      );
+
+    if (newDrafts.length === 0) {
+      return;
+    }
+
+    setSpecimenDrafts((currentDrafts) => [...currentDrafts, ...newDrafts]);
+
+    setActiveSpecimenDraftId(newDrafts[0].id);
+    setIsBulkImportOpen(false);
+    setStep(12);
   };
 
   const closeBulkImport = () => {
@@ -203,6 +289,10 @@ function App() {
       case 11:
         setStep(0);
         return;
+
+      case 12:
+        setStep(11);
+        return;
     }
   };
 
@@ -241,9 +331,7 @@ function App() {
         return;
 
       case 7:
-        if (findPhotos.length > 0) {
-          setStep(8);
-        }
+        addSingleFindToQueue();
         return;
 
       case 8:
@@ -267,6 +355,10 @@ function App() {
         setAddReturnStep(11);
         setStep(3);
         return;
+
+      case 12:
+        setStep(11);
+        return;
     }
   };
 
@@ -277,7 +369,7 @@ function App() {
 
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
-    setAddReturnStep(step === 11 ? 11 : 0);
+    setAddReturnStep(step === 11 || step === 12 ? 11 : 0);
     setStep(3);
   };
 
@@ -309,7 +401,9 @@ function App() {
               onWorkspace={() => setStep(11)}
             />
           }
-          overlay={isBulkImportOpen ? <BulkImportModal onClose={closeBulkImport} /> : null}>
+          overlay={
+            isBulkImportOpen ? <BulkImportModal onClose={closeBulkImport} onAddToQueue={addBatchDraftsToQueue} /> : null
+          }>
           {step === 0 && (
             <WelcomeScreen
               onBrowse={() => setStep(1)}
@@ -322,7 +416,24 @@ function App() {
 
           {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
 
-          {step === 11 && <WorkspaceScreen onAddMaterial={openAddFromWorkspace} onExplore={showWelcome} />}
+          {step === 11 && (
+            <WorkspaceScreen
+              queueCount={specimenDrafts.length}
+              onOpenQueue={() => setStep(12)}
+              onAddMaterial={openAddFromWorkspace}
+              onExplore={showWelcome}
+            />
+          )}
+
+          {step === 12 && (
+            <SpecimenQueueScreen
+              drafts={specimenDrafts}
+              activeDraftId={activeSpecimenDraftId}
+              onSelectDraft={setActiveSpecimenDraftId}
+              onBack={() => setStep(11)}
+              onAddMaterial={openAddFromWorkspace}
+            />
+          )}
 
           {step === 3 && (
             <AddMethodScreen
@@ -358,7 +469,7 @@ function App() {
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
               onBack={() => setStep(5)}
-              onContinue={() => setStep(8)}
+              onAddToQueue={addSingleFindToQueue}
             />
           )}
 

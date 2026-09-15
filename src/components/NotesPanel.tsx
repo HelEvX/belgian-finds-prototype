@@ -13,7 +13,8 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
 
   const isJourneyEnd = step === 2 || step === 6 || step === 10;
 
-  const nextLabel = step === 11 ? "Add material" : isJourneyEnd ? "Restart journey" : "Next";
+  const nextLabel =
+    step === 11 ? "Add material" : step === 12 ? "Back to workspace" : isJourneyEnd ? "Restart journey" : "Next";
 
   return (
     <aside className="notes-panel">

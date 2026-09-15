@@ -106,4 +106,14 @@ export const stepNotes: StepNote[] = [
     decision:
       "The workspace is mocked locally in this phase. It establishes the correct product structure before accounts, persistent drafts or a database are introduced.",
   },
+  {
+    label: "Contributor area · Annotation queue",
+    title: "Specimen drafts ready to document",
+    purpose:
+      "Hold image-associated specimen drafts until the contributor is ready to complete their individual record information.",
+    matters:
+      "A specimen created from one image sequence and a specimen created through batch grouping need the same documentation workflow once their images are correctly associated.",
+    decision:
+      "The queue stores a reusable local specimen-draft model and an active selected draft. The next prototype phase will connect that draft to the existing annotation screens.",
+  },
 ];

@@ -8,7 +8,7 @@ type PhotoScreenProps = {
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
-  onContinue: () => void;
+  onAddToQueue: () => void;
 };
 
 function getPhotoGuidance(photoCount: number) {
@@ -46,7 +46,14 @@ function getPhotoGuidance(photoCount: number) {
   };
 }
 
-export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, onBack, onContinue }: PhotoScreenProps) {
+export function PhotoScreen({
+  recordKind,
+  photos,
+  onAddPhotos,
+  onRemovePhoto,
+  onBack,
+  onAddToQueue,
+}: PhotoScreenProps) {
   const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
@@ -159,21 +166,21 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
             ← Review photos
           </button>
 
-          <p className="mobile-eyebrow">Record a find</p>
+          <p className="mobile-eyebrow">Add one specimen</p>
         </header>
 
         <section className="record-flow">
-          <p className="record-progress">Single find · Photographs</p>
+          <p className="record-progress">Single specimen · Images ready</p>
 
           <div className="photo-ready-card">
             <span className="photo-ready-symbol" aria-hidden="true">
               ✓
             </span>
 
-            <h2>Photographs ready</h2>
+            <h2>Specimen draft ready</h2>
 
             <p>
-              You have added {photos.length} {photos.length === 1 ? "photograph" : "photographs"} to this draft record.
+              You have associated {photos.length} {photos.length === 1 ? "image" : "images"} with one physical specimen.
             </p>
           </div>
 
@@ -184,8 +191,13 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
             </div>
 
             <div>
-              <dt>Photographs</dt>
+              <dt>Associated images</dt>
               <dd>{photos.length}</dd>
+            </div>
+
+            <div>
+              <dt>Queue status</dt>
+              <dd>Ready to annotate</dd>
             </div>
 
             <div>
@@ -195,18 +207,21 @@ export function PhotoScreen({ recordKind, photos, onAddPhotos, onRemovePhoto, on
           </dl>
 
           <div className="record-selection-note">
-            <strong>Next planned step</strong>
+            <strong>Next step</strong>
 
-            <span>The contributor will add provenance, find location and collection history next.</span>
+            <span>
+              Add this image-associated specimen draft to the shared annotation queue. Its detailed documentation can
+              then be completed later.
+            </span>
           </div>
 
           <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onContinue}>
-              Continue to provenance
+            <button className="primary-button" type="button" onClick={onAddToQueue}>
+              Add to annotation queue
             </button>
 
-            <button className="secondary-button" type="button" onClick={onBack}>
-              Back to record type
+            <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>
+              Review photographs
             </button>
           </div>
         </section>

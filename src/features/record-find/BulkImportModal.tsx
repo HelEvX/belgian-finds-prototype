@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { BulkImportGroupingStep } from "./BulkImportGroupingStep";
 import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
+import type { SpecimenDraftImage } from "./types";
 
 type BulkImportModalProps = {
   onClose: () => void;
+  onAddToQueue: (draftImageSets: SpecimenDraftImage[][]) => void;
 };
 
 type ImportStage = "select" | "ready" | "group" | "finished";
@@ -16,7 +18,7 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function BulkImportModal({ onClose }: BulkImportModalProps) {
+export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps) {
   const [images, setImages] = useState<LocalImportImage[]>([]);
   const [groups, setGroups] = useState<SpecimenDraftGroup[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -25,6 +27,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesRef = useRef<LocalImportImage[]>([]);
+  const transferredImageIdsRef = useRef<Set<string>>(new Set());
+
   const nextGroupIdRef = useRef(1);
 
   useEffect(() => {
@@ -46,10 +50,20 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
   }, [onClose]);
 
   useEffect(() => {
+    /*
+     * These refs are application-owned URL registries, rather than
+     * rendered DOM nodes. The modal cleanup must read their latest
+     * values when the modal unmounts.
+     */
+    const currentImagesRef = imagesRef;
+    const currentTransferredImageIdsRef = transferredImageIdsRef;
+
     return () => {
-      imagesRef.current.forEach((image) => {
-        URL.revokeObjectURL(image.previewUrl);
-      });
+      currentImagesRef.current
+        .filter((image) => !currentTransferredImageIdsRef.current.has(image.id))
+        .forEach((image) => {
+          URL.revokeObjectURL(image.previewUrl);
+        });
     };
   }, []);
 
@@ -186,6 +200,30 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
     setGroups((currentGroups) => currentGroups.filter((group) => group.id !== groupId));
 
     setDraftCount(0);
+  };
+
+  const addGroupedDraftsToQueue = () => {
+    const draftImageSets = groups
+      .map((group) =>
+        group.imageIds
+          .map((imageId) => images.find((image) => image.id === imageId))
+          .filter((image): image is LocalImportImage => image !== undefined)
+          .map((image) => ({
+            ...image,
+            source: "batch-import" as const,
+          })),
+      )
+      .filter((imageSet) => imageSet.length > 0);
+
+    if (draftImageSets.length === 0) {
+      return;
+    }
+
+    draftImageSets.flat().forEach((image) => {
+      transferredImageIdsRef.current.add(image.id);
+    });
+
+    onAddToQueue(draftImageSets);
   };
 
   const totalSize = images.reduce((total, image) => total + image.file.size, 0);
@@ -431,8 +469,8 @@ export function BulkImportModal({ onClose }: BulkImportModalProps) {
             </div>
 
             <div className="bulk-import-actions">
-              <button className="primary-button" type="button" onClick={onClose}>
-                Finish preview
+              <button className="primary-button" type="button" onClick={addGroupedDraftsToQueue}>
+                Add {draftCount} {draftCount === 1 ? "draft" : "drafts"} to annotation queue
               </button>
 
               <button className="secondary-button" type="button" onClick={clearImages}>

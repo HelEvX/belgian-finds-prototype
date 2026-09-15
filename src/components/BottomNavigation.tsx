@@ -16,12 +16,15 @@ export function BottomNavigation({ step, onExplore, onAdd, onWorkspace }: Bottom
       </button>
 
       <button className={`nav-item ${step >= 3 && step <= 10 ? "nav-item-active" : ""}`} type="button" onClick={onAdd}>
-        <span>＋</span>
+        <span>🞦</span>
         Add
       </button>
 
-      <button className={`nav-item ${step === 11 ? "nav-item-active" : ""}`} type="button" onClick={onWorkspace}>
-        <span>♡</span>
+      <button
+        className={`nav-item ${step === 11 || step === 12 ? "nav-item-active" : ""}`}
+        type="button"
+        onClick={onWorkspace}>
+        <span>🞛</span>
         My workspace
       </button>
 
