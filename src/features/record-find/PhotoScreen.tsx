@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto } from "./types";
 
 type PhotoScreenProps = {
+  showWorkflowGuidance: boolean;
   photos: LocalFindPhoto[];
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
@@ -51,6 +52,7 @@ function getPhotoGuidance(photoCount: number) {
 }
 
 export function PhotoScreen({
+  showWorkflowGuidance,
   photos,
   onAddPhotos,
   onRemovePhoto,
@@ -204,14 +206,16 @@ export function PhotoScreen({
             </div>
           </dl>
 
-          <div className="record-selection-note">
-            <strong>Next step</strong>
+          {showWorkflowGuidance && (
+            <div className="record-selection-note">
+              <strong>Next step</strong>
 
-            <span>
-              Add this image-associated specimen draft to the shared annotation queue. Its type, history and context can
-              be documented later.
-            </span>
-          </div>
+              <span>
+                Add this image-associated specimen draft to the shared annotation queue. Its type, history and context
+                can be documented later.
+              </span>
+            </div>
+          )}
 
           <div className="mobile-actions">
             <button className="primary-button" type="button" onClick={onAddToQueue}>

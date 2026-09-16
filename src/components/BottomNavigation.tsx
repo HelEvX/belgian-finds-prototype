@@ -17,7 +17,7 @@ export function BottomNavigation({ step, onExplore, onAdd, onWorkspace, onSettin
       </button>
 
       <button
-        className={`nav-item ${(step >= 3 && step <= 10) || step === 13 ? "nav-item-active" : ""}`}
+        className={`nav-item ${(step >= 3 && step <= 10) || step === 13 || step === 15 ? "nav-item-active" : ""}`}
         type="button"
         onClick={onAdd}>
         <span>🞦</span>

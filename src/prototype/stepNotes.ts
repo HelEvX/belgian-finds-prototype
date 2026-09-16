@@ -138,4 +138,14 @@ export const stepNotes: StepNote[] = [
     decision:
       "Guidance preferences are stored locally in this prototype. A production version would attach them to the member account.",
   },
+  {
+    label: "Specimen annotation · Privacy and sharing",
+    title: "Choose record and locality visibility",
+    purpose:
+      "Let the contributor keep a record private or prepare it for later community sharing, while controlling the maximum locality detail visible to other members.",
+    matters:
+      "Find locations may be scientifically valuable but can also be sensitive. Private documentation and public disclosure need to be separate decisions.",
+    decision:
+      "Exact site details always remain private in the MVP. Community sharing is only a preference at this stage; a later review screen will be required before publication.",
+  },
 ];

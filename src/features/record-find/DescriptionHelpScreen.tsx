@@ -161,7 +161,7 @@ export function DescriptionHelpScreen({
 
           <div className="mobile-actions">
             <button className="primary-button" type="button" onClick={onFinish}>
-              Return to annotation queue
+              Continue to privacy and sharing
             </button>
 
             <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>

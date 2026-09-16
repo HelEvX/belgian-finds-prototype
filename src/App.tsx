@@ -22,6 +22,7 @@ import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
+import { PrivacySharingScreen } from "./features/record-find/PrivacySharingScreen";
 import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 
 import {
@@ -30,6 +31,7 @@ import {
   type LocalFindPhoto,
   type LocationContext,
   type PhysicalDetails,
+  type PrivacySettings,
   type RecordKind,
   type SpecimenDescription,
   type SpecimenDraft,
@@ -65,6 +67,11 @@ const createEmptySpecimenDescription = (): SpecimenDescription => ({
   helpRequest: null,
 });
 
+const createEmptyPrivacySettings = (): PrivacySettings => ({
+  sharingPreference: "private",
+  locationVisibility: "country",
+});
+
 const createSpecimenDraft = ({
   source,
   images,
@@ -84,6 +91,7 @@ const createSpecimenDraft = ({
   locationContext: createEmptyLocationContext(),
   physicalDetails: createEmptyPhysicalDetails(),
   description: createEmptySpecimenDescription(),
+  privacySettings: createEmptyPrivacySettings(),
 });
 
 function readStoredBoolean(key: string, fallback: boolean) {
@@ -240,7 +248,13 @@ function App() {
     updates: Partial<
       Pick<
         SpecimenDraft,
-        "recordKind" | "provenance" | "locationContext" | "physicalDetails" | "description" | "status"
+        | "recordKind"
+        | "provenance"
+        | "locationContext"
+        | "physicalDetails"
+        | "description"
+        | "privacySettings"
+        | "status"
       >
     >,
   ) => {
@@ -388,6 +402,10 @@ function App() {
       case 14:
         setStep(11);
         return;
+
+      case 15:
+        setStep(13);
+        return;
     }
   };
 
@@ -446,7 +464,7 @@ function App() {
         return;
 
       case 13:
-        setStep(12);
+        setStep(15);
         return;
 
       case 11:
@@ -461,6 +479,10 @@ function App() {
       case 14:
         setStep(11);
         return;
+
+      case 15:
+        setStep(12);
+        return;
     }
   };
 
@@ -472,7 +494,7 @@ function App() {
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
 
-    const returnStep = step === 11 || step === 12 || step === 14 ? 11 : 0;
+    const returnStep = step === 11 || step === 12 || step === 14 || step === 15 ? 11 : 0;
 
     setAddReturnStep(returnStep);
 
@@ -635,6 +657,7 @@ function App() {
 
           {step === 7 && (
             <PhotoScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               photos={findPhotos}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
@@ -698,6 +721,20 @@ function App() {
                 })
               }
               onBack={() => setStep(10)}
+              onFinish={() => setStep(15)}
+            />
+          )}
+
+          {step === 15 && activeSpecimenDraft && (
+            <PrivacySharingScreen
+              showWorkflowGuidance={showWorkflowGuidance}
+              value={activeSpecimenDraft.privacySettings}
+              onChange={(privacySettings) =>
+                updateActiveSpecimenDraft({
+                  privacySettings,
+                })
+              }
+              onBack={() => setStep(13)}
               onFinish={() => setStep(12)}
             />
           )}

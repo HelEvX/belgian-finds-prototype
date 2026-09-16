@@ -21,16 +21,18 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
         : step === 10
           ? "Continue to description"
           : step === 13
-            ? "Back to queue"
+            ? "Continue to privacy"
             : step === 14
               ? "Back to workspace"
-              : step === 11
-                ? "Add material"
-                : step === 12
-                  ? "Back to workspace"
-                  : isJourneyEnd
-                    ? "Restart journey"
-                    : "Next";
+              : step === 15
+                ? "Back to queue"
+                : step === 11
+                  ? "Add material"
+                  : step === 12
+                    ? "Back to workspace"
+                    : isJourneyEnd
+                      ? "Restart journey"
+                      : "Next";
 
   return (
     <aside className="notes-panel">

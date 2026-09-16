@@ -66,6 +66,16 @@ export type SpecimenDescription = {
   helpRequest: HelpRequestPreference | null;
 };
 
+// sharing & visibility
+export type SharingPreference = "private" | "community";
+
+export type LocationVisibility = "country" | "province" | "municipality";
+
+export type PrivacySettings = {
+  sharingPreference: SharingPreference;
+  locationVisibility: LocationVisibility;
+};
+
 /*
  * A specimen draft is the shared hand-off between image intake and
  * later information completion. A single-specimen image flow creates
@@ -98,4 +108,5 @@ export type SpecimenDraft = {
   locationContext: LocationContext;
   physicalDetails: PhysicalDetails;
   description: SpecimenDescription;
+  privacySettings: PrivacySettings;
 };

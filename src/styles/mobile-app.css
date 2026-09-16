@@ -22,7 +22,7 @@
   color: var(--color-text);
   overscroll-behavior: contain;
   scrollbar-color: var(--color-scrollbar) transparent;
-  scrollbar-width: thin;
+  scrollbar-width: none; /* or: thin */
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
