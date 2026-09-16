@@ -5,9 +5,10 @@ type BottomNavigationProps = {
   onExplore: () => void;
   onAdd: () => void;
   onWorkspace: () => void;
+  onSettings: () => void;
 };
 
-export function BottomNavigation({ step, onExplore, onAdd, onWorkspace }: BottomNavigationProps) {
+export function BottomNavigation({ step, onExplore, onAdd, onWorkspace, onSettings }: BottomNavigationProps) {
   return (
     <nav className="mobile-navigation" aria-label="Main navigation">
       <button className={`nav-item ${step <= 2 ? "nav-item-active" : ""}`} type="button" onClick={onExplore}>
@@ -15,22 +16,25 @@ export function BottomNavigation({ step, onExplore, onAdd, onWorkspace }: Bottom
         Explore
       </button>
 
-      <button className={`nav-item ${step >= 3 && step <= 10 ? "nav-item-active" : ""}`} type="button" onClick={onAdd}>
+      <button
+        className={`nav-item ${(step >= 3 && step <= 10) || step === 13 ? "nav-item-active" : ""}`}
+        type="button"
+        onClick={onAdd}>
         <span>🞦</span>
         Add
       </button>
 
       <button
-        className={`nav-item ${step === 11 || step === 12 || step === 14 ? "nav-item-active" : ""}`}
+        className={`nav-item ${step === 11 || step === 12 ? "nav-item-active" : ""}`}
         type="button"
         onClick={onWorkspace}>
         <span>🞛</span>
         My workspace
       </button>
 
-      <button className="nav-item" type="button">
-        <span>?</span>
-        Help
+      <button className={`nav-item ${step === 14 ? "nav-item-active" : ""}`} type="button" onClick={onSettings}>
+        <span>⚙</span>
+        Settings
       </button>
     </nav>
   );

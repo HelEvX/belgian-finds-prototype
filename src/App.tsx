@@ -539,6 +539,7 @@ function App() {
               onExplore={showWelcome}
               onAdd={openAddJourney}
               onWorkspace={() => setStep(11)}
+              onSettings={openSettings}
             />
           }
           overlay={
