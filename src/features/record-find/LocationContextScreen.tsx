@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { CollectionDateQualifier, LocationContext, LocationKnowledge, ProvenanceKind } from "./types";
 
 type LocationContextScreenProps = {
+  showWorkflowGuidance: boolean;
   provenance: ProvenanceKind;
   value: LocationContext;
   onChange: (value: LocationContext) => void;
@@ -176,7 +177,14 @@ function getCompatibleDateValue(currentValue: string, qualifier: CollectionDateQ
   return isMonth ? currentValue : "";
 }
 
-export function LocationContextScreen({ provenance, value, onChange, onBack, onContinue }: LocationContextScreenProps) {
+export function LocationContextScreen({
+  showWorkflowGuidance,
+  provenance,
+  value,
+  onChange,
+  onBack,
+  onContinue,
+}: LocationContextScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const copy = provenanceLocationCopy[provenance];
@@ -230,13 +238,15 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
         <section className="record-flow">
           <p className="record-progress">Specimen annotation · Location and context</p>
 
-          <div className="record-intro-card">
-            <p className="card-kicker">Collecting context</p>
+          {showWorkflowGuidance && (
+            <div className="record-intro-card">
+              <p className="card-kicker">Collecting context</p>
 
-            <h3>Location context recorded</h3>
+              <h3>Location context recorded</h3>
 
-            <p>Missing details can be added later if another label, notebook or reliable source becomes available.</p>
-          </div>
+              <p>Missing details can be added later if another label, notebook or reliable source becomes available.</p>
+            </div>
+          )}
 
           <dl className="photo-ready-summary">
             <div>
@@ -292,19 +302,21 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
             </div>
           )}
 
+          {showWorkflowGuidance && (
+            <div className="record-selection-note">
+              <strong>Location privacy comes later</strong>
+
+              <span>
+                Recording a detailed locality does not mean it will be shown publicly. Visibility will be chosen in a
+                separate step.
+              </span>
+            </div>
+          )}
+
           <div className="record-selection-note">
-            <strong>Location privacy comes later</strong>
+            <strong>Next</strong>
 
-            <span>
-              Recording a detailed locality does not mean it will be shown publicly. Visibility will be chosen in a
-              separate step.
-            </span>
-          </div>
-
-          <div className="record-selection-note">
-            <strong>Next planned step</strong>
-
-            <span>The contributor will add measurements and other physical details about the specimen.</span>
+            <span>Add measurements and other physical details about the specimen.</span>
           </div>
 
           <div className="mobile-actions">
@@ -328,7 +340,7 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
           ← Provenance
         </button>
 
-        <p className="mobile-eyebrow">Record a find</p>
+        <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">

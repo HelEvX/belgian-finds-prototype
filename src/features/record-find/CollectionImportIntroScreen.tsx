@@ -1,15 +1,21 @@
 type CollectionImportIntroScreenProps = {
+  showWorkflowGuidance: boolean;
   onBack: () => void;
   onExplore: () => void;
   onOpenImport: () => void;
 };
 
-export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }: CollectionImportIntroScreenProps) {
+export function CollectionImportIntroScreen({
+  showWorkflowGuidance,
+  onBack,
+  onExplore,
+  onOpenImport,
+}: CollectionImportIntroScreenProps) {
   return (
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back
+          ← Add material
         </button>
 
         <p className="mobile-eyebrow">Batch import</p>
@@ -18,57 +24,47 @@ export function CollectionImportIntroScreen({ onBack, onExplore, onOpenImport }:
       <section className="record-flow">
         <p className="record-progress">Image intake</p>
 
-        <div className="record-intro-card">
-          <p className="card-kicker">Designed for existing image sets</p>
+        <div className="record-heading">
+          <h2>Import a batch of images</h2>
 
-          <h3>Bring in a group of existing images.</h3>
-
-          <p>
-            Instead of repeating the one-specimen image process many times, you can select several files and group
-            related views into specimen drafts.
-          </p>
+          <p>Select several existing images, then group the views that show the same physical specimen.</p>
         </div>
 
-        <ul className="record-checklist">
-          <li>
-            <span aria-hidden="true">1</span>
+        {showWorkflowGuidance && (
+          <ul className="record-checklist">
+            <li>
+              <span aria-hidden="true">1</span>
 
-            <div>
-              <strong>Select existing images</strong>
-              <p>Choose photographs from a folder, phone, tablet or other available storage.</p>
-            </div>
-          </li>
+              <div>
+                <strong>Select existing images</strong>
 
-          <li>
-            <span aria-hidden="true">2</span>
+                <p>Choose photographs from a folder, phone, tablet or other available storage.</p>
+              </div>
+            </li>
 
-            <div>
-              <strong>Group images by specimen</strong>
-              <p>Front, reverse, detail and label images can be assigned to the same specimen draft.</p>
-            </div>
-          </li>
+            <li>
+              <span aria-hidden="true">2</span>
 
-          <li>
-            <span aria-hidden="true">3</span>
+              <div>
+                <strong>Group images by specimen</strong>
 
-            <div>
-              <strong>Review grouped drafts</strong>
-              <p>
-                Nothing is published automatically. Each specimen can be documented gradually after its images are
-                grouped.
-              </p>
-            </div>
-          </li>
-        </ul>
+                <p>Front, reverse, detail and label images can be associated with the same specimen draft.</p>
+              </div>
+            </li>
 
-        <div className="record-selection-note">
-          <strong>Prototype behaviour</strong>
+            <li>
+              <span aria-hidden="true">3</span>
 
-          <span>
-            You can select real local images in the next mockup. They are previewed only in your browser and are not
-            uploaded, saved or published.
-          </span>
-        </div>
+              <div>
+                <strong>Document drafts later</strong>
+
+                <p>
+                  Grouped specimen drafts enter your annotation queue and remain private until you choose to publish.
+                </p>
+              </div>
+            </li>
+          </ul>
+        )}
 
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onOpenImport}>

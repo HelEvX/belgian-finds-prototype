@@ -21,7 +21,7 @@ export function BottomNavigation({ step, onExplore, onAdd, onWorkspace }: Bottom
       </button>
 
       <button
-        className={`nav-item ${step === 11 || step === 12 ? "nav-item-active" : ""}`}
+        className={`nav-item ${step === 11 || step === 12 || step === 14 ? "nav-item-active" : ""}`}
         type="button"
         onClick={onWorkspace}>
         <span>🞛</span>

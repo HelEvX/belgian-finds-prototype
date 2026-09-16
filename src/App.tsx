@@ -10,6 +10,7 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 // features/workspace
 import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
 import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
+import { SettingsScreen } from "./features/workspace/SettingsScreen";
 // features/record-find
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
@@ -18,9 +19,10 @@ import { LocationContextScreen } from "./features/record-find/LocationContextScr
 import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
-import { RecordIntroScreen } from "./features/record-find/RecordIntroScreen";
+
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
+import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 
 import {
   MAX_FIND_PHOTOS,
@@ -84,6 +86,20 @@ const createSpecimenDraft = ({
   description: createEmptySpecimenDescription(),
 });
 
+function readStoredBoolean(key: string, fallback: boolean) {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const storedValue = window.localStorage.getItem(key);
+
+  if (storedValue === null) {
+    return fallback;
+  }
+
+  return storedValue === "true";
+}
+
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
 
@@ -97,8 +113,37 @@ function App() {
 
   const [addReturnStep, setAddReturnStep] = useState<0 | 11>(0);
 
+  const [onboardingReturnStep, setOnboardingReturnStep] = useState<0 | 11 | 14>(0);
+
+  const [hasSeenContributionOnboarding, setHasSeenContributionOnboarding] = useState(() =>
+    readStoredBoolean("belgian-finds.has-seen-contribution-onboarding", false),
+  );
+
+  const [showWorkflowGuidance, setShowWorkflowGuidance] = useState(() =>
+    readStoredBoolean("belgian-finds.show-workflow-guidance", true),
+  );
+
+  const [showImageGuidance, setShowImageGuidance] = useState(() =>
+    readStoredBoolean("belgian-finds.show-image-guidance", true),
+  );
+
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "belgian-finds.has-seen-contribution-onboarding",
+      String(hasSeenContributionOnboarding),
+    );
+  }, [hasSeenContributionOnboarding]);
+
+  useEffect(() => {
+    window.localStorage.setItem("belgian-finds.show-workflow-guidance", String(showWorkflowGuidance));
+  }, [showWorkflowGuidance]);
+
+  useEffect(() => {
+    window.localStorage.setItem("belgian-finds.show-image-guidance", String(showImageGuidance));
+  }, [showImageGuidance]);
 
   const activeSpecimenDraft = specimenDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
@@ -278,7 +323,7 @@ function App() {
 
   const startSingleFindJourney = () => {
     clearSingleFind();
-    setStep(4);
+    setStep(7);
   };
 
   const goToPreviousStep = () => {
@@ -301,7 +346,7 @@ function App() {
         return;
 
       case 4:
-        setStep(3);
+        setStep(onboardingReturnStep);
         return;
 
       case 5:
@@ -313,7 +358,7 @@ function App() {
         return;
 
       case 7:
-        setStep(4);
+        setStep(3);
         return;
 
       case 8:
@@ -339,6 +384,10 @@ function App() {
       case 13:
         setStep(10);
         return;
+
+      case 14:
+        setStep(11);
+        return;
     }
   };
 
@@ -359,11 +408,11 @@ function App() {
         return;
 
       case 3:
-        setStep(4);
+        setStep(7);
         return;
 
       case 4:
-        setStep(7);
+        finishContributionOnboarding();
         return;
 
       case 5:
@@ -408,6 +457,10 @@ function App() {
       case 12:
         setStep(11);
         return;
+
+      case 14:
+        setStep(11);
+        return;
     }
   };
 
@@ -419,15 +472,51 @@ function App() {
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
 
-    setAddReturnStep(step === 11 || step === 12 ? 11 : 0);
+    const returnStep = step === 11 || step === 12 || step === 14 ? 11 : 0;
 
-    setStep(3);
+    setAddReturnStep(returnStep);
+
+    if (hasSeenContributionOnboarding) {
+      setStep(3);
+      return;
+    }
+
+    setOnboardingReturnStep(returnStep);
+    setStep(4);
   };
 
   const openAddFromWorkspace = () => {
     setIsBulkImportOpen(false);
     setAddReturnStep(11);
+
+    if (hasSeenContributionOnboarding) {
+      setStep(3);
+      return;
+    }
+
+    setOnboardingReturnStep(11);
+    setStep(4);
+  };
+
+  const finishContributionOnboarding = () => {
+    setHasSeenContributionOnboarding(true);
     setStep(3);
+  };
+
+  const dismissContributionOnboarding = () => {
+    setHasSeenContributionOnboarding(true);
+    setStep(onboardingReturnStep);
+  };
+
+  const openSettings = () => {
+    setIsBulkImportOpen(false);
+    setStep(14);
+  };
+
+  const reviewContributionScope = () => {
+    setIsBulkImportOpen(false);
+    setOnboardingReturnStep(14);
+    setStep(4);
   };
 
   return (
@@ -453,7 +542,13 @@ function App() {
             />
           }
           overlay={
-            isBulkImportOpen ? <BulkImportModal onClose={closeBulkImport} onAddToQueue={addBatchDraftsToQueue} /> : null
+            isBulkImportOpen ? (
+              <BulkImportModal
+                showWorkflowGuidance={showWorkflowGuidance}
+                onClose={closeBulkImport}
+                onAddToQueue={addBatchDraftsToQueue}
+              />
+            ) : null
           }>
           {step === 0 && (
             <WelcomeScreen
@@ -470,9 +565,22 @@ function App() {
           {step === 11 && (
             <WorkspaceScreen
               queueCount={specimenDrafts.length}
+              showWorkflowGuidance={showWorkflowGuidance}
               onOpenQueue={() => setStep(12)}
               onAddMaterial={openAddFromWorkspace}
               onExplore={showWelcome}
+              onOpenSettings={openSettings}
+            />
+          )}
+
+          {step === 14 && (
+            <SettingsScreen
+              showWorkflowGuidance={showWorkflowGuidance}
+              showImageGuidance={showImageGuidance}
+              onShowWorkflowGuidanceChange={setShowWorkflowGuidance}
+              onShowImageGuidanceChange={setShowImageGuidance}
+              onReviewContributionScope={reviewContributionScope}
+              onBack={() => setStep(11)}
             />
           )}
 
@@ -495,7 +603,12 @@ function App() {
             />
           )}
 
-          {step === 4 && <RecordIntroScreen onStart={() => setStep(7)} onCancel={() => setStep(3)} />}
+          {step === 4 && (
+            <ContributionOnboardingScreen
+              onContinue={finishContributionOnboarding}
+              onCancel={dismissContributionOnboarding}
+            />
+          )}
 
           {step === 5 && activeSpecimenDraft && (
             <RecordTypeScreen
@@ -512,6 +625,7 @@ function App() {
 
           {step === 6 && (
             <CollectionImportIntroScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               onBack={() => setStep(3)}
               onExplore={showWelcome}
               onOpenImport={() => setIsBulkImportOpen(true)}
@@ -523,13 +637,15 @@ function App() {
               photos={findPhotos}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
-              onBack={() => setStep(4)}
+              onBack={() => setStep(3)}
               onAddToQueue={addSingleFindToQueue}
+              showImageGuidance={showImageGuidance}
             />
           )}
 
           {step === 8 && activeSpecimenDraft && (
             <ProvenanceScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               selectedProvenance={activeSpecimenDraft.provenance}
               onSelect={(provenance) =>
                 updateActiveSpecimenDraft({
@@ -543,6 +659,7 @@ function App() {
 
           {step === 9 && activeSpecimenDraft && activeSpecimenDraft.provenance && (
             <LocationContextScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               provenance={activeSpecimenDraft.provenance}
               value={activeSpecimenDraft.locationContext}
               onChange={(locationContext) =>
@@ -557,6 +674,7 @@ function App() {
 
           {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
             <PhysicalDetailsScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               recordKind={activeSpecimenDraft.recordKind}
               value={activeSpecimenDraft.physicalDetails}
               onChange={(physicalDetails) =>
@@ -571,6 +689,7 @@ function App() {
 
           {step === 13 && activeSpecimenDraft && (
             <DescriptionHelpScreen
+              showWorkflowGuidance={showWorkflowGuidance}
               value={activeSpecimenDraft.description}
               onChange={(description) =>
                 updateActiveSpecimenDraft({

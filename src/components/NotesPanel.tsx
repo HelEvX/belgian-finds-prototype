@@ -14,17 +14,23 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
   const isJourneyEnd = step === 2 || step === 6;
 
   const nextLabel =
-    step === 10
-      ? "Continue to description"
-      : step === 13
-        ? "Back to queue"
-        : step === 11
-          ? "Add material"
-          : step === 12
-            ? "Back to workspace"
-            : isJourneyEnd
-              ? "Restart journey"
-              : "Next";
+    step === 4
+      ? "Choose image route"
+      : step === 6
+        ? "Back to add material"
+        : step === 10
+          ? "Continue to description"
+          : step === 13
+            ? "Back to queue"
+            : step === 14
+              ? "Back to workspace"
+              : step === 11
+                ? "Add material"
+                : step === 12
+                  ? "Back to workspace"
+                  : isJourneyEnd
+                    ? "Restart journey"
+                    : "Next";
 
   return (
     <aside className="notes-panel">

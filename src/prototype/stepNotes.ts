@@ -32,16 +32,18 @@ export const stepNotes: StepNote[] = [
     matters:
       "Image intake and later specimen documentation are separate concerns. The contributor should not need to decide a taxonomic type or a collection structure before images are associated with a specimen.",
     decision:
-      "The eligibility boundary applies to both intake routes: Belgian field finds and documented amateur collection material are welcome; commercial souvenirs, stock and valuation requests are outside scope.",
+      "Belgian field finds and documented amateur collection material are welcome; commercial souvenirs, stock and valuation requests are outside scope.",
   },
   {
-    label: "Single find · Introduction",
-    title: "Before you begin",
-    purpose: "Briefly prepare the contributor for the information that will make their record useful to other people.",
-    matters: "Contributors should feel welcome even when they do not know what they have found.",
+    label: "Contribution onboarding",
+    title: "Before you add material",
+    purpose: "Introduce the project’s contribution scope once, before a member chooses an image-intake route.",
+    matters:
+      "The platform needs a clear scientific and ethical boundary, but repeating that boundary during every contribution would become intrusive for experienced users.",
     decision:
-      "Detailed instructions are shown progressively while the user creates the record, rather than presented all at once.",
+      "The onboarding screen is shown only on a contributor’s first visit to Add material. Members can review it again manually from Settings.",
   },
+
   {
     label: "Specimen annotation · Material type",
     title: "What are you recording?",
@@ -125,5 +127,15 @@ export const stepNotes: StepNote[] = [
       "A contributor who knows a specimen can record a useful scientific name, while an uncertain contributor can still document observable evidence and ask for help.",
     decision:
       "Suggested identifications remain free text and are explicitly separated from later community suggestions or verified determinations. A large taxonomic index or autocomplete service is outside this MVP.",
+  },
+  {
+    label: "Contributor area · Settings",
+    title: "Guidance preferences",
+    purpose:
+      "Let experienced contributors reduce optional workflow and image guidance without removing important labels, validation or record status.",
+    matters:
+      "Collectors may document dozens or hundreds of specimens. Guidance should help beginners without slowing down repeat contributors.",
+    decision:
+      "Guidance preferences are stored locally in this prototype. A production version would attach them to the member account.",
   },
 ];

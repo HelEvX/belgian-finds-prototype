@@ -4,6 +4,7 @@ import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
 import type { SpecimenDraftImage } from "./types";
 
 type BulkImportModalProps = {
+  showWorkflowGuidance: boolean;
   onClose: () => void;
   onAddToQueue: (draftImageSets: SpecimenDraftImage[][]) => void;
 };
@@ -18,7 +19,7 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps) {
+export function BulkImportModal({ showWorkflowGuidance, onClose, onAddToQueue }: BulkImportModalProps) {
   const [images, setImages] = useState<LocalImportImage[]>([]);
   const [groups, setGroups] = useState<SpecimenDraftGroup[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -265,10 +266,12 @@ export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps)
 
         {stage === "select" && (
           <>
-            <p className="bulk-import-description">
-              Select existing images for several specimens. In the next stage, you will group images that show the same
-              physical specimen.
-            </p>
+            {showWorkflowGuidance && (
+              <p className="bulk-import-description">
+                Select existing images for several specimens. You will then group images that show the same physical
+                specimen.
+              </p>
+            )}
 
             <button
               className={
@@ -342,19 +345,13 @@ export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps)
               </>
             )}
 
-            <div className="bulk-import-local-note">
-              <strong>Local prototype only</strong>
-
-              <span>These images stay in this browser session. They are not uploaded, saved or published.</span>
-            </div>
-
             <div className="bulk-import-actions">
               <button
                 className="primary-button"
                 type="button"
                 disabled={images.length === 0}
                 onClick={() => setStage("ready")}>
-                {groups.length > 0 ? "Return to draft workspace" : "Create draft workspace"}
+                {groups.length > 0 ? "Continue grouping" : "Continue to grouping"}
               </button>
 
               <button className="secondary-button" type="button" onClick={onClose}>
@@ -394,14 +391,16 @@ export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps)
               </div>
             </dl>
 
-            <div className="bulk-import-local-note">
-              <strong>Nothing has been published</strong>
+            {showWorkflowGuidance && (
+              <div className="bulk-import-local-note">
+                <strong>Your images remain private</strong>
 
-              <span>
-                The next step groups photographs belonging to the same physical specimen. Your existing groups will be
-                preserved if you return to image selection.
-              </span>
-            </div>
+                <span>
+                  The next step groups photographs belonging to the same physical specimen. Existing groups are
+                  preserved if you return to image selection.
+                </span>
+              </div>
+            )}
 
             <div className="bulk-import-actions">
               <button className="primary-button" type="button" onClick={() => setStage("group")}>
@@ -417,6 +416,7 @@ export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps)
 
         {stage === "group" && (
           <BulkImportGroupingStep
+            showWorkflowGuidance={showWorkflowGuidance}
             images={images}
             groups={groups}
             selectedIds={selectedIds}
@@ -459,14 +459,13 @@ export function BulkImportModal({ onClose, onAddToQueue }: BulkImportModalProps)
               </div>
             </dl>
 
-            <div className="bulk-import-local-note">
-              <strong>Next planned step</strong>
+            {showWorkflowGuidance && (
+              <div className="bulk-import-local-note">
+                <strong>Ready for annotation</strong>
 
-              <span>
-                The next prototype phase will place these grouped drafts in the shared specimen annotation queue, ready
-                for individual documentation.
-              </span>
-            </div>
+                <span>These grouped drafts can now be documented one at a time from your annotation queue.</span>
+              </div>
+            )}
 
             <div className="bulk-import-actions">
               <button className="primary-button" type="button" onClick={addGroupedDraftsToQueue}>

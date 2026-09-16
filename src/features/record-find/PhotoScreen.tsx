@@ -7,6 +7,7 @@ type PhotoScreenProps = {
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
   onAddToQueue: () => void;
+  showImageGuidance: boolean;
 };
 
 type PhotoFeedback = {
@@ -49,7 +50,14 @@ function getPhotoGuidance(photoCount: number) {
   };
 }
 
-export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddToQueue }: PhotoScreenProps) {
+export function PhotoScreen({
+  photos,
+  onAddPhotos,
+  onRemovePhoto,
+  onBack,
+  onAddToQueue,
+  showImageGuidance,
+}: PhotoScreenProps) {
   const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
@@ -128,7 +136,7 @@ export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddT
       feedbackParts.push(
         `${maximumSkippedCount} ${
           maximumSkippedCount === 1 ? "image was" : "images were"
-        } skipped because this prototype allows five photographs.`,
+        } skipped because one specimen record can include up to five photographs.`,
       );
     }
 
@@ -191,8 +199,8 @@ export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddT
             </div>
 
             <div>
-              <dt>Uploaded</dt>
-              <dd>No — local preview only</dd>
+              <dt>Visibility</dt>
+              <dd>Private draft</dd>
             </div>
           </dl>
 
@@ -299,17 +307,19 @@ export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddT
           </div>
         )}
 
-        <div className={`photo-guidance ${photos.length >= 3 ? "photo-guidance-complete" : ""}`} aria-live="polite">
-          <div className="photo-guidance-heading">
-            <strong>{guidance.title}</strong>
+        {showImageGuidance && (
+          <div className={`photo-guidance ${photos.length >= 3 ? "photo-guidance-complete" : ""}`} aria-live="polite">
+            <div className="photo-guidance-heading">
+              <strong>{guidance.title}</strong>
 
-            <span>
-              {photos.length} / {MAX_FIND_PHOTOS}
-            </span>
+              <span>
+                {photos.length} / {MAX_FIND_PHOTOS}
+              </span>
+            </div>
+
+            <p>{guidance.description}</p>
           </div>
-
-          <p>{guidance.description}</p>
-        </div>
+        )}
 
         {photos.length > 0 && (
           <div className="single-photo-grid">
@@ -345,12 +355,6 @@ export function PhotoScreen({ photos, onAddPhotos, onRemovePhoto, onBack, onAddT
             ))}
           </div>
         )}
-
-        <div className="record-selection-note">
-          <strong>Local prototype only</strong>
-
-          <span>These photographs are previewed in this browser. They are not uploaded, saved or published.</span>
-        </div>
 
         <button
           className="primary-button photo-continue-button"

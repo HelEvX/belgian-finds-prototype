@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
 
 type BulkImportGroupingStepProps = {
+  showWorkflowGuidance: boolean;
   images: LocalImportImage[];
   groups: SpecimenDraftGroup[];
   selectedIds: string[];
@@ -14,6 +15,7 @@ type BulkImportGroupingStepProps = {
 };
 
 export function BulkImportGroupingStep({
+  showWorkflowGuidance,
   images,
   groups,
   selectedIds,
@@ -47,10 +49,12 @@ export function BulkImportGroupingStep({
         <span className="bulk-grouping-count">{unassignedImages.length} unassigned</span>
       </header>
 
-      <p className="bulk-grouping-description">
-        Select all photographs that show the same specimen, then create one draft. Repeat until every image has been
-        grouped.
-      </p>
+      {showWorkflowGuidance && (
+        <p className="bulk-grouping-description">
+          Select all photographs that show the same specimen, then create one draft. Repeat until every image has been
+          grouped.
+        </p>
+      )}
 
       <button className="secondary-button bulk-grouping-add-images" type="button" onClick={onAddImages}>
         Add missing images

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { HelpRequestPreference, IdentificationConfidence, SpecimenDescription } from "./types";
 
 type DescriptionHelpScreenProps = {
+  showWorkflowGuidance: boolean;
   value: SpecimenDescription;
   onChange: (value: SpecimenDescription) => void;
   onBack: () => void;
@@ -54,7 +55,13 @@ const helpOptions: Array<{
   },
 ];
 
-export function DescriptionHelpScreen({ value, onChange, onBack, onFinish }: DescriptionHelpScreenProps) {
+export function DescriptionHelpScreen({
+  showWorkflowGuidance,
+  value,
+  onChange,
+  onBack,
+  onFinish,
+}: DescriptionHelpScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const selectedConfidence = confidenceOptions.find((option) => option.id === value.identificationConfidence);
@@ -106,16 +113,18 @@ export function DescriptionHelpScreen({ value, onChange, onBack, onFinish }: Des
         <section className="record-flow">
           <p className="record-progress">Specimen annotation · Description</p>
 
-          <div className="record-intro-card">
-            <p className="card-kicker">Contributor statement</p>
+          {showWorkflowGuidance && (
+            <div className="record-intro-card">
+              <p className="card-kicker">Contributor statement</p>
 
-            <h3>Description recorded</h3>
+              <h3>Description recorded</h3>
 
-            <p>
-              Your own observations and suggested identification remain separate from later community suggestions or
-              verified determinations.
-            </p>
-          </div>
+              <p>
+                Your observations and suggested identification remain separate from later community suggestions or
+                verified determinations.
+              </p>
+            </div>
+          )}
 
           <dl className="photo-ready-summary">
             <div>
@@ -147,15 +156,6 @@ export function DescriptionHelpScreen({ value, onChange, onBack, onFinish }: Des
             <span>
               A suggested identification is the contributor’s own statement. It does not change the record’s
               determination status or create a verified identification.
-            </span>
-          </div>
-
-          <div className="record-selection-note">
-            <strong>Next prototype phase</strong>
-
-            <span>
-              Current custodian, storage, visibility, location privacy and final review will be added after this shared
-              annotation flow.
             </span>
           </div>
 

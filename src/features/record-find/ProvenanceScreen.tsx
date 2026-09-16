@@ -3,13 +3,20 @@ import { provenanceOptions } from "./provenanceOptions";
 import type { ProvenanceKind } from "./types";
 
 type ProvenanceScreenProps = {
+  showWorkflowGuidance: boolean;
   selectedProvenance: ProvenanceKind | null;
   onSelect: (provenance: ProvenanceKind) => void;
   onBack: () => void;
   onContinue: () => void;
 };
 
-export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onContinue }: ProvenanceScreenProps) {
+export function ProvenanceScreen({
+  showWorkflowGuidance,
+  selectedProvenance,
+  onSelect,
+  onBack,
+  onContinue,
+}: ProvenanceScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const selectedOption = provenanceOptions.find((option) => option.id === selectedProvenance);
@@ -22,32 +29,36 @@ export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onConti
             ← Review provenance
           </button>
 
-          <p className="mobile-eyebrow">Record a find</p>
+          <p className="mobile-eyebrow">Document specimen</p>
         </header>
 
         <section className="record-flow">
           <p className="record-progress">Specimen annotation · Provenance</p>
 
-          <div className="record-intro-card">
-            <p className="card-kicker">Collection context</p>
+          {showWorkflowGuidance && (
+            <div className="record-intro-card">
+              <p className="card-kicker">Collection context</p>
 
-            <h3>Provenance recorded</h3>
+              <h3>Provenance recorded</h3>
 
-            <p>
-              The original collector or collection history can be changed later if more information becomes available.
-            </p>
-          </div>
+              <p>
+                The original collector or collection history can be changed later if more information becomes available.
+              </p>
+            </div>
+          )}
 
           <div className="record-selection-note record-selection-note-active">
             <strong>{selectedOption.title}</strong>
             <span>{selectedOption.description}</span>
           </div>
 
-          <div className="record-selection-note">
-            <strong>Next planned step</strong>
+          {showWorkflowGuidance && (
+            <div className="record-selection-note">
+              <strong>Next</strong>
 
-            <span>The contributor will add the find location, locality notes and geological context next.</span>
-          </div>
+              <span>Add the find location, locality notes and geological context.</span>
+            </div>
+          )}
 
           <div className="mobile-actions">
             <button className="primary-button" type="button" onClick={onContinue}>

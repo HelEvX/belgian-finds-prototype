@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { MeasurementStatus, PhysicalDetails, RecordKind, SpecimenCondition } from "./types";
 
 type PhysicalDetailsScreenProps = {
+  showWorkflowGuidance: boolean;
   recordKind: RecordKind;
   value: PhysicalDetails;
   onChange: (value: PhysicalDetails) => void;
@@ -126,7 +127,14 @@ function formatMeasurement(value: string, unit: string) {
   return value.trim() ? `${value.trim()} ${unit}` : null;
 }
 
-export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onFinish }: PhysicalDetailsScreenProps) {
+export function PhysicalDetailsScreen({
+  showWorkflowGuidance,
+  recordKind,
+  value,
+  onChange,
+  onBack,
+  onFinish,
+}: PhysicalDetailsScreenProps) {
   const [isReady, setIsReady] = useState(false);
 
   const copy = physicalDetailsCopy[recordKind];
@@ -196,15 +204,18 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onF
         <section className="record-flow">
           <p className="record-progress">Specimen annotation · Physical details</p>
 
-          <div className="record-intro-card">
-            <p className="card-kicker">Specimen information</p>
+          {showWorkflowGuidance && (
+            <div className="record-intro-card">
+              <p className="card-kicker">Specimen information</p>
 
-            <h3>Physical details recorded</h3>
+              <h3>Physical details recorded</h3>
 
-            <p>
-              Measurements can be edited later if the specimen is measured again or more reliable documentation appears.
-            </p>
-          </div>
+              <p>
+                Measurements can be edited later if the specimen is measured again or more reliable documentation
+                appears.
+              </p>
+            </div>
+          )}
 
           <dl className="photo-ready-summary">
             <div>
@@ -235,14 +246,16 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onF
             </div>
           )}
 
-          <div className="record-selection-note">
-            <strong>Next step</strong>
+          {showWorkflowGuidance && (
+            <div className="record-selection-note">
+              <strong>Next step</strong>
 
-            <span>
-              Add your observations, an optional suggested identification and a preference for community or
-              verified-specialist help.
-            </span>
-          </div>
+              <span>
+                Add your observations, an optional suggested identification and a preference for community or
+                verified-specialist help.
+              </span>
+            </div>
+          )}
 
           <div className="mobile-actions">
             <button className="primary-button" type="button" onClick={onFinish}>
