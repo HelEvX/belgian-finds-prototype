@@ -14,7 +14,6 @@ import { SettingsScreen } from "./features/workspace/SettingsScreen";
 // features/record-find
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
-import { CollectionImportIntroScreen } from "./features/record-find/CollectionImportIntroScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
 import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
@@ -624,7 +623,7 @@ function App() {
           {step === 3 && (
             <AddMethodScreen
               onRecordOne={startSingleFindJourney}
-              onImportBatch={() => setStep(6)}
+              onImportBatch={() => setIsBulkImportOpen(true)}
               onCancel={() => setStep(addReturnStep)}
             />
           )}
@@ -647,15 +646,6 @@ function App() {
               }
               onBack={() => setStep(12)}
               onContinue={() => setStep(8)}
-            />
-          )}
-
-          {step === 6 && (
-            <CollectionImportIntroScreen
-              showWorkflowGuidance={showWorkflowGuidance}
-              onBack={() => setStep(3)}
-              onExplore={showWelcome}
-              onOpenImport={() => setIsBulkImportOpen(true)}
             />
           )}
 
