@@ -1,13 +1,11 @@
-import { useState } from "react";
 import type { MeasurementStatus, PhysicalDetails, RecordKind, SpecimenCondition } from "./types";
 
 type PhysicalDetailsScreenProps = {
-  showWorkflowGuidance: boolean;
   recordKind: RecordKind;
   value: PhysicalDetails;
   onChange: (value: PhysicalDetails) => void;
   onBack: () => void;
-  onFinish: () => void;
+  onContinue: () => void;
 };
 
 type PhysicalTextField = Exclude<keyof PhysicalDetails, "measurementStatus" | "condition">;
@@ -37,6 +35,7 @@ const physicalDetailsCopy: Record<RecordKind, PhysicalDetailsCopy> = {
     weightLabel: "Weight (g), if known",
     conditionLabel: "Completeness",
   },
+
   "rock-mineral": {
     heading: "Measure the specimen",
     introduction:
@@ -49,6 +48,7 @@ const physicalDetailsCopy: Record<RecordKind, PhysicalDetailsCopy> = {
     weightLabel: "Weight (g), if known",
     conditionLabel: "Specimen condition",
   },
+
   "collection-item": {
     heading: "Add physical details",
     introduction:
@@ -61,6 +61,7 @@ const physicalDetailsCopy: Record<RecordKind, PhysicalDetailsCopy> = {
     weightLabel: "Weight (g), if known",
     conditionLabel: "Object condition",
   },
+
   unknown: {
     heading: "Measure the object",
     introduction:
@@ -123,25 +124,10 @@ const conditionOptions: Array<{
   },
 ];
 
-function formatMeasurement(value: string, unit: string) {
-  return value.trim() ? `${value.trim()} ${unit}` : null;
-}
-
-export function PhysicalDetailsScreen({
-  showWorkflowGuidance,
-  recordKind,
-  value,
-  onChange,
-  onBack,
-  onFinish,
-}: PhysicalDetailsScreenProps) {
-  const [isReady, setIsReady] = useState(false);
-
+export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onContinue }: PhysicalDetailsScreenProps) {
   const copy = physicalDetailsCopy[recordKind];
 
   const selectedMeasurementStatus = measurementOptions.find((option) => option.id === value.measurementStatus);
-
-  const selectedCondition = conditionOptions.find((option) => option.id === value.condition);
 
   const updateMeasurementStatus = (measurementStatus: MeasurementStatus) => {
     onChange({
@@ -164,118 +150,11 @@ export function PhysicalDetailsScreen({
     });
   };
 
-  const measurements = [
-    {
-      label: "Longest dimension",
-      value: formatMeasurement(value.lengthCm, "cm"),
-    },
-    {
-      label: "Width",
-      value: formatMeasurement(value.widthCm, "cm"),
-    },
-    {
-      label: "Height or thickness",
-      value: formatMeasurement(value.heightCm, "cm"),
-    },
-    {
-      label: "Weight",
-      value: formatMeasurement(value.weightG, "g"),
-    },
-  ].filter(
-    (
-      measurement,
-    ): measurement is {
-      label: string;
-      value: string;
-    } => measurement.value !== null,
-  );
-
-  if (isReady && selectedMeasurementStatus) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review physical details
-          </button>
-
-          <p className="mobile-eyebrow">Document specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">Specimen annotation · Physical details</p>
-
-          {showWorkflowGuidance && (
-            <div className="record-intro-card">
-              <p className="card-kicker">Specimen information</p>
-
-              <h3>Physical details recorded</h3>
-
-              <p>
-                Measurements can be edited later if the specimen is measured again or more reliable documentation
-                appears.
-              </p>
-            </div>
-          )}
-
-          <dl className="photo-ready-summary">
-            <div>
-              <dt>Measurement status</dt>
-              <dd>{selectedMeasurementStatus.title}</dd>
-            </div>
-
-            {measurements.map((measurement) => (
-              <div key={measurement.label}>
-                <dt>{measurement.label}</dt>
-                <dd>{measurement.value}</dd>
-              </div>
-            ))}
-
-            {selectedCondition && (
-              <div>
-                <dt>{copy.conditionLabel}</dt>
-                <dd>{selectedCondition.label}</dd>
-              </div>
-            )}
-          </dl>
-
-          {measurements.length === 0 && value.measurementStatus !== "not-measured" && (
-            <div className="record-selection-note">
-              <strong>No dimensions entered</strong>
-
-              <span>This is fine for now. Measurements can be added later if they become available.</span>
-            </div>
-          )}
-
-          {showWorkflowGuidance && (
-            <div className="record-selection-note">
-              <strong>Next step</strong>
-
-              <span>
-                Add your observations, an optional suggested identification and a preference for community or
-                verified-specialist help.
-              </span>
-            </div>
-          )}
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onFinish}>
-              Continue to description
-            </button>
-
-            <button className="secondary-button" type="button" onClick={onBack}>
-              Back to location
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
-
   return (
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back
+          ← Location and context
         </button>
 
         <p className="mobile-eyebrow">Document specimen</p>
@@ -291,6 +170,7 @@ export function PhysicalDetailsScreen({
 
         <div className="physical-section-heading">
           <h3>What can you provide?</h3>
+
           <p>Select one option. Measurements themselves remain optional.</p>
         </div>
 
@@ -404,6 +284,7 @@ export function PhysicalDetailsScreen({
         <div className="physical-condition-section">
           <div className="physical-section-heading">
             <h3>{copy.conditionLabel}</h3>
+
             <p>Optional, but helpful when the item is incomplete or consists of several pieces.</p>
           </div>
 
@@ -442,8 +323,8 @@ export function PhysicalDetailsScreen({
           className="primary-button record-continue-button"
           type="button"
           disabled={!selectedMeasurementStatus}
-          onClick={() => setIsReady(true)}>
-          Use these physical details
+          onClick={onContinue}>
+          Continue to description
         </button>
       </section>
     </>

@@ -135,6 +135,8 @@ function App() {
     readStoredBoolean("belgian-finds.show-image-guidance", true),
   );
 
+  const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(11);
+
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
 
@@ -400,7 +402,7 @@ function App() {
         return;
 
       case 14:
-        setStep(11);
+        setStep(settingsReturnStep);
         return;
 
       case 15:
@@ -477,7 +479,7 @@ function App() {
         return;
 
       case 14:
-        setStep(11);
+        setStep(settingsReturnStep);
         return;
 
       case 15:
@@ -532,6 +534,7 @@ function App() {
 
   const openSettings = () => {
     setIsBulkImportOpen(false);
+    setSettingsReturnStep(step);
     setStep(14);
   };
 
@@ -603,7 +606,7 @@ function App() {
               onShowWorkflowGuidanceChange={setShowWorkflowGuidance}
               onShowImageGuidanceChange={setShowImageGuidance}
               onReviewContributionScope={reviewContributionScope}
-              onBack={() => setStep(11)}
+              onBack={() => setStep(settingsReturnStep)}
             />
           )}
 
@@ -628,6 +631,7 @@ function App() {
 
           {step === 4 && (
             <ContributionOnboardingScreen
+              returnToSettings={onboardingReturnStep === 14}
               onContinue={finishContributionOnboarding}
               onCancel={dismissContributionOnboarding}
             />
@@ -669,7 +673,6 @@ function App() {
 
           {step === 8 && activeSpecimenDraft && (
             <ProvenanceScreen
-              showWorkflowGuidance={showWorkflowGuidance}
               selectedProvenance={activeSpecimenDraft.provenance}
               onSelect={(provenance) =>
                 updateActiveSpecimenDraft({
@@ -683,7 +686,6 @@ function App() {
 
           {step === 9 && activeSpecimenDraft && activeSpecimenDraft.provenance && (
             <LocationContextScreen
-              showWorkflowGuidance={showWorkflowGuidance}
               provenance={activeSpecimenDraft.provenance}
               value={activeSpecimenDraft.locationContext}
               onChange={(locationContext) =>
@@ -698,7 +700,6 @@ function App() {
 
           {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
             <PhysicalDetailsScreen
-              showWorkflowGuidance={showWorkflowGuidance}
               recordKind={activeSpecimenDraft.recordKind}
               value={activeSpecimenDraft.physicalDetails}
               onChange={(physicalDetails) =>
@@ -707,7 +708,7 @@ function App() {
                 })
               }
               onBack={() => setStep(9)}
-              onFinish={() => setStep(13)}
+              onContinue={() => setStep(13)}
             />
           )}
 
@@ -727,7 +728,6 @@ function App() {
 
           {step === 15 && activeSpecimenDraft && (
             <PrivacySharingScreen
-              showWorkflowGuidance={showWorkflowGuidance}
               value={activeSpecimenDraft.privacySettings}
               onChange={(privacySettings) =>
                 updateActiveSpecimenDraft({

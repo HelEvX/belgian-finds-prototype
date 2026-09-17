@@ -1,78 +1,15 @@
-import { useState } from "react";
 import { provenanceOptions } from "./provenanceOptions";
 import type { ProvenanceKind } from "./types";
 
 type ProvenanceScreenProps = {
-  showWorkflowGuidance: boolean;
   selectedProvenance: ProvenanceKind | null;
   onSelect: (provenance: ProvenanceKind) => void;
   onBack: () => void;
   onContinue: () => void;
 };
 
-export function ProvenanceScreen({
-  showWorkflowGuidance,
-  selectedProvenance,
-  onSelect,
-  onBack,
-  onContinue,
-}: ProvenanceScreenProps) {
-  const [isReady, setIsReady] = useState(false);
-
+export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onContinue }: ProvenanceScreenProps) {
   const selectedOption = provenanceOptions.find((option) => option.id === selectedProvenance);
-
-  if (isReady && selectedOption) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review provenance
-          </button>
-
-          <p className="mobile-eyebrow">Document specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">Specimen annotation · Provenance</p>
-
-          {showWorkflowGuidance && (
-            <div className="record-intro-card">
-              <p className="card-kicker">Collection context</p>
-
-              <h3>Provenance recorded</h3>
-
-              <p>
-                The original collector or collection history can be changed later if more information becomes available.
-              </p>
-            </div>
-          )}
-
-          <div className="record-selection-note record-selection-note-active">
-            <strong>{selectedOption.title}</strong>
-            <span>{selectedOption.description}</span>
-          </div>
-
-          {showWorkflowGuidance && (
-            <div className="record-selection-note">
-              <strong>Next</strong>
-
-              <span>Add the find location, locality notes and geological context.</span>
-            </div>
-          )}
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onContinue}>
-              Continue to location
-            </button>
-
-            <button className="secondary-button" type="button" onClick={onBack}>
-              Back to photographs
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
 
   return (
     <>
@@ -127,7 +64,8 @@ export function ProvenanceScreen({
           {selectedOption ? (
             <>
               <strong>{selectedOption.title}</strong>
-              <span>Next, we will ask what is known about where the specimen was found.</span>
+
+              <span>Next, add what is known about where the specimen was found.</span>
             </>
           ) : (
             <span>
@@ -140,8 +78,8 @@ export function ProvenanceScreen({
           className="primary-button record-continue-button"
           type="button"
           disabled={!selectedOption}
-          onClick={() => setIsReady(true)}>
-          Use this provenance
+          onClick={onContinue}>
+          Continue to location
         </button>
       </section>
     </>

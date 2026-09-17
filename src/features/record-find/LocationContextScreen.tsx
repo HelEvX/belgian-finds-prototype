@@ -1,8 +1,6 @@
-import { useState } from "react";
 import type { CollectionDateQualifier, LocationContext, LocationKnowledge, ProvenanceKind } from "./types";
 
 type LocationContextScreenProps = {
-  showWorkflowGuidance: boolean;
   provenance: ProvenanceKind;
   value: LocationContext;
   onChange: (value: LocationContext) => void;
@@ -145,22 +143,6 @@ const collectionDateOptions: Array<{
   },
 ];
 
-function formatCollectionDate(qualifier: CollectionDateQualifier | null, value: string) {
-  if (!qualifier || !value) {
-    return null;
-  }
-
-  if (qualifier === "on") {
-    return `On ${value}`;
-  }
-
-  if (qualifier === "around") {
-    return `Around ${value}`;
-  }
-
-  return `Known to be in the collection by ${value}`;
-}
-
 function getCompatibleDateValue(currentValue: string, qualifier: CollectionDateQualifier) {
   const isExactDate = /^\d{4}-\d{2}-\d{2}$/.test(currentValue);
 
@@ -177,23 +159,12 @@ function getCompatibleDateValue(currentValue: string, qualifier: CollectionDateQ
   return isMonth ? currentValue : "";
 }
 
-export function LocationContextScreen({
-  showWorkflowGuidance,
-  provenance,
-  value,
-  onChange,
-  onBack,
-  onContinue,
-}: LocationContextScreenProps) {
-  const [isReady, setIsReady] = useState(false);
-
+export function LocationContextScreen({ provenance, value, onChange, onBack, onContinue }: LocationContextScreenProps) {
   const copy = provenanceLocationCopy[provenance];
 
   const selectedKnowledge = knowledgeOptions.find((option) => option.id === value.knowledge);
 
   const selectedDateQualifier = collectionDateOptions.find((option) => option.id === value.collectionDateQualifier);
-
-  const collectionDateSummary = formatCollectionDate(value.collectionDateQualifier, value.collectionDateValue);
 
   const updateKnowledge = (knowledge: LocationKnowledge) => {
     onChange({
@@ -223,115 +194,6 @@ export function LocationContextScreen({
       collectionDateValue,
     });
   };
-
-  if (isReady && selectedKnowledge) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review location
-          </button>
-
-          <p className="mobile-eyebrow">Document specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">Specimen annotation · Location and context</p>
-
-          {showWorkflowGuidance && (
-            <div className="record-intro-card">
-              <p className="card-kicker">Collecting context</p>
-
-              <h3>Location context recorded</h3>
-
-              <p>Missing details can be added later if another label, notebook or reliable source becomes available.</p>
-            </div>
-          )}
-
-          <dl className="photo-ready-summary">
-            <div>
-              <dt>Location status</dt>
-              <dd>{selectedKnowledge.title}</dd>
-            </div>
-
-            <div>
-              <dt>Country of find</dt>
-              <dd>Belgium</dd>
-            </div>
-
-            {value.municipality.trim() && (
-              <div>
-                <dt>Municipality</dt>
-                <dd>{value.municipality}</dd>
-              </div>
-            )}
-
-            {value.province.trim() && (
-              <div>
-                <dt>Province or region</dt>
-                <dd>{value.province}</dd>
-              </div>
-            )}
-
-            {value.siteDescription.trim() && (
-              <div>
-                <dt>Site or locality</dt>
-                <dd>{value.siteDescription}</dd>
-              </div>
-            )}
-
-            {value.geologicalContext.trim() && (
-              <div>
-                <dt>Geological context</dt>
-                <dd>{value.geologicalContext}</dd>
-              </div>
-            )}
-
-            {collectionDateSummary && (
-              <div>
-                <dt>Collection date</dt>
-                <dd>{collectionDateSummary}</dd>
-              </div>
-            )}
-          </dl>
-
-          {value.sourceNotes.trim() && (
-            <div className="location-summary-notes">
-              <strong>{copy.notesLabel}</strong>
-              <p>{value.sourceNotes}</p>
-            </div>
-          )}
-
-          {showWorkflowGuidance && (
-            <div className="record-selection-note">
-              <strong>Location privacy comes later</strong>
-
-              <span>
-                Recording a detailed locality does not mean it will be shown publicly. Visibility will be chosen in a
-                separate step.
-              </span>
-            </div>
-          )}
-
-          <div className="record-selection-note">
-            <strong>Next</strong>
-
-            <span>Add measurements and other physical details about the specimen.</span>
-          </div>
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onContinue}>
-              Continue to physical details
-            </button>
-
-            <button className="secondary-button" type="button" onClick={onBack}>
-              Back to provenance
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
 
   return (
     <>
@@ -437,7 +299,7 @@ export function LocationContextScreen({
                 onChange={(event) => updateTextField("siteDescription", event.currentTarget.value)}
               />
 
-              <small>Record the useful detail now. Public precision will be chosen later.</small>
+              <small>Record useful detail now. Public precision will be chosen later.</small>
             </label>
 
             <label className="location-field">
@@ -554,7 +416,7 @@ export function LocationContextScreen({
             <>
               <strong>{selectedKnowledge.title}</strong>
 
-              <span>You can continue even when the individual context fields are incomplete.</span>
+              <span>You can continue even when individual context fields are incomplete.</span>
             </>
           ) : (
             <span>Choose whether the find location is known, partial or currently unknown.</span>
@@ -565,8 +427,8 @@ export function LocationContextScreen({
           className="primary-button record-continue-button"
           type="button"
           disabled={!selectedKnowledge}
-          onClick={() => setIsReady(true)}>
-          Use this location context
+          onClick={onContinue}>
+          Continue to physical details
         </button>
       </section>
     </>

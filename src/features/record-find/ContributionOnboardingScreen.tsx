@@ -1,9 +1,14 @@
 type ContributionOnboardingScreenProps = {
+  returnToSettings: boolean;
   onContinue: () => void;
   onCancel: () => void;
 };
 
-export function ContributionOnboardingScreen({ onContinue, onCancel }: ContributionOnboardingScreenProps) {
+export function ContributionOnboardingScreen({
+  returnToSettings,
+  onContinue,
+  onCancel,
+}: ContributionOnboardingScreenProps) {
   return (
     <>
       <header className="mobile-header">
@@ -73,12 +78,12 @@ export function ContributionOnboardingScreen({ onContinue, onCancel }: Contribut
         </ul>
 
         <div className="mobile-actions">
-          <button className="primary-button" type="button" onClick={onContinue}>
-            Choose image route
+          <button className="primary-button" type="button" onClick={returnToSettings ? onCancel : onContinue}>
+            {returnToSettings ? "Back to settings" : "Choose image route"}
           </button>
 
           <button className="secondary-button" type="button" onClick={onCancel}>
-            Not now
+            {returnToSettings ? "Close" : "Not now"}
           </button>
         </div>
       </section>

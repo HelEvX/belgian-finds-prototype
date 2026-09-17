@@ -1,8 +1,6 @@
-import { useState } from "react";
 import type { LocationVisibility, PrivacySettings, SharingPreference } from "./types";
 
 type PrivacySharingScreenProps = {
-  showWorkflowGuidance: boolean;
   value: PrivacySettings;
   onChange: (value: PrivacySettings) => void;
   onBack: () => void;
@@ -55,19 +53,7 @@ const locationVisibilityOptions: Array<{
   },
 ];
 
-export function PrivacySharingScreen({
-  showWorkflowGuidance,
-  value,
-  onChange,
-  onBack,
-  onFinish,
-}: PrivacySharingScreenProps) {
-  const [isReady, setIsReady] = useState(false);
-
-  const selectedSharingOption = sharingOptions.find((option) => option.id === value.sharingPreference);
-
-  const selectedLocationOption = locationVisibilityOptions.find((option) => option.id === value.locationVisibility);
-
+export function PrivacySharingScreen({ value, onChange, onBack, onFinish }: PrivacySharingScreenProps) {
   const updateSharingPreference = (sharingPreference: SharingPreference) => {
     onChange({
       ...value,
@@ -81,73 +67,6 @@ export function PrivacySharingScreen({
       locationVisibility,
     });
   };
-
-  if (isReady) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review privacy choices
-          </button>
-
-          <p className="mobile-eyebrow">Document specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">Specimen annotation · Privacy</p>
-
-          {showWorkflowGuidance && (
-            <div className="record-intro-card">
-              <p className="card-kicker">Privacy and sharing</p>
-
-              <h3>Sharing choices recorded</h3>
-
-              <p>The record remains a private draft until a later review confirms whether it should be published.</p>
-            </div>
-          )}
-
-          <dl className="photo-ready-summary">
-            <div>
-              <dt>Record sharing</dt>
-
-              <dd>{selectedSharingOption?.title}</dd>
-            </div>
-
-            <div>
-              <dt>Location visible to others</dt>
-
-              <dd>{selectedLocationOption?.title}</dd>
-            </div>
-
-            <div>
-              <dt>Exact site details</dt>
-
-              <dd>Private</dd>
-            </div>
-          </dl>
-
-          <div className="record-selection-note">
-            <strong>Exact site details stay private by default</strong>
-
-            <span>
-              Site names, quarry details, river sections, coordinates and other precise locality information are never
-              shared automatically.
-            </span>
-          </div>
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onFinish}>
-              Return to annotation queue
-            </button>
-
-            <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>
-              Review privacy choices
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
 
   return (
     <>
@@ -248,8 +167,8 @@ export function PrivacySharingScreen({
           </span>
         </div>
 
-        <button className="primary-button record-continue-button" type="button" onClick={() => setIsReady(true)}>
-          Use these privacy choices
+        <button className="primary-button record-continue-button" type="button" onClick={onFinish}>
+          Return to annotation queue
         </button>
       </section>
     </>

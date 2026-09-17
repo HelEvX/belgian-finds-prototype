@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { HelpRequestPreference, IdentificationConfidence, SpecimenDescription } from "./types";
 
 type DescriptionHelpScreenProps = {
@@ -62,10 +61,6 @@ export function DescriptionHelpScreen({
   onBack,
   onFinish,
 }: DescriptionHelpScreenProps) {
-  const [isReady, setIsReady] = useState(false);
-
-  const selectedConfidence = confidenceOptions.find((option) => option.id === value.identificationConfidence);
-
   const selectedHelpOption = helpOptions.find((option) => option.id === value.helpRequest);
 
   const hasSuggestedIdentification = value.suggestedIdentification.trim().length > 0;
@@ -98,80 +93,6 @@ export function DescriptionHelpScreen({
       helpRequest,
     });
   };
-
-  if (isReady) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review description
-          </button>
-
-          <p className="mobile-eyebrow">Document specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">Specimen annotation · Description</p>
-
-          {showWorkflowGuidance && (
-            <div className="record-intro-card">
-              <p className="card-kicker">Contributor statement</p>
-
-              <h3>Description recorded</h3>
-
-              <p>
-                Your observations and suggested identification remain separate from later community suggestions or
-                verified determinations.
-              </p>
-            </div>
-          )}
-
-          <dl className="photo-ready-summary">
-            <div>
-              <dt>Suggested identification</dt>
-              <dd>{hasSuggestedIdentification ? value.suggestedIdentification : "Not recorded"}</dd>
-            </div>
-
-            <div>
-              <dt>Confidence</dt>
-              <dd>{selectedConfidence?.label ?? "Not recorded"}</dd>
-            </div>
-
-            <div>
-              <dt>Help preference</dt>
-              <dd>{selectedHelpOption?.title ?? "Not recorded"}</dd>
-            </div>
-          </dl>
-
-          {value.observations.trim() && (
-            <div className="location-summary-notes">
-              <strong>Your observations</strong>
-              <p>{value.observations}</p>
-            </div>
-          )}
-
-          <div className="record-selection-note">
-            <strong>Important distinction</strong>
-
-            <span>
-              A suggested identification is the contributor’s own statement. It does not change the record’s
-              determination status or create a verified identification.
-            </span>
-          </div>
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onFinish}>
-              Continue to privacy and sharing
-            </button>
-
-            <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>
-              Review description
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
 
   return (
     <>
@@ -301,8 +222,19 @@ export function DescriptionHelpScreen({
           )}
         </div>
 
-        <button className="primary-button record-continue-button" type="button" onClick={() => setIsReady(true)}>
-          Use this description
+        {showWorkflowGuidance && (
+          <div className="record-selection-note">
+            <strong>Important distinction</strong>
+
+            <span>
+              A suggested identification is the contributor’s own statement. It does not change the record’s
+              determination status or create a verified identification.
+            </span>
+          </div>
+        )}
+
+        <button className="primary-button record-continue-button" type="button" onClick={onFinish}>
+          Continue to privacy and sharing
         </button>
       </section>
     </>
