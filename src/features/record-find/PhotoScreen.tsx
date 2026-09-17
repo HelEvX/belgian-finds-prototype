@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto } from "./types";
 
 type PhotoScreenProps = {
-  showWorkflowGuidance: boolean;
   photos: LocalFindPhoto[];
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
@@ -52,7 +51,6 @@ function getPhotoGuidance(photoCount: number) {
 }
 
 export function PhotoScreen({
-  showWorkflowGuidance,
   photos,
   onAddPhotos,
   onRemovePhoto,
@@ -60,13 +58,13 @@ export function PhotoScreen({
   onAddToQueue,
   showImageGuidance,
 }: PhotoScreenProps) {
-  const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const existingInputRef = useRef<HTMLInputElement>(null);
 
   const guidance = getPhotoGuidance(photos.length);
+
   const hasReachedMaximum = photos.length >= MAX_FIND_PHOTOS;
 
   useEffect(() => {
@@ -158,79 +156,6 @@ export function PhotoScreen({
     event.currentTarget.value = "";
   };
 
-  if (isReady) {
-    return (
-      <>
-        <header className="mobile-header">
-          <button className="back-button" type="button" onClick={() => setIsReady(false)}>
-            ← Review images
-          </button>
-
-          <p className="mobile-eyebrow">Add one specimen</p>
-        </header>
-
-        <section className="record-flow">
-          <p className="record-progress">One specimen · Images ready</p>
-
-          <div className="photo-ready-card">
-            <span className="photo-ready-symbol" aria-hidden="true">
-              ✓
-            </span>
-
-            <h2>Specimen draft ready</h2>
-
-            <p>
-              You have associated {photos.length} {photos.length === 1 ? "image" : "images"} with one physical specimen.
-            </p>
-          </div>
-
-          <dl className="photo-ready-summary">
-            <div>
-              <dt>Associated images</dt>
-              <dd>{photos.length}</dd>
-            </div>
-
-            <div>
-              <dt>Record type</dt>
-              <dd>To be selected later</dd>
-            </div>
-
-            <div>
-              <dt>Queue status</dt>
-              <dd>Ready to annotate</dd>
-            </div>
-
-            <div>
-              <dt>Visibility</dt>
-              <dd>Private draft</dd>
-            </div>
-          </dl>
-
-          {showWorkflowGuidance && (
-            <div className="record-selection-note">
-              <strong>Next step</strong>
-
-              <span>
-                Add this image-associated specimen draft to the shared annotation queue. Its type, history and context
-                can be documented later.
-              </span>
-            </div>
-          )}
-
-          <div className="mobile-actions">
-            <button className="primary-button" type="button" onClick={onAddToQueue}>
-              Add to annotation queue
-            </button>
-
-            <button className="secondary-button" type="button" onClick={() => setIsReady(false)}>
-              Review images
-            </button>
-          </div>
-        </section>
-      </>
-    );
-  }
-
   return (
     <>
       <header className="mobile-header">
@@ -280,6 +205,7 @@ export function PhotoScreen({
 
             <span className="photo-source-copy">
               <strong>Take a photo</strong>
+
               <span>Use this device’s camera when supported.</span>
             </span>
           </button>
@@ -295,6 +221,7 @@ export function PhotoScreen({
 
             <span className="photo-source-copy">
               <strong>Choose existing photos</strong>
+
               <span>Select one or several files from this device.</span>
             </span>
           </button>
@@ -364,8 +291,8 @@ export function PhotoScreen({
           className="primary-button photo-continue-button"
           type="button"
           disabled={photos.length === 0}
-          onClick={() => setIsReady(true)}>
-          Use these images
+          onClick={onAddToQueue}>
+          Add {photos.length} {photos.length === 1 ? "image" : "images"} to annotation queue
         </button>
       </section>
     </>

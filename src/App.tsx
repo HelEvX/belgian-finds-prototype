@@ -661,7 +661,6 @@ function App() {
 
           {step === 7 && (
             <PhotoScreen
-              showWorkflowGuidance={showWorkflowGuidance}
               photos={findPhotos}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
