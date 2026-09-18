@@ -26,7 +26,8 @@ import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
-import { PhotoScreen } from "./features/record-find/PhotoScreen";
+import { PhotoScreen, type PhotoRemovalResult } from "./features/record-find/PhotoScreen";
+
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
 import { PrivacySharingScreen } from "./features/record-find/PrivacySharingScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
@@ -293,19 +294,19 @@ function App() {
     setActiveSpecimenDraftId(newDraft.id);
   };
 
-  const removeFindPhoto = (photoId: string) => {
+  const removeFindPhoto = (photoId: string): PhotoRemovalResult => {
     const currentDrafts = specimenDraftsRef.current;
 
     const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
     if (!currentActiveDraft || currentActiveDraft.source !== "single-specimen") {
-      return;
+      return "cancelled";
     }
 
     const photoToRemove = currentActiveDraft.images.find((image) => image.id === photoId);
 
     if (!photoToRemove) {
-      return;
+      return "cancelled";
     }
 
     if (currentActiveDraft.images.length === 1) {
@@ -314,7 +315,7 @@ function App() {
       );
 
       if (!shouldDiscardDraft) {
-        return;
+        return "cancelled";
       }
 
       const nextDrafts = currentDrafts.filter((draft) => draft.id !== currentActiveDraft.id);
@@ -323,7 +324,7 @@ function App() {
       setActiveSpecimenDraftId(null);
       URL.revokeObjectURL(photoToRemove.previewUrl);
 
-      return;
+      return "draft-discarded";
     }
 
     const nextDrafts = currentDrafts.map((draft) =>
@@ -338,6 +339,8 @@ function App() {
 
     replaceSpecimenDrafts(nextDrafts);
     URL.revokeObjectURL(photoToRemove.previewUrl);
+
+    return "removed";
   };
 
   const updateActiveSpecimenDraft = (

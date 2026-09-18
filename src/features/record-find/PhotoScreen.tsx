@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto } from "./types";
 
+export type PhotoRemovalResult = "removed" | "draft-discarded" | "cancelled";
+
 type PhotoScreenProps = {
   photos: LocalFindPhoto[];
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
-  onRemovePhoto: (photoId: string) => void;
+  onRemovePhoto: (photoId: string) => PhotoRemovalResult;
   onBack: () => void;
   onContinue: () => void;
   onSaveForLater: () => void;
@@ -270,11 +272,18 @@ export function PhotoScreen({
                     type="button"
                     aria-label={`Remove ${photo.file.name}`}
                     onClick={() => {
-                      onRemovePhoto(photo.id);
+                      const removalResult = onRemovePhoto(photo.id);
+
+                      if (removalResult === "cancelled") {
+                        return;
+                      }
 
                       setFeedback({
                         tone: "success",
-                        message: "Photograph removed. You can select it again if needed.",
+                        message:
+                          removalResult === "draft-discarded"
+                            ? "Private draft discarded. Add a photograph to start again."
+                            : "Photograph removed. You can select it again if needed.",
                       });
                     }}>
                     ×
