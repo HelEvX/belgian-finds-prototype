@@ -1,61 +1,84 @@
+# Belgian Fossil Finds prototype flow
+
 ```mermaid
 flowchart TD
-    OPEN["Open app"] --> HOME["My specimens<br/>Signed-in home"]
+    OPEN["Open app"] --> HOME["My specimens
+Signed-in home"]
 
     %% Primary signed-in navigation
     HOME --> ADD["Add a specimen"]
-    HOME --> QUEUE["Annotation queue<br/>Specimens needing information"]
+    HOME --> RESUME["Resume a private draft
+at its saved stage"]
     HOME --> EXPLORE["Explore specimens"]
+    HOME --> SETTINGS["Settings"]
 
     %% Public exploration
     EXPLORE --> BROWSE["Browse publicly shared specimens"]
-    BROWSE --> DETAIL["View specimen detail<br/>Images, context and determination history"]
+    BROWSE --> DETAIL["View specimen detail
+Images, context and determination history"]
 
-    %% One-specimen contribution flow
-    ADD --> FIRST_TIME{"First time adding<br/>a specimen?"}
-    FIRST_TIME -- Yes --> SCOPE["Contribution scope<br/>Belgian field finds and documented collections"]
-    FIRST_TIME -- No --> PHOTOS["Add images for one specimen"]
+    %% Direct mobile single-specimen flow
+    ADD --> FIRST_TIME{"First time adding
+a specimen?"}
+    FIRST_TIME -- Yes --> SCOPE["Contribution scope
+Belgian finds and documented collections"]
+    FIRST_TIME -- No --> PHOTOS["Add specimen photos"]
 
     SCOPE --> PHOTOS
-    PHOTOS --> DRAFT["Create private specimen draft<br/>Image association is complete"]
-    DRAFT --> QUEUE
-
-    %% Current shared annotation flow
-    QUEUE --> ANNOTATE["Start documenting specimen"]
-    ANNOTATE --> TYPE["What does this appear to be?<br/>Fossil, rock/mineral, artefact or unsure"]
-    TYPE --> PROVENANCE["Provenance<br/>Who originally found it?"]
-    PROVENANCE --> CONTEXT["Find location and collecting context"]
-    CONTEXT --> MEASURE["Physical details<br/>Measurements and condition"]
-    MEASURE --> DESCRIPTION["Identification, observations<br/>and help preference"]
+    PHOTOS --> FIRST_IMAGE["First valid image creates
+a private draft"]
+    FIRST_IMAGE --> TYPE["What does this appear to be?"]
+    TYPE --> PROVENANCE["Provenance
+Who originally found or collected it?"]
+    PROVENANCE --> CONTEXT["Find location and
+collecting context"]
+    CONTEXT --> MEASURE["Physical details
+Measurements and condition"]
+    MEASURE --> DESCRIPTION["Identification and observations
+Optional help preference"]
     DESCRIPTION --> PRIVACY["Privacy and sharing preferences"]
+    PRIVACY --> READY["Ready for review
+Current prototype boundary"]
+    READY --> HOME
 
-    %% Current prototype endpoint versus next intended slice
-    PRIVACY --> CURRENT_RETURN["Current prototype:<br/>return to annotation queue"]
-    CURRENT_RETURN --> QUEUE
+    %% Save and resume
+    FIRST_IMAGE -. "save and finish later" .-> HOME
+    TYPE -. "save and finish later" .-> HOME
+    PROVENANCE -. "save and finish later" .-> HOME
+    CONTEXT -. "save and finish later" .-> HOME
+    MEASURE -. "save and finish later" .-> HOME
+    DESCRIPTION -. "save and finish later" .-> HOME
+    PRIVACY -. "save and finish later" .-> HOME
 
-    PRIVACY -. "next MVP slice" .-> REVIEW["Review specimen"]
+    %% Next intended product slice
+    READY -. "next MVP slice" .-> REVIEW["Review specimen"]
     REVIEW --> SAVE["Save private specimen"]
     SAVE --> HOME
 
     %% Future sharing and human collaboration
     SAVE -. "later" .-> SHARE["Review and share a selected specimen"]
     SHARE --> DETAIL
-    SHARE --> REQUEST["Invite community input<br/>or request verified-specialist help"]
-    REQUEST --> RESPONSE["Attributed observation<br/>or determination"]
+    SHARE --> REQUEST["Invite member input
+or request verified-specialist help"]
+    REQUEST --> RESPONSE["Attributed observation
+or determination"]
     RESPONSE --> DETAIL
 
     DETAIL -. "later" .-> FOLLOW["Follow specimen"]
-    FOLLOW -. "later" .-> UPDATES["Updates<br/>Changes to owned, followed or contributed-to specimens"]
+    FOLLOW -. "later" .-> UPDATES["Updates
+Meaningful specimen changes"]
     RESPONSE -. "later" .-> UPDATES
 
-    %% Advanced desktop-only catalogue-import route
-    ADD -. "later · desktop only" .-> CSV_SETUP["Import an existing catalogue<br/>Choose a source catalogue and defaults"]
-    CSV_SETUP --> CSV_UPLOAD["Upload one flat CSV<br/>One row = one specimen"]
-    CSV_UPLOAD --> CSV_VALIDATE["Validate columns, values and<br/>duplicate catalogue numbers"]
+    %% Future desktop-only catalogue import
+    ADD -. "later · desktop only" .-> CSV_SETUP["Import an existing catalogue
+Choose source catalogue and defaults"]
+    CSV_SETUP --> CSV_UPLOAD["Upload one flat CSV
+One row = one specimen"]
+    CSV_UPLOAD --> CSV_VALIDATE["Validate columns, values and
+duplicate catalogue numbers"]
     CSV_VALIDATE --> CSV_DRAFTS["Create private specimen drafts"]
-    CSV_DRAFTS --> IMAGE_MATCH["Attach images record by record<br/>Expected image count supports progress"]
+    CSV_DRAFTS --> IMAGE_MATCH["Attach images record by record"]
     IMAGE_MATCH --> REVISION_QUEUE["Complete missing or invalid information"]
-    REVISION_QUEUE --> QUEUE
 
     %% Styles
     classDef implemented fill:#d8e9f0,stroke:#10546f,color:#172229,stroke-width:2px;
@@ -63,7 +86,7 @@ flowchart TD
     classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.64;
     classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.76;
 
-    class OPEN,HOME,ADD,QUEUE,EXPLORE,BROWSE,DETAIL,SCOPE,PHOTOS,DRAFT,ANNOTATE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,CURRENT_RETURN implemented;
+    class OPEN,HOME,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SETTINGS,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,READY implemented;
     class FIRST_TIME decision;
     class REVIEW,SAVE,SHARE,REQUEST,RESPONSE,FOLLOW,UPDATES planned;
     class CSV_SETUP,CSV_UPLOAD,CSV_VALIDATE,CSV_DRAFTS,IMAGE_MATCH,REVISION_QUEUE future;
@@ -73,95 +96,151 @@ flowchart TD
 
 - **Blue, solid:** Implemented in the current interactive prototype.
 - **Orange, solid:** Implemented decision point.
-- **Faded, dashed:** Agreed next MVP work; not yet implemented.
-- **Warm yellow, dashed:** Later advanced capability; catalogue import is desktop-only and intentionally outside the current mobile-first flow.
+- **Faded, dashed:** Agreed next MVP work that is not yet implemented.
+- **Warm yellow, dashed:** Future desktop-only catalogue import.
 
-# Model
+# Current product model
 
 ```text
 SIGNED-IN HOME
 │
 ├── My specimens
-│   ├── Specimens needing information
-│   ├── Private specimens
-│   └── Shared specimens
+│   ├── Private drafts
+│   │   ├── Show a thumbnail and current stage
+│   │   └── Resume directly at the saved stage
+│   ├── Later: private specimens
+│   └── Later: shared specimens
 │
 ├── Explore specimens
 │   ├── Browse publicly shared specimens
-│   └── View specimen detail
+│   └── View specimen details
+│
+├── Settings
+│   ├── Workflow-guidance preference
+│   ├── Image-guidance preference
+│   └── Review contribution scope
 │
 └── Add a specimen
     │
     ├── First contribution only
     │   └── Contribution scope and eligibility guidance
     │
-    ├── Add one specimen
-    │   ├── Take new photos or choose existing images
-    │   ├── Associate all selected images with this specimen
-    │   └── Create a private specimen draft
-    │
-    └── Later: import an existing catalogue — desktop only
-        ├── Download / prepare one flat CSV template
-        ├── Choose source-catalogue defaults
-        ├── Upload and validate CSV
-        ├── Create one private specimen draft per valid row
-        ├── Attach images to each specimen record
-        └── Complete missing or invalid information
+    └── Add specimen photos
+        ├── Take a new photograph
+        ├── Choose existing photographs
+        ├── First valid image creates the private draft
+        ├── Further images are added directly to that draft
+        ├── Continue directly to specimen type
+        └── Save and finish later returns to My specimens
                     │
                     ▼
-SHARED SPECIMEN DOCUMENTATION
+SPECIMEN DOCUMENTATION
 │
 ├── What does this appear to be?
-│   └── Fossil / rock or mineral / artefact / not sure yet
+│   └── Fossil / rock or mineral / collection item / not sure yet
+│
 ├── Provenance
-│   └── Who originally found or collected it?
+│   └── Original finder, collector, or collection history
+│
 ├── Find location and collecting context
+│
 ├── Physical details
 │   └── Measurements and condition
+│
 ├── Identification and observations
 │   └── Optional suggested identification and help preference
-├── Privacy and sharing preferences
-│   └── Private by default; exact site details remain private
-├── Review specimen
-└── Save private specimen
+│
+└── Privacy and sharing preferences
+    ├── Private by default
+    ├── Exact site details remain private
+    └── Finish current slice as Ready for review
                     │
                     ▼
-LATER: SELECTED SHARING AND HUMAN COLLABORATION
+MY SPECIMENS
 │
-├── Share a reviewed specimen
-├── Choose interaction level
-│   ├── View only
-│   ├── Invite community observations
-│   └── Request verified-specialist help
-├── Follow a specimen
-└── Updates
-    └── Meaningful changes to owned, followed or contributed-to specimens
+└── Ready for review
+    └── Later: Review specimen → Save private specimen
 ```
 
-## Note
+## Draft creation and image ownership
 
-The diagram deliberately stops before:
+The mobile single-specimen route remains image-first.
 
-- marketplace or sales;
+A private draft is created only after the first supported, non-duplicate image is accepted. Opening the photo screen and leaving without an image creates nothing.
+
+After draft creation, `SpecimenDraft.images` is the only owner of the selected files and preview URLs. Returning from specimen type to images edits that same array. Navigation and save-for-later actions do not recreate or transfer preview URLs.
+
+Removing a non-final image removes it from the active draft and revokes only that image’s preview URL. Removing the final image requires confirmation because it discards the private draft and any information entered for it.
+
+## Save and resume behavior
+
+Field changes are written to the active draft as they occur.
+
+**Save and finish later** records the current domain-level stage and returns to My specimens. Selecting a private draft resumes it directly at that stage. It does not require a second queue-selection action.
+
+Opening Settings preserves the active draft and current flow screen. Closing Settings returns to the exact previous screen.
+
+The current prototype stores drafts only in React memory. Refreshing the page loses unfinished drafts, files, preview URLs, and annotations. Only onboarding and guidance preferences use local storage.
+
+## Current endpoint
+
+Completing privacy and sharing choices marks the draft **Ready for review** and returns to My specimens.
+
+This is not yet a completed private specimen. The following transition belongs to the next MVP slice:
+
+```text
+Ready for review
+→ Review specimen
+→ Save private specimen
+→ My specimens
+```
+
+Publication is a separate later action. Nothing is published from the current privacy screen.
+
+## Legacy prototype routes
+
+The source still contains the earlier batch-image grouping and annotation-queue components. They are preserved temporarily so this refactor does not mix direct-flow work with removal of the legacy prototype.
+
+They are not part of the canonical mobile single-specimen journey.
+
+The arbitrary-thumbnail grouping concept has been superseded by a future desktop-only catalogue-import route:
+
+```text
+Choose source catalogue and defaults
+→ Upload one flat CSV
+→ Validate rows
+→ Create one private draft per valid row
+→ Attach images record by record
+→ Complete missing or invalid information
+```
+
+CSV import is not implemented or designed by the current refactor.
+
+## Product boundaries
+
+The prototype deliberately excludes:
+
+- marketplace or sales features;
+- valuation requests;
 - private messaging;
 - reputation points;
-- automatic identification;
-- elaborate social feeds;
-- institutional data publishing;
-- collection CSV imports;
+- automatic or AI identification;
+- a generic social feed;
+- institutional data publication;
+- production catalogue import;
 - advanced moderator tooling.
 
-Those would expand the prototype beyond its purpose.
+The project documents fossil specimens connected to Belgium. It does not claim to represent the Belgian fossil community or any geological or palaeontological association.
 
 ## Recommended handoff architecture
 
 ```text
-My (frontend) responsibility
+Frontend responsibility
 ────────────────────────────────
 React PWA
-UX/UI
+UX and UI
 Forms and validation
-Responsive behaviour
+Responsive behavior
 Accessibility
 Frontend state
 Mock service layer
@@ -180,49 +259,47 @@ Backend specialist responsibility
 Authentication
 Database schema review
 Access-control policies
-Private location protection
+Private-location protection
 Image permissions
 Moderation authority
 Audit and security controls
 Production deployment
 ```
 
-## Handoff point
+## Frontend handoff point
 
-This is a **frontend beta** with a replaceable data-service layer:
+The intended frontend beta includes:
 
-- complete responsive UI;
-- all primary user journeys;
-- realistic loading, empty, success and error states;
+- a complete responsive interface;
+- the primary signed-in user journeys;
+- realistic loading, empty, success, and error states;
 - form validation;
 - image preview and upload UX;
 - multilingual-ready interface structure;
 - accessibility;
-- seeded catalogue data;
-- mock accounts and user roles;
+- seeded specimen data;
+- mock accounts and roles;
 - mock determination requests;
 - API contracts and TypeScript types;
 - a development database or mock API;
 - frontend tests;
-- documented expectations for the production backend.
+- documented production-backend expectations.
 
-## Backend implementation
+## Production backend boundary
 
-I can deliver the complete frontend product experience and a realistic data-integrated testing environment.
-
-**Production services** such as production identity, authorisation, privacy controls and backend security will require review and implementation by a suitably experienced backend developer.
+Production services require review and implementation by a suitably experienced backend developer. They include:
 
 - registration and login security;
 - password recovery;
 - account deletion;
-- authorisation and role enforcement;
-- scientist verification;
-- Row Level Security policies;
+- authorization and role enforcement;
+- specialist verification;
+- row-level security policies;
 - private exact-location protection;
 - secure image access;
 - moderation privileges;
 - audit logging;
 - rate limiting and abuse prevention;
 - backups and recovery;
-- GDPR-related deletion and data-export workflows;
+- data deletion and export workflows;
 - security testing.

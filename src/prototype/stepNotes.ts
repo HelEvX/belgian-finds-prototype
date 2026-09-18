@@ -5,154 +5,142 @@ export const stepNotes: StepNote[] = [
     label: "Signed-in home",
     title: "My specimens",
     purpose:
-      "Give a signed-in contributor a calm personal starting point, focused on specimens that still need information or on adding a first specimen.",
+      "Give a signed-in contributor a personal starting point for adding specimens and resuming unfinished private drafts.",
     matters:
-      "A returning contributor should not land on a generic welcome page, a promotional hero, or an ambiguous route between browsing and managing their own material.",
+      "A contributor should be able to continue a specific specimen directly rather than entering an annotation queue and selecting it again.",
     decision:
-      "The application opens to My specimens for signed-in members. Public exploration remains available as a separate bottom-navigation destination rather than competing with the member’s own work.",
+      "My specimens lists private drafts and resumes each draft at its saved stage. Nothing is shared automatically.",
   },
   {
     label: "Public exploration · Step 1 of 2",
     title: "Explore specimens",
-    purpose:
-      "Let members browse publicly shared specimens connected to Belgium without implying that the platform represents a single national fossil community.",
-    matters:
-      "Exploration is valuable for learning and later participation, but it should not distract from the signed-in member’s private specimens when the app first opens.",
+    purpose: "Let members browse publicly shared specimens connected to Belgium.",
+    matters: "Exploration remains separate from the signed-in contributor’s private specimens and unfinished work.",
     decision:
-      "Explore is a dedicated navigation destination. The first real implementation should fetch recently shared specimens by publication date, with manual refresh rather than constant polling.",
+      "Explore is a dedicated navigation destination. It does not claim to represent a Belgian fossil community or any association.",
   },
   {
     label: "Public exploration · Step 2 of 2",
     title: "Specimen detail",
     purpose:
-      "Show one shared specimen in enough detail for another member to understand the contributor’s information and, later, decide whether to follow or contribute where input is invited.",
+      "Show one shared specimen in enough detail for another member to understand its images, context, and determination history.",
     matters:
-      "The detail page must distinguish the contributor’s original statement from later community or specialist responses.",
-    decision:
-      "A help request belongs to one specimen, not a generic contact form. Future interaction remains owner-controlled and is outside this prototype step.",
+      "The detail page must distinguish the contributor’s original statement from later attributed observations or verified determinations.",
+    decision: "Future interaction remains controlled by the specimen owner and is outside this prototype step.",
   },
   {
-    label: "Contribute · Add material",
-    title: "Start with images",
+    label: "Legacy prototype route",
+    title: "Image-intake route choice",
     purpose:
-      "Set the platform’s contribution scope and let a contributor choose between adding images for one specimen or importing a batch of existing images.",
+      "Preserve access to the older single-image and batch-grouping prototype while its remaining behavior is reviewed separately.",
     matters:
-      "Image intake and later specimen documentation are separate concerns. The contributor should not need to decide a taxonomic type or a collection structure before images are associated with a specimen.",
+      "The active mobile single-specimen journey no longer asks the contributor to choose an intake architecture.",
     decision:
-      "Belgian field finds and documented amateur collection material are welcome; commercial souvenirs, stock and valuation requests are outside scope.",
+      "Normal mobile Add navigation bypasses this screen and opens specimen photos directly. Future catalogue import will be a separate desktop-only route.",
   },
   {
-    label: "Contribution onboarding",
-    title: "Before you add material",
-    purpose: "Introduce the project’s contribution scope once, before a member chooses an image-intake route.",
+    label: "First contribution only",
+    title: "Before you add a specimen",
+    purpose: "Introduce the project’s contribution scope once before a member adds their first specimen.",
     matters:
-      "The platform needs a clear scientific and ethical boundary, but repeating that boundary during every contribution would become intrusive for experienced users.",
+      "The project needs a clear scientific and ethical boundary without repeating it during every contribution.",
     decision:
-      "The onboarding screen is shown only on a contributor’s first visit to Add material. Members can review it again manually from Settings.",
-  },
-
-  {
-    label: "Specimen annotation · Material type",
-    title: "What are you recording?",
-    purpose: "Establish a broad material type after images have already been associated with one physical specimen.",
-    matters:
-      "The image-intake route no longer matters at this point. A one-specimen draft and a batch-imported draft should use the same documentation workflow.",
-    decision:
-      "A contributor can explicitly choose ‘Something unknown’ rather than being forced to identify the specimen before asking for help.",
+      "After the first-time introduction, the contributor continues directly to specimen photos. The introduction remains available from Settings.",
   },
   {
-    label: "Batch import · Image intake",
-    title: "Import a batch of images",
-    purpose: "Let contributors select many existing images and group those that depict the same physical specimen.",
+    label: "Specimen details · Type",
+    title: "What does this appear to be?",
+    purpose: "Capture a broad apparent specimen type after at least one image has created the private draft.",
     matters:
-      "Existing and inherited collections may contain many useful photographs, but imported files do not automatically reveal which images belong to the same specimen.",
+      "A contributor should not need a confident identification before documenting a specimen or asking for later human input.",
     decision:
-      "A batch is an image-intake method, not a collection. After grouping, each resulting specimen draft will eventually enter the same annotation queue as a one-specimen draft.",
+      "The contributor continues directly from images to type. Back returns to the same draft-owned images without recreating preview URLs.",
   },
   {
-    label: "One specimen · Images",
-    title: "Add images for one specimen",
+    label: "Legacy prototype route",
+    title: "Batch image grouping",
     purpose:
-      "Associate one or more new or existing images with a single physical specimen before its detailed documentation begins.",
-    matters: "New finds benefit from guided photography, while existing and inherited material must remain welcome.",
+      "Retain the existing batch-image grouping prototype without treating it as part of the current mobile product flow.",
+    matters:
+      "Arbitrary image grouping has been superseded conceptually by a future desktop-only catalogue-import workflow.",
     decision:
-      "One image is sufficient to create a specimen draft, three useful views are recommended, and five is the prototype maximum.",
+      "This screen remains isolated for now. It must not influence the state model or copy of the direct single-specimen journey.",
   },
   {
-    label: "Specimen annotation · Provenance",
+    label: "Add a specimen · Photos",
+    title: "Add specimen photos",
+    purpose: "Associate one or more photographs with one physical specimen before collecting detailed information.",
+    matters:
+      "Images provide a natural mobile starting point and allow a contributor to begin without knowing the specimen’s type or history.",
+    decision:
+      "The first accepted image creates the private draft. Later images belong directly to that draft. Continue opens specimen type, while Save and finish later returns to My specimens.",
+  },
+  {
+    label: "Specimen details · Provenance",
     title: "Who originally found it?",
     purpose:
-      "Record the original field collector or collection history separately from the current owner or custodian.",
-    matters:
-      "A specimen’s locality and collecting history often contribute more scientific meaning than its appearance alone.",
-    decision:
-      "The flow does not offer a generic purchase route. Uncertainty remains available for inherited or older collections whose documentation is incomplete.",
+      "Record the original finder, collector, or collection history separately from the current owner or custodian.",
+    matters: "Provenance and find location may contribute more scientific meaning than appearance alone.",
+    decision: "Uncertainty remains available for inherited or older specimens whose collecting history is incomplete.",
   },
   {
-    label: "Specimen annotation · Location and context",
-    title: "Where was it found?",
+    label: "Specimen details · Find location",
+    title: "Find location and collecting context",
     purpose: "Record the best available Belgian find location and any surviving geological or collecting context.",
     matters:
-      "Locality, geological layer and collecting documentation can give an otherwise ordinary specimen scientific meaning.",
+      "A locality, geological layer, label, or collecting note can give an otherwise ordinary specimen scientific meaning.",
     decision:
-      "The wording adapts to provenance. Individual fields remain optional, but the contributor explicitly marks the location as known, partial or unknown.",
+      "The contributor explicitly marks the location as known, partial, or unknown. Individual context fields remain optional.",
   },
   {
-    label: "Specimen annotation · Physical details",
-    title: "Measure the specimen",
-    purpose: "Capture dimensions, weight and condition that give the associated images a useful sense of scale.",
-    matters: "Even simple measurements can make comparison and later human determination more reliable.",
+    label: "Specimen details · Physical details",
+    title: "Physical details",
+    purpose: "Capture dimensions, weight, and condition that give the photographs a useful sense of scale.",
+    matters: "Simple measurements can make later comparison and human identification more reliable.",
     decision:
-      "Measurements are encouraged rather than required. Contributors distinguish measured dimensions, estimates and information that is not yet available.",
+      "Measurements are encouraged rather than required. Contributors distinguish measured values, estimates, and details not yet recorded.",
   },
   {
-    label: "Contributor area · My workspace",
-    title: "My workspace",
+    label: "Legacy prototype route",
+    title: "Previous workspace screen",
+    purpose: "Document a superseded contributor-area screen retained in the source for reference.",
+    matters: "The active signed-in home is My specimens, not a separate workspace.",
+    decision:
+      "Do not route the direct single-specimen journey through this screen. Remove it only during a separate verified cleanup.",
+  },
+  {
+    label: "Legacy batch route",
+    title: "Annotation queue",
+    purpose: "Retain the existing queue used by the older batch-image prototype.",
+    matters: "The queue exposes implementation architecture and adds unnecessary selection steps for one specimen.",
+    decision:
+      "New mobile single-specimen drafts resume directly from My specimens. The queue is not part of that journey.",
+  },
+  {
+    label: "Specimen details · Identification",
+    title: "Identification and observations",
     purpose:
-      "Give returning contributors one clear home for specimen drafts, the future annotation queue and saved records.",
-    matters:
-      "The platform must support gradual documentation. A contributor may add images now and complete contextual information later.",
+      "Capture the contributor’s observations, optional suggested identification, confidence, and preference for later human input.",
+    matters: "A contributor can document visible evidence even when the specimen’s exact identity is unknown.",
     decision:
-      "The workspace is mocked locally in this phase. It establishes the correct product structure before accounts, persistent drafts or a database are introduced.",
+      "A suggested identification remains the contributor’s own statement. It does not create a verified determination.",
   },
   {
-    label: "Contributor area · Annotation queue",
-    title: "Specimen drafts ready to document",
-    purpose:
-      "Hold image-associated specimen drafts until the contributor is ready to document each individual specimen.",
-    matters:
-      "A specimen created from one image sequence and a specimen created through batch grouping need the same annotation workflow once their images are correctly associated.",
-    decision:
-      "Selecting a draft opens the shared type, provenance, locality and physical-details sequence. Draft data remains in local browser state for this prototype.",
-  },
-  {
-    label: "Specimen annotation · Description",
-    title: "Observations and help preference",
-    purpose:
-      "Capture the contributor’s own observations, an optional suggested identification and an optional preference for human input.",
-    matters:
-      "A contributor who knows a specimen can record a useful scientific name, while an uncertain contributor can still document observable evidence and ask for help.",
-    decision:
-      "Suggested identifications remain free text and are explicitly separated from later community suggestions or verified determinations. A large taxonomic index or autocomplete service is outside this MVP.",
-  },
-  {
-    label: "Contributor area · Settings",
+    label: "Settings",
     title: "Guidance preferences",
-    purpose:
-      "Let experienced contributors reduce optional workflow and image guidance without removing important labels, validation or record status.",
-    matters:
-      "Collectors may document dozens or hundreds of specimens. Guidance should help beginners without slowing down repeat contributors.",
+    purpose: "Let experienced contributors reduce optional workflow and image guidance.",
+    matters: "Guidance should support beginners without slowing down people documenting many specimens.",
     decision:
-      "Guidance preferences are stored locally in this prototype. A production version would attach them to the member account.",
+      "Opening Settings preserves the exact current flow screen and active draft. Closing Settings returns to that screen.",
   },
   {
-    label: "Specimen annotation · Privacy and sharing",
-    title: "Choose record and locality visibility",
+    label: "Specimen details · Privacy",
+    title: "Privacy and sharing",
     purpose:
-      "Let the contributor keep a record private or prepare it for later community sharing, while controlling the maximum locality detail visible to other members.",
+      "Record whether the contributor intends to keep the specimen private or prepare it for later sharing, while limiting visible location detail.",
     matters:
-      "Find locations may be scientifically valuable but can also be sensitive. Private documentation and public disclosure need to be separate decisions.",
+      "Private documentation and public disclosure are separate decisions. Find locations may be scientifically useful and sensitive.",
     decision:
-      "Exact site details always remain private in the MVP. Community sharing is only a preference at this stage; a later review screen will be required before publication.",
+      "Exact site details remain private. Finishing this screen marks the draft Ready for review and returns to My specimens; Review and Save private specimen are not implemented yet.",
   },
 ];
