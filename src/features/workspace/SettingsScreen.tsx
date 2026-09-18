@@ -19,14 +19,14 @@ export function SettingsScreen({
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← My workspace
+          ← Back
         </button>
 
-        <p className="mobile-eyebrow">My workspace</p>
+        <p className="mobile-eyebrow">Settings</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Settings</p>
+        <p className="record-progress">Guidance preferences</p>
 
         <div className="record-heading">
           <h2>Guidance preferences</h2>
@@ -38,7 +38,7 @@ export function SettingsScreen({
           <div className="settings-section-heading">
             <h3>Guidance</h3>
 
-            <p>These options do not hide fields, validation messages or important record status.</p>
+            <p>These options do not hide fields, validation messages, or important specimen status information.</p>
           </div>
 
           <label className="settings-option">
@@ -46,7 +46,7 @@ export function SettingsScreen({
               <strong>Show workflow guidance</strong>
 
               <span>
-                Show optional explanations and step-by-step guidance during image intake and specimen documentation.
+                Show optional explanations and step-by-step guidance while adding photographs and documenting specimens.
               </span>
             </span>
 
@@ -61,7 +61,7 @@ export function SettingsScreen({
             <span className="settings-option-copy">
               <strong>Show image guidance</strong>
 
-              <span>Show recommendations such as taking a whole-object, reverse, side or scale photograph.</span>
+              <span>Show recommendations such as taking a whole-object, reverse, side, or scale photograph.</span>
             </span>
 
             <input
@@ -76,7 +76,7 @@ export function SettingsScreen({
           <div className="settings-section-heading">
             <h3>Contribution scope</h3>
 
-            <p>Review the one-time introduction if you would like to revisit what this community is designed for.</p>
+            <p>Review the one-time introduction if you would like to revisit which specimens this project accepts.</p>
           </div>
 
           <button className="secondary-button" type="button" onClick={onReviewContributionScope}>

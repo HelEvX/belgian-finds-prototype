@@ -15,24 +15,26 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
 
   const nextLabel =
     step === 4
-      ? "Choose image route"
+      ? "Add specimen photos"
       : step === 6
-        ? "Back to add material"
-        : step === 10
-          ? "Continue to description"
-          : step === 13
-            ? "Continue to privacy"
-            : step === 14
-              ? "Back to My specimens"
-              : step === 15
-                ? "Back to queue"
-                : step === 11
-                  ? "Add material"
-                  : step === 12
-                    ? "Back to My specimens"
-                    : isJourneyEnd
-                      ? "Restart journey"
-                      : "Next";
+        ? "Back to add specimen"
+        : step === 7
+          ? "Continue to specimen type"
+          : step === 10
+            ? "Continue to identification"
+            : step === 13
+              ? "Continue to privacy"
+              : step === 14
+                ? "Back"
+                : step === 15
+                  ? "Finish privacy choices"
+                  : step === 11
+                    ? "Add a specimen"
+                    : step === 12
+                      ? "Back to My specimens"
+                      : isJourneyEnd
+                        ? "Restart journey"
+                        : "Next";
 
   return (
     <aside className="notes-panel">

@@ -13,8 +13,9 @@ export function ContributionOnboardingScreen({
     <>
       <header className="mobile-header">
         <div>
-          <p className="mobile-eyebrow">Contributing here</p>
-          <h2>Before you add material</h2>
+          <p className="mobile-eyebrow">Contributing to Belgian Fossil Finds</p>
+
+          <h2>Before you add a specimen</h2>
         </div>
 
         <button className="icon-button" type="button" aria-label="Close contribution introduction" onClick={onCancel}>
@@ -26,13 +27,13 @@ export function ContributionOnboardingScreen({
         <p className="record-progress">Contribution introduction</p>
 
         <div className="record-intro-card">
-          <p className="card-kicker">Belgian fossil community</p>
+          <p className="card-kicker">Belgian Fossil Finds</p>
 
-          <h3>Share material with useful context.</h3>
+          <h3>Document a specimen with useful context.</h3>
 
           <p>
-            This space is for Belgian field finds and inherited or documented amateur collection material that may
-            contribute to learning, determination or research.
+            This project is for Belgian field finds and inherited or documented amateur collection specimens that may
+            contribute to learning, identification, or research.
           </p>
         </div>
 
@@ -40,8 +41,8 @@ export function ContributionOnboardingScreen({
           <strong>What does not belong here?</strong>
 
           <span>
-            Shop-bought souvenirs, decorative fossils, commercial stock, bulk purchases and valuation requests are
-            outside this platform’s purpose.
+            Shop-bought souvenirs, decorative fossils, commercial stock, bulk purchases, and valuation requests are
+            outside this project’s purpose.
           </span>
         </div>
 
@@ -50,9 +51,9 @@ export function ContributionOnboardingScreen({
             <span aria-hidden="true">1</span>
 
             <div>
-              <strong>Start with images</strong>
+              <strong>Start with photographs</strong>
 
-              <p>Add images for one specimen, or import a larger set of existing photographs.</p>
+              <p>Add one or more clear photographs of the same physical specimen.</p>
             </div>
           </li>
 
@@ -60,9 +61,9 @@ export function ContributionOnboardingScreen({
             <span aria-hidden="true">2</span>
 
             <div>
-              <strong>Associate images with specimens</strong>
+              <strong>Add what you know</strong>
 
-              <p>Batch imports are grouped before any specimen information is added.</p>
+              <p>Record its apparent type, provenance, find location, physical details, and your own observations.</p>
             </div>
           </li>
 
@@ -70,16 +71,18 @@ export function ContributionOnboardingScreen({
             <span aria-hidden="true">3</span>
 
             <div>
-              <strong>Document at your own pace</strong>
+              <strong>Continue at your own pace</strong>
 
-              <p>Type, provenance, location, observations and help preferences can be added later.</p>
+              <p>
+                Your private draft can be left unfinished and resumed from My specimens during this prototype session.
+              </p>
             </div>
           </li>
         </ul>
 
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={returnToSettings ? onCancel : onContinue}>
-            {returnToSettings ? "Back to settings" : "Choose image route"}
+            {returnToSettings ? "Back to settings" : "Add specimen photos"}
           </button>
 
           <button className="secondary-button" type="button" onClick={onCancel}>

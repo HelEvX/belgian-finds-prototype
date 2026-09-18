@@ -15,8 +15,14 @@ import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
 import { SettingsScreen } from "./features/workspace/SettingsScreen";
 
 // features/record-find
+
+{
+  /* The AddMethodScreen import, render block, and bulk-import state can remain for now. 
+  This keeps the excluded batch prototype intact even though normal mobile navigation no longer enters it. */
+}
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
+
 import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
@@ -516,7 +522,12 @@ function App() {
         return;
 
       case 7:
-        setStep(activeSpecimenDraft ? 0 : 3);
+        if (activeSpecimenDraft) {
+          saveActiveDraftForLater("images");
+          return;
+        }
+
+        setStep(0);
         return;
 
       case 8:
@@ -654,7 +665,7 @@ function App() {
     setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
-      setStep(3);
+      startSingleFindJourney();
       return;
     }
 
@@ -663,21 +674,18 @@ function App() {
   };
 
   const openAddFromMySpecimens = () => {
-    setIsBulkImportOpen(false);
-    setAddReturnStep(0);
-
-    if (hasSeenContributionOnboarding) {
-      setStep(3);
-      return;
-    }
-
-    setOnboardingReturnStep(0);
-    setStep(4);
+    openAddJourney();
   };
 
   const finishContributionOnboarding = () => {
     setHasSeenContributionOnboarding(true);
-    setStep(3);
+
+    if (onboardingReturnStep === 14) {
+      setStep(14);
+      return;
+    }
+
+    startSingleFindJourney();
   };
 
   const dismissContributionOnboarding = () => {
@@ -804,7 +812,7 @@ function App() {
                   return;
                 }
 
-                setStep(3);
+                setStep(0);
               }}
               onContinue={finishSingleFindImageIntake}
               onSaveForLater={() => saveActiveDraftForLater("images")}
