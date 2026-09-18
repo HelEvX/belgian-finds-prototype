@@ -66,7 +66,6 @@ export type SpecimenDescription = {
   helpRequest: HelpRequestPreference | null;
 };
 
-// sharing & visibility
 export type SharingPreference = "private" | "community";
 
 export type LocationVisibility = "country" | "province" | "municipality";
@@ -76,11 +75,6 @@ export type PrivacySettings = {
   locationVisibility: LocationVisibility;
 };
 
-/*
- * A specimen draft is the shared hand-off between image intake and
- * later information completion. A single-specimen image flow creates
- * one draft; batch grouping can create many drafts.
- */
 export type SpecimenDraftImage = {
   id: string;
   file: File;
@@ -90,19 +84,31 @@ export type SpecimenDraftImage = {
 
 export type SpecimenDraftSource = "single-specimen" | "batch-import";
 
-export type SpecimenDraftStatus = "ready-to-annotate" | "annotation-in-progress";
+export type SpecimenDraftStatus = "ready-to-annotate" | "annotation-in-progress" | "ready-for-review";
+
+/*
+ * This is deliberately a domain-level stage rather than a numeric
+ * PrototypeStep. Prototype screen numbers also include Explore,
+ * Settings, and legacy batch screens and should not be persisted as
+ * specimen progress.
+ */
+export type SpecimenDraftStep =
+  | "images"
+  | "type"
+  | "provenance"
+  | "find-location"
+  | "physical-details"
+  | "identification-observations"
+  | "privacy";
 
 export type SpecimenDraft = {
   id: string;
   createdAt: string;
+  updatedAt: string;
   source: SpecimenDraftSource;
   status: SpecimenDraftStatus;
+  resumeStep: SpecimenDraftStep;
   images: SpecimenDraftImage[];
-
-  /*
-   * These fields are deliberately part of the draft now, even though
-   * the existing screens will only be connected to them next.
-   */
   recordKind: RecordKind | null;
   provenance: ProvenanceKind | null;
   locationContext: LocationContext;

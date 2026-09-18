@@ -38,6 +38,7 @@ import {
   type SpecimenDraft,
   type SpecimenDraftImage,
   type SpecimenDraftSource,
+  type SpecimenDraftStep,
 } from "./features/record-find/types";
 import type { PrototypeStep } from "./prototype/types";
 
@@ -81,19 +82,25 @@ const createSpecimenDraft = ({
   source: SpecimenDraftSource;
   images: SpecimenDraftImage[];
   recordKind?: RecordKind | null;
-}): SpecimenDraft => ({
-  id: crypto.randomUUID(),
-  createdAt: new Date().toISOString(),
-  source,
-  status: "ready-to-annotate",
-  images,
-  recordKind,
-  provenance: null,
-  locationContext: createEmptyLocationContext(),
-  physicalDetails: createEmptyPhysicalDetails(),
-  description: createEmptySpecimenDescription(),
-  privacySettings: createEmptyPrivacySettings(),
-});
+}): SpecimenDraft => {
+  const now = new Date().toISOString();
+
+  return {
+    id: crypto.randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+    source,
+    status: "ready-to-annotate",
+    resumeStep: source === "single-specimen" ? "images" : "type",
+    images,
+    recordKind,
+    provenance: null,
+    locationContext: createEmptyLocationContext(),
+    physicalDetails: createEmptyPhysicalDetails(),
+    description: createEmptySpecimenDescription(),
+    privacySettings: createEmptyPrivacySettings(),
+  };
+};
 
 function readStoredBoolean(key: string, fallback: boolean) {
   if (typeof window === "undefined") {
@@ -112,6 +119,16 @@ function readStoredBoolean(key: string, fallback: boolean) {
 function getFileSignature(file: File) {
   return `${file.name}-${file.size}-${file.lastModified}`;
 }
+
+const specimenDraftStepToPrototypeStep: Record<SpecimenDraftStep, PrototypeStep> = {
+  images: 7,
+  type: 5,
+  provenance: 8,
+  "find-location": 9,
+  "physical-details": 10,
+  "identification-observations": 13,
+  privacy: 15,
+};
 
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
@@ -246,6 +263,7 @@ function App() {
         draft.id === activeSingleDraft.id
           ? {
               ...draft,
+              updatedAt: new Date().toISOString(),
               images: [...draft.images, ...newImages],
             }
           : draft,
@@ -306,6 +324,7 @@ function App() {
       draft.id === currentActiveDraft.id
         ? {
             ...draft,
+            updatedAt: new Date().toISOString(),
             images: draft.images.filter((image) => image.id !== photoId),
           }
         : draft,
@@ -326,6 +345,7 @@ function App() {
         | "description"
         | "privacySettings"
         | "status"
+        | "resumeStep"
       >
     >,
   ) => {
@@ -338,11 +358,64 @@ function App() {
         ? {
             ...draft,
             ...updates,
+            updatedAt: new Date().toISOString(),
           }
         : draft,
     );
 
     replaceSpecimenDrafts(nextDrafts);
+  };
+
+  const moveActiveDraftToStep = (resumeStep: SpecimenDraftStep, nextStep: PrototypeStep) => {
+    if (!activeSpecimenDraftId) {
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      resumeStep,
+    });
+
+    setStep(nextStep);
+  };
+
+  const saveActiveDraftForLater = (resumeStep: SpecimenDraftStep) => {
+    if (!activeSpecimenDraftId) {
+      setStep(0);
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      resumeStep,
+    });
+
+    setActiveSpecimenDraftId(null);
+    setStep(0);
+  };
+
+  const resumeSpecimenDraft = (draftId: string) => {
+    const draft = specimenDraftsRef.current.find((candidate) => candidate.id === draftId);
+
+    if (!draft) {
+      return;
+    }
+
+    setIsBulkImportOpen(false);
+    setActiveSpecimenDraftId(draft.id);
+    setStep(specimenDraftStepToPrototypeStep[draft.resumeStep]);
+  };
+
+  const finishPrivacyForCurrentSlice = () => {
+    if (!activeSpecimenDraftId) {
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      status: "ready-for-review",
+      resumeStep: "privacy",
+    });
+
+    setActiveSpecimenDraftId(null);
+    setStep(0);
   };
 
   const finishSingleFindImageIntake = () => {
@@ -358,6 +431,7 @@ function App() {
 
     updateActiveSpecimenDraft({
       status: "annotation-in-progress",
+      resumeStep: "type",
     });
 
     setStep(5);
@@ -391,6 +465,7 @@ function App() {
 
     updateActiveSpecimenDraft({
       status: "annotation-in-progress",
+      resumeStep: "type",
     });
 
     setStep(5);
@@ -433,7 +508,7 @@ function App() {
         return;
 
       case 5:
-        setStep(7);
+        moveActiveDraftToStep("images", 7);
         return;
 
       case 6:
@@ -445,15 +520,15 @@ function App() {
         return;
 
       case 8:
-        setStep(5);
+        moveActiveDraftToStep("type", 5);
         return;
 
       case 9:
-        setStep(8);
+        moveActiveDraftToStep("provenance", 8);
         return;
 
       case 10:
-        setStep(9);
+        moveActiveDraftToStep("find-location", 9);
         return;
 
       case 11:
@@ -465,7 +540,7 @@ function App() {
         return;
 
       case 13:
-        setStep(10);
+        moveActiveDraftToStep("physical-details", 10);
         return;
 
       case 14:
@@ -473,7 +548,7 @@ function App() {
         return;
 
       case 15:
-        setStep(13);
+        moveActiveDraftToStep("identification-observations", 13);
         return;
     }
   };
@@ -504,7 +579,7 @@ function App() {
 
       case 5:
         if (activeSpecimenDraft?.recordKind) {
-          setStep(8);
+          moveActiveDraftToStep("provenance", 8);
         }
         return;
 
@@ -518,22 +593,24 @@ function App() {
 
       case 8:
         if (activeSpecimenDraft?.provenance) {
-          setStep(9);
+          moveActiveDraftToStep("find-location", 9);
         }
         return;
 
       case 9:
         if (activeSpecimenDraft?.locationContext.knowledge) {
-          setStep(10);
+          moveActiveDraftToStep("physical-details", 10);
         }
         return;
 
       case 10:
-        setStep(13);
+        if (activeSpecimenDraft?.physicalDetails.measurementStatus) {
+          moveActiveDraftToStep("identification-observations", 13);
+        }
         return;
 
       case 13:
-        setStep(15);
+        moveActiveDraftToStep("privacy", 15);
         return;
 
       case 11:
@@ -550,13 +627,20 @@ function App() {
         return;
 
       case 15:
-        setStep(12);
+        finishPrivacyForCurrentSlice();
         return;
     }
   };
 
   const showMemberHome = () => {
     setIsBulkImportOpen(false);
+
+    /*
+     * Draft values are already stored as fields change. Leaving the flow
+     * therefore keeps the current draft without copying or transferring
+     * its images.
+     */
+    setActiveSpecimenDraftId(null);
     setStep(0);
   };
 
@@ -647,8 +731,8 @@ function App() {
           }>
           {step === 0 && (
             <WelcomeScreen
-              queueCount={specimenDrafts.length}
-              onOpenQueue={() => setStep(12)}
+              drafts={specimenDrafts}
+              onResumeSpecimen={resumeSpecimenDraft}
               onAddSpecimen={openAddFromMySpecimens}
             />
           )}
@@ -703,8 +787,8 @@ function App() {
                   recordKind,
                 })
               }
-              onBack={() => setStep(7)}
-              onContinue={() => setStep(8)}
+              onBack={() => moveActiveDraftToStep("images", 7)}
+              onContinue={() => moveActiveDraftToStep("provenance", 8)}
             />
           )}
 
@@ -715,7 +799,7 @@ function App() {
               onRemovePhoto={removeFindPhoto}
               onBack={() => {
                 if (activeSpecimenDraft) {
-                  setStep(0);
+                  saveActiveDraftForLater("images");
                   return;
                 }
 
@@ -734,8 +818,8 @@ function App() {
                   provenance,
                 })
               }
-              onBack={() => setStep(5)}
-              onContinue={() => setStep(9)}
+              onBack={() => moveActiveDraftToStep("type", 5)}
+              onContinue={() => moveActiveDraftToStep("find-location", 9)}
             />
           )}
 
@@ -748,8 +832,8 @@ function App() {
                   locationContext,
                 })
               }
-              onBack={() => setStep(8)}
-              onContinue={() => setStep(10)}
+              onBack={() => moveActiveDraftToStep("provenance", 8)}
+              onContinue={() => moveActiveDraftToStep("physical-details", 10)}
             />
           )}
 
@@ -762,8 +846,8 @@ function App() {
                   physicalDetails,
                 })
               }
-              onBack={() => setStep(9)}
-              onContinue={() => setStep(13)}
+              onBack={() => moveActiveDraftToStep("find-location", 9)}
+              onContinue={() => moveActiveDraftToStep("identification-observations", 13)}
             />
           )}
 
@@ -776,8 +860,8 @@ function App() {
                   description,
                 })
               }
-              onBack={() => setStep(10)}
-              onFinish={() => setStep(15)}
+              onBack={() => moveActiveDraftToStep("physical-details", 10)}
+              onFinish={() => moveActiveDraftToStep("privacy", 15)}
             />
           )}
 
@@ -789,8 +873,8 @@ function App() {
                   privacySettings,
                 })
               }
-              onBack={() => setStep(13)}
-              onFinish={() => setStep(12)}
+              onBack={() => moveActiveDraftToStep("identification-observations", 13)}
+              onFinish={finishPrivacyForCurrentSlice}
             />
           )}
         </PhoneFrame>
