@@ -6,7 +6,7 @@ type PhotoScreenProps = {
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
-  onAddToQueue: () => void;
+  onContinue: () => void;
   showImageGuidance: boolean;
 };
 
@@ -55,7 +55,7 @@ export function PhotoScreen({
   onAddPhotos,
   onRemovePhoto,
   onBack,
-  onAddToQueue,
+  onContinue,
   showImageGuidance,
 }: PhotoScreenProps) {
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
@@ -291,8 +291,8 @@ export function PhotoScreen({
           className="primary-button photo-continue-button"
           type="button"
           disabled={photos.length === 0}
-          onClick={onAddToQueue}>
-          Add {photos.length} {photos.length === 1 ? "image" : "images"} to annotation queue
+          onClick={onContinue}>
+          Continue to specimen type
         </button>
       </section>
     </>

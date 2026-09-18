@@ -1,28 +1,30 @@
 import { useEffect, useRef, useState } from "react";
+
 // components
 import { BottomNavigation } from "./components/BottomNavigation";
 import { NotesPanel } from "./components/NotesPanel";
 import { PhoneFrame } from "./components/PhoneFrame";
+
 // explore
 import { BrowseScreen } from "./features/explore/BrowseScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
+
 // features/workspace
 import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
-
 import { SettingsScreen } from "./features/workspace/SettingsScreen";
+
 // features/record-find
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
 import { BulkImportModal } from "./features/record-find/BulkImportModal";
+import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
+import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
 import { PhotoScreen } from "./features/record-find/PhotoScreen";
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
-import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
-
-import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
-import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { PrivacySharingScreen } from "./features/record-find/PrivacySharingScreen";
-import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
+import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
+import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
 
 import {
   MAX_FIND_PHOTOS,
@@ -107,10 +109,12 @@ function readStoredBoolean(key: string, fallback: boolean) {
   return storedValue === "true";
 }
 
+function getFileSignature(file: File) {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
 function App() {
   const [step, setStep] = useState<PrototypeStep>(0);
-
-  const [findPhotos, setFindPhotos] = useState<LocalFindPhoto[]>([]);
 
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
 
@@ -136,7 +140,6 @@ function App() {
 
   const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(0);
 
-  const findPhotosRef = useRef<LocalFindPhoto[]>([]);
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
 
   useEffect(() => {
@@ -156,9 +159,19 @@ function App() {
 
   const activeSpecimenDraft = specimenDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
-  useEffect(() => {
-    findPhotosRef.current = findPhotos;
-  }, [findPhotos]);
+  /*
+   * PhotoScreen currently expects LocalFindPhoto[].
+   *
+   * A single-specimen draft can contain only camera or existing-device
+   * images, so this narrowing is safe. Batch-import images never enter
+   * the one-specimen photo editor.
+   */
+  const activeSingleSpecimenPhotos: LocalFindPhoto[] =
+    activeSpecimenDraft?.source === "single-specimen"
+      ? activeSpecimenDraft.images.filter(
+          (image): image is LocalFindPhoto => image.source === "camera" || image.source === "existing",
+        )
+      : [];
 
   useEffect(() => {
     specimenDraftsRef.current = specimenDrafts;
@@ -166,10 +179,9 @@ function App() {
 
   useEffect(() => {
     return () => {
-      const previewUrls = new Set([
-        ...findPhotosRef.current.map((photo) => photo.previewUrl),
-        ...specimenDraftsRef.current.flatMap((draft) => draft.images.map((image) => image.previewUrl)),
-      ]);
+      const previewUrls = new Set(
+        specimenDraftsRef.current.flatMap((draft) => draft.images.map((image) => image.previewUrl)),
+      );
 
       previewUrls.forEach((previewUrl) => {
         URL.revokeObjectURL(previewUrl);
@@ -177,72 +189,130 @@ function App() {
     };
   }, []);
 
-  const addFindPhotos = (files: File[], source: FindPhotoSource) => {
-    setFindPhotos((currentPhotos) => {
-      const remainingSlots = MAX_FIND_PHOTOS - currentPhotos.length;
+  const replaceSpecimenDrafts = (nextDrafts: SpecimenDraft[]) => {
+    specimenDraftsRef.current = nextDrafts;
+    setSpecimenDrafts(nextDrafts);
+  };
 
-      if (remainingSlots <= 0) {
-        return currentPhotos;
+  const addFindPhotos = (files: File[], source: FindPhotoSource) => {
+    const currentDrafts = specimenDraftsRef.current;
+
+    const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
+
+    const activeSingleDraft = currentActiveDraft?.source === "single-specimen" ? currentActiveDraft : null;
+
+    const currentImages = activeSingleDraft?.images ?? [];
+    const remainingSlots = MAX_FIND_PHOTOS - currentImages.length;
+
+    if (remainingSlots <= 0) {
+      return;
+    }
+
+    const existingSignatures = new Set(currentImages.map((image) => getFileSignature(image.file)));
+
+    const newImages: SpecimenDraftImage[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        continue;
       }
 
-      const existingSignatures = new Set(
-        currentPhotos.map((photo) => `${photo.file.name}-${photo.file.size}-${photo.file.lastModified}`),
+      if (newImages.length >= remainingSlots) {
+        break;
+      }
+
+      const signature = getFileSignature(file);
+
+      if (existingSignatures.has(signature)) {
+        continue;
+      }
+
+      existingSignatures.add(signature);
+
+      newImages.push({
+        id: crypto.randomUUID(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+        source,
+      });
+    }
+
+    if (newImages.length === 0) {
+      return;
+    }
+
+    if (activeSingleDraft) {
+      const nextDrafts = currentDrafts.map((draft) =>
+        draft.id === activeSingleDraft.id
+          ? {
+              ...draft,
+              images: [...draft.images, ...newImages],
+            }
+          : draft,
       );
 
-      const newPhotos: LocalFindPhoto[] = [];
+      replaceSpecimenDrafts(nextDrafts);
+      return;
+    }
 
-      for (const file of files) {
-        if (!file.type.startsWith("image/") || newPhotos.length >= remainingSlots) {
-          continue;
-        }
-
-        const signature = `${file.name}-${file.size}-${file.lastModified}`;
-
-        if (existingSignatures.has(signature)) {
-          continue;
-        }
-
-        existingSignatures.add(signature);
-
-        newPhotos.push({
-          id: crypto.randomUUID(),
-          file,
-          previewUrl: URL.createObjectURL(file),
-          source,
-        });
-      }
-
-      const nextPhotos = [...currentPhotos, ...newPhotos];
-
-      findPhotosRef.current = nextPhotos;
-
-      return nextPhotos;
+    /*
+     * The private draft now begins with the first accepted image.
+     * There is no separate temporary photo collection and no later
+     * transfer of object-URL ownership.
+     */
+    const newDraft = createSpecimenDraft({
+      source: "single-specimen",
+      images: newImages,
     });
+
+    replaceSpecimenDrafts([...currentDrafts, newDraft]);
+    setActiveSpecimenDraftId(newDraft.id);
   };
 
   const removeFindPhoto = (photoId: string) => {
-    setFindPhotos((currentPhotos) => {
-      const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
+    const currentDrafts = specimenDraftsRef.current;
 
-      if (photoToRemove) {
-        URL.revokeObjectURL(photoToRemove.previewUrl);
+    const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
+
+    if (!currentActiveDraft || currentActiveDraft.source !== "single-specimen") {
+      return;
+    }
+
+    const photoToRemove = currentActiveDraft.images.find((image) => image.id === photoId);
+
+    if (!photoToRemove) {
+      return;
+    }
+
+    if (currentActiveDraft.images.length === 1) {
+      const shouldDiscardDraft = window.confirm(
+        "Removing the final photograph will discard this private draft and any information entered for it. Continue?",
+      );
+
+      if (!shouldDiscardDraft) {
+        return;
       }
 
-      const remainingPhotos = currentPhotos.filter((photo) => photo.id !== photoId);
+      const nextDrafts = currentDrafts.filter((draft) => draft.id !== currentActiveDraft.id);
 
-      findPhotosRef.current = remainingPhotos;
+      replaceSpecimenDrafts(nextDrafts);
+      setActiveSpecimenDraftId(null);
+      URL.revokeObjectURL(photoToRemove.previewUrl);
 
-      return remainingPhotos;
-    });
-  };
+      return;
+    }
 
-  const clearSingleFind = () => {
-    findPhotosRef.current.forEach((photo) => {
-      URL.revokeObjectURL(photo.previewUrl);
-    });
+    const nextDrafts = currentDrafts.map((draft) =>
+      draft.id === currentActiveDraft.id
+        ? {
+            ...draft,
+            images: draft.images.filter((image) => image.id !== photoId),
+          }
+        : draft,
+    );
 
-    findPhotosRef.current = [];
-    setFindPhotos([]);
+    replaceSpecimenDrafts(nextDrafts);
+    URL.revokeObjectURL(photoToRemove.previewUrl);
   };
 
   const updateActiveSpecimenDraft = (
@@ -263,40 +333,34 @@ function App() {
       return;
     }
 
-    setSpecimenDrafts((currentDrafts) =>
-      currentDrafts.map((draft) =>
-        draft.id === activeSpecimenDraftId
-          ? {
-              ...draft,
-              ...updates,
-            }
-          : draft,
-      ),
+    const nextDrafts = specimenDraftsRef.current.map((draft) =>
+      draft.id === activeSpecimenDraftId
+        ? {
+            ...draft,
+            ...updates,
+          }
+        : draft,
     );
+
+    replaceSpecimenDrafts(nextDrafts);
   };
 
-  const addSingleFindToQueue = () => {
-    if (findPhotos.length === 0) {
+  const finishSingleFindImageIntake = () => {
+    const currentActiveDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+
+    if (
+      !currentActiveDraft ||
+      currentActiveDraft.source !== "single-specimen" ||
+      currentActiveDraft.images.length === 0
+    ) {
       return;
     }
 
-    const draft = createSpecimenDraft({
-      source: "single-specimen",
-      images: findPhotos,
+    updateActiveSpecimenDraft({
+      status: "annotation-in-progress",
     });
 
-    setSpecimenDrafts((currentDrafts) => [...currentDrafts, draft]);
-
-    setActiveSpecimenDraftId(draft.id);
-
-    /*
-     * Ownership of these preview URLs transfers from the temporary
-     * image-intake flow to the local specimen draft.
-     */
-    findPhotosRef.current = [];
-    setFindPhotos([]);
-
-    setStep(12);
+    setStep(5);
   };
 
   const addBatchDraftsToQueue = (draftImageSets: SpecimenDraftImage[][]) => {
@@ -313,7 +377,7 @@ function App() {
       return;
     }
 
-    setSpecimenDrafts((currentDrafts) => [...currentDrafts, ...newDrafts]);
+    replaceSpecimenDrafts([...specimenDraftsRef.current, ...newDrafts]);
 
     setActiveSpecimenDraftId(newDrafts[0].id);
     setIsBulkImportOpen(false);
@@ -337,7 +401,11 @@ function App() {
   };
 
   const startSingleFindJourney = () => {
-    clearSingleFind();
+    /*
+     * Existing drafts remain untouched. The first accepted image will
+     * create and activate a new single-specimen draft.
+     */
+    setActiveSpecimenDraftId(null);
     setStep(7);
   };
 
@@ -365,7 +433,7 @@ function App() {
         return;
 
       case 5:
-        setStep(12);
+        setStep(7);
         return;
 
       case 6:
@@ -373,7 +441,7 @@ function App() {
         return;
 
       case 7:
-        setStep(3);
+        setStep(activeSpecimenDraft ? 0 : 3);
         return;
 
       case 8:
@@ -445,7 +513,7 @@ function App() {
         return;
 
       case 7:
-        addSingleFindToQueue();
+        finishSingleFindImageIntake();
         return;
 
       case 8:
@@ -635,18 +703,25 @@ function App() {
                   recordKind,
                 })
               }
-              onBack={() => setStep(12)}
+              onBack={() => setStep(7)}
               onContinue={() => setStep(8)}
             />
           )}
 
           {step === 7 && (
             <PhotoScreen
-              photos={findPhotos}
+              photos={activeSingleSpecimenPhotos}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
-              onBack={() => setStep(3)}
-              onAddToQueue={addSingleFindToQueue}
+              onBack={() => {
+                if (activeSpecimenDraft) {
+                  setStep(0);
+                  return;
+                }
+
+                setStep(3);
+              }}
+              onContinue={finishSingleFindImageIntake}
               showImageGuidance={showImageGuidance}
             />
           )}
@@ -726,7 +801,7 @@ function App() {
           onNext={goToNextStep}
           nextDisabled={
             (step === 5 && activeSpecimenDraft?.recordKind === null) ||
-            (step === 7 && findPhotos.length === 0) ||
+            (step === 7 && activeSingleSpecimenPhotos.length === 0) ||
             (step === 8 && activeSpecimenDraft?.provenance === null) ||
             (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
             (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null)

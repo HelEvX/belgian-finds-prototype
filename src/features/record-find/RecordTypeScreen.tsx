@@ -15,19 +15,22 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Annotation queue
+          ← Images
         </button>
 
         <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Material type</p>
+        <p className="record-progress">Specimen details · Type</p>
 
         <div className="record-heading">
-          <h2>What are you recording?</h2>
+          <h2>What does this appear to be?</h2>
 
-          <p>Choose the closest option. You can change this later.</p>
+          <p>
+            Choose the closest option. You can change this later, and you do not need to identify the specimen before
+            continuing.
+          </p>
         </div>
 
         <div className="record-choice-list">
@@ -65,7 +68,7 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
             <>
               <strong>{selectedRecordLabel} selected</strong>
 
-              <span>Next, record what is known about its provenance.</span>
+              <span>Next, record what is known about the specimen’s provenance.</span>
             </>
           ) : (
             <span>Select one option before continuing.</span>
