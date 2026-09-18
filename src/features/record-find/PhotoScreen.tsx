@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { MAX_FIND_PHOTOS, type FindPhotoSource, type LocalFindPhoto } from "./types";
 
-export type PhotoRemovalResult = "removed" | "draft-discarded" | "cancelled";
-
 type PhotoScreenProps = {
   photos: LocalFindPhoto[];
+  hasDraft: boolean;
   onAddPhotos: (files: File[], source: FindPhotoSource) => void;
-  onRemovePhoto: (photoId: string) => PhotoRemovalResult;
+  onRemovePhoto: (photoId: string) => boolean;
   onBack: () => void;
   onContinue: () => void;
   onSaveForLater: () => void;
@@ -55,6 +54,7 @@ function getPhotoGuidance(photoCount: number) {
 
 export function PhotoScreen({
   photos,
+  hasDraft,
   onAddPhotos,
   onRemovePhoto,
   onBack,
@@ -272,18 +272,18 @@ export function PhotoScreen({
                     type="button"
                     aria-label={`Remove ${photo.file.name}`}
                     onClick={() => {
-                      const removalResult = onRemovePhoto(photo.id);
+                      const wasFinalPhoto = photos.length === 1;
+                      const wasRemoved = onRemovePhoto(photo.id);
 
-                      if (removalResult === "cancelled") {
+                      if (!wasRemoved) {
                         return;
                       }
 
                       setFeedback({
-                        tone: "success",
-                        message:
-                          removalResult === "draft-discarded"
-                            ? "Private draft discarded. Add a photograph to start again."
-                            : "Photograph removed. You can select it again if needed.",
+                        tone: wasFinalPhoto ? "warning" : "success",
+                        message: wasFinalPhoto
+                          ? "Photograph removed. Add another photograph before continuing."
+                          : "Photograph removed. You can select it again if needed.",
                       });
                     }}>
                     ×
@@ -305,7 +305,7 @@ export function PhotoScreen({
             Continue to specimen type
           </button>
 
-          {photos.length > 0 && (
+          {hasDraft && (
             <button className="secondary-button" type="button" onClick={onSaveForLater}>
               Save and finish later
             </button>

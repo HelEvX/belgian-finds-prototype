@@ -26,7 +26,7 @@ import { BulkImportModal } from "./features/record-find/BulkImportModal";
 import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
-import { PhotoScreen, type PhotoRemovalResult } from "./features/record-find/PhotoScreen";
+import { PhotoScreen } from "./features/record-find/PhotoScreen";
 
 import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScreen";
 import { PrivacySharingScreen } from "./features/record-find/PrivacySharingScreen";
@@ -294,45 +294,31 @@ function App() {
     setActiveSpecimenDraftId(newDraft.id);
   };
 
-  const removeFindPhoto = (photoId: string): PhotoRemovalResult => {
+  const removeFindPhoto = (photoId: string): boolean => {
     const currentDrafts = specimenDraftsRef.current;
 
     const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
     if (!currentActiveDraft || currentActiveDraft.source !== "single-specimen") {
-      return "cancelled";
+      return false;
     }
 
     const photoToRemove = currentActiveDraft.images.find((image) => image.id === photoId);
 
     if (!photoToRemove) {
-      return "cancelled";
+      return false;
     }
 
-    if (currentActiveDraft.images.length === 1) {
-      const shouldDiscardDraft = window.confirm(
-        "Removing the final photograph will discard this private draft and any information entered for it. Continue?",
-      );
-
-      if (!shouldDiscardDraft) {
-        return "cancelled";
-      }
-
-      const nextDrafts = currentDrafts.filter((draft) => draft.id !== currentActiveDraft.id);
-
-      replaceSpecimenDrafts(nextDrafts);
-      setActiveSpecimenDraftId(null);
-      URL.revokeObjectURL(photoToRemove.previewUrl);
-
-      return "draft-discarded";
-    }
+    const remainingImages = currentActiveDraft.images.filter((image) => image.id !== photoId);
 
     const nextDrafts = currentDrafts.map((draft) =>
       draft.id === currentActiveDraft.id
         ? {
             ...draft,
             updatedAt: new Date().toISOString(),
-            images: draft.images.filter((image) => image.id !== photoId),
+            resumeStep: "images" as const,
+            status: draft.status === "ready-for-review" ? ("annotation-in-progress" as const) : draft.status,
+            images: remainingImages,
           }
         : draft,
     );
@@ -340,7 +326,7 @@ function App() {
     replaceSpecimenDrafts(nextDrafts);
     URL.revokeObjectURL(photoToRemove.previewUrl);
 
-    return "removed";
+    return true;
   };
 
   const updateActiveSpecimenDraft = (
@@ -807,6 +793,7 @@ function App() {
           {step === 7 && (
             <PhotoScreen
               photos={activeSingleSpecimenPhotos}
+              hasDraft={Boolean(activeSpecimenDraft)}
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
               onBack={() => {
