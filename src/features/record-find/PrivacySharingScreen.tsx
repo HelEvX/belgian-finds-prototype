@@ -18,13 +18,13 @@ const sharingOptions: Array<{
     id: "private",
     symbol: "◌",
     title: "Keep as a private draft",
-    description: "Only you can see the record. You can review and share it later.",
+    description: "Only you can see this draft. You can review and share the specimen later.",
   },
   {
     id: "community",
     symbol: "◎",
-    title: "Prepare to share with the community",
-    description: "After final review, this record can be published with the location detail you choose below.",
+    title: "Prepare to share with other members",
+    description: "After final review, the specimen can be shared with the location detail you choose below.",
   },
 ];
 
@@ -80,21 +80,21 @@ export function PrivacySharingScreen({ value, onChange, onBack, onFinish, onSave
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Privacy</p>
+        <p className="record-progress">Specimen details · Privacy and sharing</p>
 
         <div className="record-heading">
           <h2>Privacy and sharing</h2>
 
           <p>
-            Decide whether to keep this record private or prepare it for community sharing. Nothing is published from
+            Keep this as a private draft or record a preference to share the specimen later. Nothing is published from
             this screen.
           </p>
         </div>
 
         <div className="physical-section-heading">
-          <h3>Who can see this record?</h3>
+          <h3>Who could see this specimen after it is shared?</h3>
 
-          <p>You will have a final review before any community sharing happens.</p>
+          <p>A final review will be required before any sharing takes place.</p>
         </div>
 
         <div className="record-choice-list">

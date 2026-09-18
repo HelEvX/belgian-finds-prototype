@@ -169,7 +169,7 @@ export function PhysicalDetailsScreen({
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Physical details</p>
+        <p className="record-progress">Specimen details · Physical details</p>
 
         <div className="record-heading">
           <h2>{copy.heading}</h2>
@@ -285,7 +285,7 @@ export function PhysicalDetailsScreen({
           <div className="record-selection-note">
             <strong>Measurements can be added later</strong>
 
-            <span>A record can still be useful with photographs, field context and collection information.</span>
+            <span>The specimen can still be useful with photographs, find context, and collection information.</span>
           </div>
         )}
 

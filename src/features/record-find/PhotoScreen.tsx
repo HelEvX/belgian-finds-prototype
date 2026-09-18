@@ -138,7 +138,7 @@ export function PhotoScreen({
       feedbackParts.push(
         `${maximumSkippedCount} ${
           maximumSkippedCount === 1 ? "image was" : "images were"
-        } skipped because one specimen record can include up to five photographs.`,
+        } skipped because one specimen can include up to five photographs.`,
       );
     }
 
@@ -169,12 +169,14 @@ export function PhotoScreen({
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">One specimen · Images</p>
+        <p className="record-progress">Specimen photos</p>
 
         <div className="record-heading">
-          <h2>Add images for one specimen</h2>
+          <h2>Add specimen photos</h2>
 
-          <p>Add at least one photograph. Three useful views are recommended, but they are not required.</p>
+          <p>
+            Add at least one photograph of this specimen. Three useful views are recommended, but they are not required.
+          </p>
         </div>
 
         <input

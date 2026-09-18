@@ -107,7 +107,7 @@ export function DescriptionHelpScreen({
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Description</p>
+        <p className="record-progress">Identification and observations</p>
 
         <div className="record-heading">
           <h2>What do you know about this specimen?</h2>
@@ -175,9 +175,12 @@ export function DescriptionHelpScreen({
         </div>
 
         <div className="physical-section-heading">
-          <h3>Would you like to invite help?</h3>
+          <h3>Would you like to invite input?</h3>
 
-          <p>This is a draft preference only. A private record remains private until you later choose to publish it.</p>
+          <p>
+            This is a draft preference only. A private draft remains private until you later choose to share the
+            specimen.
+          </p>
         </div>
 
         <div className="record-choice-list">
@@ -215,11 +218,11 @@ export function DescriptionHelpScreen({
             <>
               <strong>{selectedHelpOption.title}</strong>
 
-              <span>You can revise this preference when reviewing the record later.</span>
+              <span>You can revise this preference when reviewing the specimen later.</span>
             </>
           ) : (
             <span>
-              Help is optional. Leave this undecided for now or choose the option that best reflects your intention.
+              Input is optional. Leave this undecided for now or choose the option that best reflects your intention.
             </span>
           )}
         </div>
@@ -229,8 +232,8 @@ export function DescriptionHelpScreen({
             <strong>Important distinction</strong>
 
             <span>
-              A suggested identification is the contributor’s own statement. It does not change the record’s
-              determination status or create a verified identification.
+              A suggested identification is your own statement. It does not change the specimen’s determination status
+              or create a verified identification.
             </span>
           </div>
         )}

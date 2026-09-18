@@ -22,14 +22,14 @@ export function ProvenanceScreen({
     <>
       <header className="mobile-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Annotation queue
+          ← Specimen type
         </button>
 
         <p className="mobile-eyebrow">Document specimen</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Provenance</p>
+        <p className="record-progress">Specimen details · Provenance</p>
 
         <div className="record-heading">
           <h2>Who originally found this specimen?</h2>

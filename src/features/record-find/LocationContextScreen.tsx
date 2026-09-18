@@ -214,7 +214,7 @@ export function LocationContextScreen({
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Specimen annotation · Location and context</p>
+        <p className="record-progress">Find location and collecting context</p>
 
         <div className="record-heading">
           <h2>{copy.heading}</h2>
@@ -408,10 +408,10 @@ export function LocationContextScreen({
 
         {value.knowledge === "unknown" && (
           <div className="record-selection-note">
-            <strong>The record can still be saved</strong>
+            <strong>The private draft can still be saved</strong>
 
             <span>
-              A missing locality limits scientific interpretation, but an inherited specimen may still be worth
+              A missing find location limits scientific interpretation, but an inherited specimen may still be worth
               documenting. Location information can be added later if it is recovered.
             </span>
           </div>
@@ -424,10 +424,10 @@ export function LocationContextScreen({
             <>
               <strong>{selectedKnowledge.title}</strong>
 
-              <span>You can continue even when individual context fields are incomplete.</span>
+              <span>You can continue even when individual details are incomplete.</span>
             </>
           ) : (
-            <span>Choose whether the find location is known, partial or currently unknown.</span>
+            <span>Choose whether the find location is known, partial, or currently unknown.</span>
           )}
         </div>
 
