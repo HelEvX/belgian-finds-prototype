@@ -170,8 +170,6 @@ export function LocationContextScreen({
 }: LocationContextScreenProps) {
   const copy = provenanceLocationCopy[provenance];
 
-  const selectedKnowledge = knowledgeOptions.find((option) => option.id === value.knowledge);
-
   const selectedDateQualifier = collectionDateOptions.find((option) => option.id === value.collectionDateQualifier);
 
   const updateKnowledge = (knowledge: LocationKnowledge) => {
@@ -417,22 +415,8 @@ export function LocationContextScreen({
           </div>
         )}
 
-        <div
-          className={`record-selection-note ${selectedKnowledge ? "record-selection-note-active" : ""}`}
-          aria-live="polite">
-          {selectedKnowledge ? (
-            <>
-              <strong>{selectedKnowledge.title}</strong>
-
-              <span>You can continue even when individual details are incomplete.</span>
-            </>
-          ) : (
-            <span>Choose whether the find location is known, partial, or currently unknown.</span>
-          )}
-        </div>
-
         <div className="mobile-actions">
-          <button className="primary-button" type="button" disabled={!selectedKnowledge} onClick={onContinue}>
+          <button className="primary-button" type="button" disabled={!value.knowledge} onClick={onContinue}>
             Continue to physical details
           </button>
 

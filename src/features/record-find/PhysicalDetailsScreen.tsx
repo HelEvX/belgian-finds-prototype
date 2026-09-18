@@ -135,8 +135,6 @@ export function PhysicalDetailsScreen({
 }: PhysicalDetailsScreenProps) {
   const copy = physicalDetailsCopy[recordKind];
 
-  const selectedMeasurementStatus = measurementOptions.find((option) => option.id === value.measurementStatus);
-
   const updateMeasurementStatus = (measurementStatus: MeasurementStatus) => {
     onChange({
       ...value,
@@ -313,22 +311,8 @@ export function PhysicalDetailsScreen({
           </label>
         </div>
 
-        <div
-          className={`record-selection-note ${selectedMeasurementStatus ? "record-selection-note-active" : ""}`}
-          aria-live="polite">
-          {selectedMeasurementStatus ? (
-            <>
-              <strong>{selectedMeasurementStatus.title}</strong>
-
-              <span>You can continue with incomplete or approximate physical details.</span>
-            </>
-          ) : (
-            <span>Choose whether measurements are available, approximate or not yet recorded.</span>
-          )}
-        </div>
-
         <div className="mobile-actions">
-          <button className="primary-button" type="button" disabled={!selectedMeasurementStatus} onClick={onContinue}>
+          <button className="primary-button" type="button" disabled={!value.measurementStatus} onClick={onContinue}>
             Continue to identification and observations
           </button>
 

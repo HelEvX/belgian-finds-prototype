@@ -16,8 +16,6 @@ export function ProvenanceScreen({
   onContinue,
   onSaveForLater,
 }: ProvenanceScreenProps) {
-  const selectedOption = provenanceOptions.find((option) => option.id === selectedProvenance);
-
   return (
     <>
       <header className="mobile-header">
@@ -65,24 +63,8 @@ export function ProvenanceScreen({
           })}
         </div>
 
-        <div
-          className={`record-selection-note ${selectedOption ? "record-selection-note-active" : ""}`}
-          aria-live="polite">
-          {selectedOption ? (
-            <>
-              <strong>{selectedOption.title}</strong>
-
-              <span>Next, add what is known about where the specimen was found.</span>
-            </>
-          ) : (
-            <span>
-              Choose the closest option. Incomplete history does not prevent you from documenting an older collection.
-            </span>
-          )}
-        </div>
-
         <div className="mobile-actions">
-          <button className="primary-button" type="button" disabled={!selectedOption} onClick={onContinue}>
+          <button className="primary-button" type="button" disabled={!selectedProvenance} onClick={onContinue}>
             Continue to find location
           </button>
 

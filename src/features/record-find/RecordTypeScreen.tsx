@@ -16,8 +16,6 @@ export function RecordTypeScreen({
   onContinue,
   onSaveForLater,
 }: RecordTypeScreenProps) {
-  const selectedRecordLabel = recordKinds.find((record) => record.id === selectedKind)?.title;
-
   return (
     <>
       <header className="mobile-header">
@@ -66,20 +64,6 @@ export function RecordTypeScreen({
               </button>
             );
           })}
-        </div>
-
-        <div
-          className={`record-selection-note ${selectedKind ? "record-selection-note-active" : ""}`}
-          aria-live="polite">
-          {selectedRecordLabel ? (
-            <>
-              <strong>{selectedRecordLabel} selected</strong>
-
-              <span>Next, record what is known about the specimen’s provenance.</span>
-            </>
-          ) : (
-            <span>Select one option before continuing.</span>
-          )}
         </div>
 
         <div className="mobile-actions">

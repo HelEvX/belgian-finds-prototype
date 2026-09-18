@@ -63,8 +63,6 @@ export function DescriptionHelpScreen({
   onFinish,
   onSaveForLater,
 }: DescriptionHelpScreenProps) {
-  const selectedHelpOption = helpOptions.find((option) => option.id === value.helpRequest);
-
   const hasSuggestedIdentification = value.suggestedIdentification.trim().length > 0;
 
   const updateTextField = (field: DescriptionTextField, fieldValue: string) => {
@@ -209,22 +207,6 @@ export function DescriptionHelpScreen({
               </button>
             );
           })}
-        </div>
-
-        <div
-          className={`record-selection-note ${selectedHelpOption ? "record-selection-note-active" : ""}`}
-          aria-live="polite">
-          {selectedHelpOption ? (
-            <>
-              <strong>{selectedHelpOption.title}</strong>
-
-              <span>You can revise this preference when reviewing the specimen later.</span>
-            </>
-          ) : (
-            <span>
-              Input is optional. Leave this undecided for now or choose the option that best reflects your intention.
-            </span>
-          )}
         </div>
 
         {showWorkflowGuidance && (
