@@ -6,6 +6,7 @@ type LocationContextScreenProps = {
   onChange: (value: LocationContext) => void;
   onBack: () => void;
   onContinue: () => void;
+  onSaveForLater: () => void;
 };
 
 type LocationTextField = Exclude<
@@ -159,7 +160,14 @@ function getCompatibleDateValue(currentValue: string, qualifier: CollectionDateQ
   return isMonth ? currentValue : "";
 }
 
-export function LocationContextScreen({ provenance, value, onChange, onBack, onContinue }: LocationContextScreenProps) {
+export function LocationContextScreen({
+  provenance,
+  value,
+  onChange,
+  onBack,
+  onContinue,
+  onSaveForLater,
+}: LocationContextScreenProps) {
   const copy = provenanceLocationCopy[provenance];
 
   const selectedKnowledge = knowledgeOptions.find((option) => option.id === value.knowledge);
@@ -423,13 +431,15 @@ export function LocationContextScreen({ provenance, value, onChange, onBack, onC
           )}
         </div>
 
-        <button
-          className="primary-button record-continue-button"
-          type="button"
-          disabled={!selectedKnowledge}
-          onClick={onContinue}>
-          Continue to physical details
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" disabled={!selectedKnowledge} onClick={onContinue}>
+            Continue to physical details
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

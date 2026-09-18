@@ -6,6 +6,7 @@ type DescriptionHelpScreenProps = {
   onChange: (value: SpecimenDescription) => void;
   onBack: () => void;
   onFinish: () => void;
+  onSaveForLater: () => void;
 };
 
 type DescriptionTextField = Exclude<keyof SpecimenDescription, "identificationConfidence" | "helpRequest">;
@@ -60,6 +61,7 @@ export function DescriptionHelpScreen({
   onChange,
   onBack,
   onFinish,
+  onSaveForLater,
 }: DescriptionHelpScreenProps) {
   const selectedHelpOption = helpOptions.find((option) => option.id === value.helpRequest);
 
@@ -233,9 +235,15 @@ export function DescriptionHelpScreen({
           </div>
         )}
 
-        <button className="primary-button record-continue-button" type="button" onClick={onFinish}>
-          Continue to privacy and sharing
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" onClick={onFinish}>
+            Continue to privacy and sharing
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

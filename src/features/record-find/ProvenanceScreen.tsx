@@ -6,9 +6,16 @@ type ProvenanceScreenProps = {
   onSelect: (provenance: ProvenanceKind) => void;
   onBack: () => void;
   onContinue: () => void;
+  onSaveForLater: () => void;
 };
 
-export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onContinue }: ProvenanceScreenProps) {
+export function ProvenanceScreen({
+  selectedProvenance,
+  onSelect,
+  onBack,
+  onContinue,
+  onSaveForLater,
+}: ProvenanceScreenProps) {
   const selectedOption = provenanceOptions.find((option) => option.id === selectedProvenance);
 
   return (
@@ -74,13 +81,15 @@ export function ProvenanceScreen({ selectedProvenance, onSelect, onBack, onConti
           )}
         </div>
 
-        <button
-          className="primary-button record-continue-button"
-          type="button"
-          disabled={!selectedOption}
-          onClick={onContinue}>
-          Continue to location
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" disabled={!selectedOption} onClick={onContinue}>
+            Continue to find location
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

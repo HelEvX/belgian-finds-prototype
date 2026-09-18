@@ -5,6 +5,7 @@ type PrivacySharingScreenProps = {
   onChange: (value: PrivacySettings) => void;
   onBack: () => void;
   onFinish: () => void;
+  onSaveForLater: () => void;
 };
 
 const sharingOptions: Array<{
@@ -53,7 +54,7 @@ const locationVisibilityOptions: Array<{
   },
 ];
 
-export function PrivacySharingScreen({ value, onChange, onBack, onFinish }: PrivacySharingScreenProps) {
+export function PrivacySharingScreen({ value, onChange, onBack, onFinish, onSaveForLater }: PrivacySharingScreenProps) {
   const updateSharingPreference = (sharingPreference: SharingPreference) => {
     onChange({
       ...value,
@@ -167,9 +168,15 @@ export function PrivacySharingScreen({ value, onChange, onBack, onFinish }: Priv
           </span>
         </div>
 
-        <button className="primary-button record-continue-button" type="button" onClick={onFinish}>
-          Return to annotation queue
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" onClick={onFinish}>
+            Finish privacy choices
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

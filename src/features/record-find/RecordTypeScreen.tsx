@@ -6,9 +6,16 @@ type RecordTypeScreenProps = {
   onSelect: (recordKind: RecordKind) => void;
   onBack: () => void;
   onContinue: () => void;
+  onSaveForLater: () => void;
 };
 
-export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }: RecordTypeScreenProps) {
+export function RecordTypeScreen({
+  selectedKind,
+  onSelect,
+  onBack,
+  onContinue,
+  onSaveForLater,
+}: RecordTypeScreenProps) {
   const selectedRecordLabel = recordKinds.find((record) => record.id === selectedKind)?.title;
 
   return (
@@ -75,13 +82,15 @@ export function RecordTypeScreen({ selectedKind, onSelect, onBack, onContinue }:
           )}
         </div>
 
-        <button
-          className="primary-button record-continue-button"
-          type="button"
-          disabled={!selectedKind}
-          onClick={onContinue}>
-          Continue to provenance
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" disabled={!selectedKind} onClick={onContinue}>
+            Continue to provenance
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

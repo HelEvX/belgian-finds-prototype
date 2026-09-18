@@ -6,6 +6,7 @@ type PhysicalDetailsScreenProps = {
   onChange: (value: PhysicalDetails) => void;
   onBack: () => void;
   onContinue: () => void;
+  onSaveForLater: () => void;
 };
 
 type PhysicalTextField = Exclude<keyof PhysicalDetails, "measurementStatus" | "condition">;
@@ -124,7 +125,14 @@ const conditionOptions: Array<{
   },
 ];
 
-export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onContinue }: PhysicalDetailsScreenProps) {
+export function PhysicalDetailsScreen({
+  recordKind,
+  value,
+  onChange,
+  onBack,
+  onContinue,
+  onSaveForLater,
+}: PhysicalDetailsScreenProps) {
   const copy = physicalDetailsCopy[recordKind];
 
   const selectedMeasurementStatus = measurementOptions.find((option) => option.id === value.measurementStatus);
@@ -319,13 +327,15 @@ export function PhysicalDetailsScreen({ recordKind, value, onChange, onBack, onC
           )}
         </div>
 
-        <button
-          className="primary-button record-continue-button"
-          type="button"
-          disabled={!selectedMeasurementStatus}
-          onClick={onContinue}>
-          Continue to description
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" disabled={!selectedMeasurementStatus} onClick={onContinue}>
+            Continue to identification and observations
+          </button>
+
+          <button className="secondary-button" type="button" onClick={onSaveForLater}>
+            Save and finish later
+          </button>
+        </div>
       </section>
     </>
   );

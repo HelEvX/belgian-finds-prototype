@@ -7,6 +7,7 @@ type PhotoScreenProps = {
   onRemovePhoto: (photoId: string) => void;
   onBack: () => void;
   onContinue: () => void;
+  onSaveForLater: () => void;
   showImageGuidance: boolean;
 };
 
@@ -56,6 +57,7 @@ export function PhotoScreen({
   onRemovePhoto,
   onBack,
   onContinue,
+  onSaveForLater,
   showImageGuidance,
 }: PhotoScreenProps) {
   const [feedback, setFeedback] = useState<PhotoFeedback | null>(null);
@@ -287,13 +289,17 @@ export function PhotoScreen({
           </div>
         )}
 
-        <button
-          className="primary-button photo-continue-button"
-          type="button"
-          disabled={photos.length === 0}
-          onClick={onContinue}>
-          Continue to specimen type
-        </button>
+        <div className="mobile-actions">
+          <button className="primary-button" type="button" disabled={photos.length === 0} onClick={onContinue}>
+            Continue to specimen type
+          </button>
+
+          {photos.length > 0 && (
+            <button className="secondary-button" type="button" onClick={onSaveForLater}>
+              Save and finish later
+            </button>
+          )}
+        </div>
       </section>
     </>
   );

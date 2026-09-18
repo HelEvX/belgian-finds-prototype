@@ -789,6 +789,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("images", 7)}
               onContinue={() => moveActiveDraftToStep("provenance", 8)}
+              onSaveForLater={() => saveActiveDraftForLater("type")}
             />
           )}
 
@@ -806,6 +807,7 @@ function App() {
                 setStep(3);
               }}
               onContinue={finishSingleFindImageIntake}
+              onSaveForLater={() => saveActiveDraftForLater("images")}
               showImageGuidance={showImageGuidance}
             />
           )}
@@ -820,6 +822,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("type", 5)}
               onContinue={() => moveActiveDraftToStep("find-location", 9)}
+              onSaveForLater={() => saveActiveDraftForLater("provenance")}
             />
           )}
 
@@ -834,6 +837,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("provenance", 8)}
               onContinue={() => moveActiveDraftToStep("physical-details", 10)}
+              onSaveForLater={() => saveActiveDraftForLater("find-location")}
             />
           )}
 
@@ -848,6 +852,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("find-location", 9)}
               onContinue={() => moveActiveDraftToStep("identification-observations", 13)}
+              onSaveForLater={() => saveActiveDraftForLater("physical-details")}
             />
           )}
 
@@ -862,6 +867,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("physical-details", 10)}
               onFinish={() => moveActiveDraftToStep("privacy", 15)}
+              onSaveForLater={() => saveActiveDraftForLater("identification-observations")}
             />
           )}
 
@@ -875,6 +881,7 @@ function App() {
               }
               onBack={() => moveActiveDraftToStep("identification-observations", 13)}
               onFinish={finishPrivacyForCurrentSlice}
+              onSaveForLater={() => saveActiveDraftForLater("privacy")}
             />
           )}
         </PhoneFrame>
