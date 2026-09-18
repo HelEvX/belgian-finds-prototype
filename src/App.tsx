@@ -9,7 +9,7 @@ import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 // features/workspace
 import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
-import { WorkspaceScreen } from "./features/workspace/WorkspaceScreen";
+
 import { SettingsScreen } from "./features/workspace/SettingsScreen";
 // features/record-find
 import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
@@ -118,9 +118,9 @@ function App() {
 
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
-  const [addReturnStep, setAddReturnStep] = useState<0 | 11>(0);
+  const [addReturnStep, setAddReturnStep] = useState<0>(0);
 
-  const [onboardingReturnStep, setOnboardingReturnStep] = useState<0 | 11 | 14>(0);
+  const [onboardingReturnStep, setOnboardingReturnStep] = useState<0 | 14>(0);
 
   const [hasSeenContributionOnboarding, setHasSeenContributionOnboarding] = useState(() =>
     readStoredBoolean("belgian-finds.has-seen-contribution-onboarding", false),
@@ -134,7 +134,7 @@ function App() {
     readStoredBoolean("belgian-finds.show-image-guidance", true),
   );
 
-  const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(11);
+  const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(0);
 
   const findPhotosRef = useRef<LocalFindPhoto[]>([]);
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
@@ -393,7 +393,7 @@ function App() {
         return;
 
       case 12:
-        setStep(11);
+        setStep(0);
         return;
 
       case 13:
@@ -469,12 +469,12 @@ function App() {
         return;
 
       case 11:
-        setAddReturnStep(11);
+        setAddReturnStep(0);
         setStep(3);
         return;
 
       case 12:
-        setStep(11);
+        setStep(0);
         return;
 
       case 14:
@@ -487,37 +487,39 @@ function App() {
     }
   };
 
-  const showWelcome = () => {
+  const showMemberHome = () => {
     setIsBulkImportOpen(false);
     setStep(0);
   };
 
+  const showExplore = () => {
+    setIsBulkImportOpen(false);
+    setStep(1);
+  };
+
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
-
-    const returnStep = step === 11 || step === 12 || step === 14 || step === 15 ? 11 : 0;
-
-    setAddReturnStep(returnStep);
+    setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
       setStep(3);
       return;
     }
 
-    setOnboardingReturnStep(returnStep);
+    setOnboardingReturnStep(0);
     setStep(4);
   };
 
-  const openAddFromWorkspace = () => {
+  const openAddFromMySpecimens = () => {
     setIsBulkImportOpen(false);
-    setAddReturnStep(11);
+    setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
       setStep(3);
       return;
     }
 
-    setOnboardingReturnStep(11);
+    setOnboardingReturnStep(0);
     setStep(4);
   };
 
@@ -560,9 +562,9 @@ function App() {
           navigation={
             <BottomNavigation
               step={step}
-              onExplore={showWelcome}
+              onExplore={showExplore}
               onAdd={openAddJourney}
-              onWorkspace={() => setStep(11)}
+              onMySpecimens={showMemberHome}
               onSettings={openSettings}
             />
           }
@@ -577,26 +579,15 @@ function App() {
           }>
           {step === 0 && (
             <WelcomeScreen
-              onBrowse={() => setStep(1)}
-              onOpenFind={() => setStep(2)}
-              onOpenWorkspace={() => setStep(11)}
+              queueCount={specimenDrafts.length}
+              onOpenQueue={() => setStep(12)}
+              onAddSpecimen={openAddFromMySpecimens}
             />
           )}
 
           {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
 
           {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
-
-          {step === 11 && (
-            <WorkspaceScreen
-              queueCount={specimenDrafts.length}
-              showWorkflowGuidance={showWorkflowGuidance}
-              onOpenQueue={() => setStep(12)}
-              onAddMaterial={openAddFromWorkspace}
-              onExplore={showWelcome}
-              onOpenSettings={openSettings}
-            />
-          )}
 
           {step === 14 && (
             <SettingsScreen
@@ -616,7 +607,7 @@ function App() {
               onSelectDraft={setActiveSpecimenDraftId}
               onStartAnnotation={startAnnotation}
               onBack={() => setStep(11)}
-              onAddMaterial={openAddFromWorkspace}
+              onAddMaterial={openAddFromMySpecimens}
             />
           )}
 

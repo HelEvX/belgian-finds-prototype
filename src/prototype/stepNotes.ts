@@ -2,27 +2,34 @@ import type { StepNote } from "./types";
 
 export const stepNotes: StepNote[] = [
   {
-    label: "Explore journey · Step 1 of 3",
-    title: "Welcome",
+    label: "Signed-in home",
+    title: "My specimens",
     purpose:
-      "Introduce the platform as a place to explore Belgian-connected fossil finds and connect with other people.",
-    matters: "A visitor should understand the purpose before being asked to register or contribute.",
-    decision: "Browsing remains available to visitors. Registration is not required just to look around.",
-  },
-  {
-    label: "Explore journey · Step 2 of 3",
-    title: "Browse finds",
-    purpose: "Give visitors a simple way to explore records from the wider Belgian fossil community.",
-    matters: "The public catalogue is the entry point for people who are curious but are not ready to submit a find.",
-    decision: "The first filters are intentionally broad: location, identification status and type of material.",
-  },
-  {
-    label: "Explore journey · Step 3 of 3",
-    title: "Find detail",
-    purpose: "Show one record in enough detail for another person to understand it and offer useful input.",
+      "Give a signed-in contributor a calm personal starting point, focused on specimens that still need information or on adding a first specimen.",
     matters:
-      "The detail page must distinguish the collector’s original statement from later community or specialist responses.",
-    decision: "A help request is attached to a specific find rather than handled through a general contact form.",
+      "A returning contributor should not land on a generic welcome page, a promotional hero, or an ambiguous route between browsing and managing their own material.",
+    decision:
+      "The application opens to My specimens for signed-in members. Public exploration remains available as a separate bottom-navigation destination rather than competing with the member’s own work.",
+  },
+  {
+    label: "Public exploration · Step 1 of 2",
+    title: "Explore specimens",
+    purpose:
+      "Let members browse publicly shared specimens connected to Belgium without implying that the platform represents a single national fossil community.",
+    matters:
+      "Exploration is valuable for learning and later participation, but it should not distract from the signed-in member’s private specimens when the app first opens.",
+    decision:
+      "Explore is a dedicated navigation destination. The first real implementation should fetch recently shared specimens by publication date, with manual refresh rather than constant polling.",
+  },
+  {
+    label: "Public exploration · Step 2 of 2",
+    title: "Specimen detail",
+    purpose:
+      "Show one shared specimen in enough detail for another member to understand the contributor’s information and, later, decide whether to follow or contribute where input is invited.",
+    matters:
+      "The detail page must distinguish the contributor’s original statement from later community or specialist responses.",
+    decision:
+      "A help request belongs to one specimen, not a generic contact form. Future interaction remains owner-controlled and is outside this prototype step.",
   },
   {
     label: "Contribute · Add material",

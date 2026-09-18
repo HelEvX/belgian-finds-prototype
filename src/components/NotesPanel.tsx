@@ -23,13 +23,13 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
           : step === 13
             ? "Continue to privacy"
             : step === 14
-              ? "Back to workspace"
+              ? "Back to My specimens"
               : step === 15
                 ? "Back to queue"
                 : step === 11
                   ? "Add material"
                   : step === 12
-                    ? "Back to workspace"
+                    ? "Back to My specimens"
                     : isJourneyEnd
                       ? "Restart journey"
                       : "Next";

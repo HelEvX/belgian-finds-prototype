@@ -91,14 +91,14 @@ export function WorkspaceScreen({
             <span>Completed documentation and published records will appear here.</span>
           </div>
         </section>
-
+        {/* Why 'material' and not 'find' or 'record'? Isn't that confusing? Note that we're using this across the app*/}
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onAddMaterial}>
             Add material
           </button>
-
+          {/* this should NOT go to public finds */}
           <button className="secondary-button" type="button" onClick={onExplore}>
-            Browse public finds
+            Browse my finds
           </button>
         </div>
       </section>

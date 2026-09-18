@@ -10,7 +10,7 @@ export function BrowseScreen({ onOpenFind }: BrowseScreenProps) {
           <p className="mobile-eyebrow">Belgian fossil community</p>
           <h2>Browse finds</h2>
         </div>
-
+        {/* can we filter for 'my finds' (only finds by the user) here?? */}
         <button className="icon-button" aria-label="Open filters">
           ☷
         </button>

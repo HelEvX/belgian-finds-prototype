@@ -1,58 +1,57 @@
 type WelcomeScreenProps = {
-  onBrowse: () => void;
-  onOpenFind: () => void;
-  onOpenWorkspace: () => void;
+  queueCount: number;
+  onOpenQueue: () => void;
+  onAddSpecimen: () => void;
 };
 
-export function WelcomeScreen({ onBrowse, onOpenFind, onOpenWorkspace }: WelcomeScreenProps) {
+export function WelcomeScreen({ queueCount, onOpenQueue, onAddSpecimen }: WelcomeScreenProps) {
+  const hasDrafts = queueCount > 0;
+
   return (
     <>
       <header className="mobile-header">
         <div>
-          <p className="mobile-eyebrow">Belgian fossil community</p>
-          <h2>Discover finds</h2>
+          <p className="mobile-eyebrow">Belgian Fossil Finds</p>
+
+          <h2>My specimens</h2>
         </div>
 
-        <button className="icon-button" type="button" aria-label="Open my workspace" onClick={onOpenWorkspace}>
-          ◎
-        </button>
+        <div className="member-identity" aria-label="Signed in as Helen Deleuze">
+          <span>Helen</span>
+
+          <span className="member-avatar" aria-hidden="true">
+            HD
+          </span>
+        </div>
       </header>
 
-      <section className="welcome-card">
-        <p className="card-kicker">Explore · Learn · Connect</p>
-        <h3>Fossils have stories to tell.</h3>
-        <p>Browse Belgian-connected specimen records and share useful context when you are ready.</p>
+      <section className="member-summary-card">
+        <p className="card-kicker">{hasDrafts ? "Needs information" : "Your private area"}</p>
+
+        <h3>
+          {hasDrafts
+            ? `${queueCount} ${queueCount === 1 ? "specimen needs" : "specimens need"} information`
+            : "No specimens yet"}
+        </h3>
+
+        <p>
+          {hasDrafts
+            ? "Continue documenting your private drafts whenever you are ready, or start another specimen."
+            : "Start with one specimen, its photographs, and whatever context you know. Nothing is shared automatically."}
+        </p>
       </section>
 
       <div className="mobile-actions">
-        <button className="primary-button" type="button" onClick={onBrowse}>
-          Browse finds
+        <button className="primary-button" type="button" onClick={hasDrafts ? onOpenQueue : onAddSpecimen}>
+          {hasDrafts ? "Continue documenting" : "Add a specimen"}
         </button>
 
-        <button className="secondary-button" type="button" onClick={onOpenWorkspace}>
-          Open my workspace
-        </button>
-      </div>
-
-      <section className="mobile-section">
-        <div className="section-heading">
-          <h3>Recent finds</h3>
-
-          <button className="text-button" type="button" onClick={onBrowse}>
-            See all
+        {hasDrafts && (
+          <button className="secondary-button" type="button" onClick={onAddSpecimen}>
+            Add another specimen
           </button>
-        </div>
-
-        <button className="find-card find-card-button" type="button" onClick={onOpenFind}>
-          <div className="find-image-placeholder">IMAGE</div>
-
-          <div className="find-card-content">
-            <span className="status-label">Needs community input</span>
-            <h4>Possible ammonite</h4>
-            <p>Hainaut, Belgium</p>
-          </div>
-        </button>
-      </section>
+        )}
+      </div>
     </>
   );
 }
