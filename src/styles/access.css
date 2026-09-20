@@ -1,0 +1,238 @@
+/* Signed-in member home */
+.phone-account-button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-action-primary-border);
+  border-radius: 50%;
+  background: var(--color-choice-active-surface);
+  color: var(--color-action-primary);
+  font: inherit;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.phone-account-button:hover {
+  border-color: var(--color-action-primary);
+  background: var(--color-surface);
+}
+
+.phone-account-button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Guest account control */
+.phone-account-button-guest {
+  width: auto;
+  min-width: 54px;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  font-size: 0.6rem;
+}
+
+/* Prototype entry */
+.prototype-mode-intro {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--color-action-primary-border);
+  border-radius: 20px;
+  background: var(--color-choice-active-surface);
+}
+
+.prototype-mode-intro h3 {
+  margin: 10px 0 var(--space-2);
+  font-size: 1.3rem;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.prototype-mode-intro p:last-child {
+  max-width: 280px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.prototype-mode-options {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.prototype-mode-option {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.prototype-mode-option:hover {
+  border-color: var(--color-action-hover-border);
+  transform: translateY(-1px);
+}
+
+.prototype-mode-option-primary {
+  border-color: var(--color-action-primary-border);
+  background: var(--color-choice-active-surface);
+}
+
+.prototype-mode-symbol {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-choice-symbol-surface);
+  color: var(--color-action-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.prototype-mode-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.prototype-mode-copy strong {
+  font-size: 0.8rem;
+}
+
+.prototype-mode-copy span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.prototype-mode-arrow {
+  color: var(--color-action-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.prototype-mode-note {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-subtle);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.prototype-mode-option:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Guest sign-in prompt */
+.sign-in-prompt-backdrop {
+  position: absolute;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--primary-ink-950), transparent 28%);
+  backdrop-filter: blur(2px);
+}
+
+.sign-in-prompt {
+  width: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: 22px 22px 26px 26px;
+  background: var(--color-app-surface);
+  box-shadow: 0 -16px 40px color-mix(in srgb, var(--primary-ink-950), transparent 76%);
+}
+
+.sign-in-prompt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sign-in-prompt-header h2 {
+  margin: var(--space-1) 0 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
+.sign-in-prompt-close {
+  display: grid;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1.2rem;
+  line-height: 0.2em;
+  cursor: pointer;
+}
+
+.sign-in-prompt-description {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.sign-in-prompt-note {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-subtle);
+  font-size: 0.65rem;
+  line-height: 1.45;
+}
+
+.sign-in-prompt-close:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Public specimen-detail access boundary */
+.detail-guest-actions {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: 22px;
+}
+
+.detail-member-note {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: 22px;
+  padding: var(--space-3);
+  border-left: 3px solid var(--color-action-primary);
+  background: var(--color-surface-subtle);
+}
+
+.detail-member-note strong {
+  font-size: 0.72rem;
+}
+
+.detail-member-note span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
