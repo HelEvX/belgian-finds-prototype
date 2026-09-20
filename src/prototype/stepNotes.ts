@@ -144,6 +144,16 @@ export const stepNotes: StepNote[] = [
       "Exact site details remain private. Finishing this screen marks the draft Ready for review and returns to My specimens; Review and Save private specimen are not implemented yet.",
   },
   {
+    label: "Review and save · Reserved next slice",
+    title: "Review specimen",
+    purpose:
+      "Reserve the next route for reviewing completed private-draft information before saving a private specimen.",
+    matters:
+      "Review and saving must be separate from future publication. The contributor needs a precise place to correct information before the entry is treated as complete.",
+    decision:
+      "Step 16 is reserved for the Review specimen implementation so it does not collide with guest-access or account-navigation work.",
+  },
+  {
     label: "Member activity",
     title: "Updates",
     purpose:
@@ -152,5 +162,15 @@ export const stepNotes: StepNote[] = [
       "The project should not create an unbounded social feed or notify members about every public change across the platform.",
     decision:
       "Updates is an intentionally empty placeholder in this prototype. Future notifications will be limited to owned, followed, or contributed-to specimens.",
+  },
+  {
+    label: "Prototype entry",
+    title: "Guest or member view",
+    purpose:
+      "Show the different public and member-access boundaries without pretending that authentication is already implemented.",
+    matters:
+      "A future developer needs to understand that guests can browse public specimens, while private drafts and interaction require a member account.",
+    decision:
+      "The selector changes only local prototype state. Continuing as Helen is not a real sign-in and creates no account.",
   },
 ];

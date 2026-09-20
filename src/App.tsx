@@ -18,6 +18,10 @@ import { SettingsScreen } from "./features/workspace/SettingsScreen";
 // features/updates
 import { UpdatesScreen } from "./features/updates/UpdatesScreen";
 
+// features/access
+import { SignInPrompt } from "./features/access/SignInPrompt";
+import { PrototypeModeScreen } from "./features/access/PrototypeModeScreen";
+
 // features/record-find
 
 {
@@ -141,14 +145,28 @@ const specimenDraftStepToPrototypeStep: Record<SpecimenDraftStep, PrototypeStep>
   privacy: 15,
 };
 
+type PrototypeMode = "guest" | "member";
+
+type SignInPromptState = {
+  title: string;
+  description: string;
+  returnStep: 1 | 2;
+};
+
 function App() {
-  const [step, setStep] = useState<PrototypeStep>(0);
+  const [step, setStep] = useState<PrototypeStep>(18);
 
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
 
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
+  const [prototypeMode, setPrototypeMode] = useState<PrototypeMode | null>(null);
+
+  const [signInPrompt, setSignInPrompt] = useState<SignInPromptState | null>(null);
+
+  const isGuest = prototypeMode === "guest";
 
   const [addReturnStep, setAddReturnStep] = useState<0>(0);
 
@@ -486,6 +504,7 @@ function App() {
   const goToPreviousStep = () => {
     setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
+    setSignInPrompt(null);
 
     switch (step) {
       case 0:
@@ -559,12 +578,20 @@ function App() {
       case 16:
         setStep(0);
         return;
+
+      case 17:
+        setStep(0);
+        return;
+
+      case 18:
+        return;
     }
   };
 
   const goToNextStep = () => {
     setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
+    setSignInPrompt(null);
 
     switch (step) {
       case 0:
@@ -643,7 +670,56 @@ function App() {
       case 16:
         setStep(0);
         return;
+
+      case 17:
+        setStep(0);
+        return;
+
+      case 18:
+        startGuestPrototype();
+        return;
     }
+  };
+
+  const startGuestPrototype = () => {
+    setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
+    setSignInPrompt(null);
+    setPrototypeMode("guest");
+    setActiveSpecimenDraftId(null);
+    setStep(1);
+  };
+
+  const startMemberPrototype = () => {
+    setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
+    setSignInPrompt(null);
+    setPrototypeMode("member");
+    setActiveSpecimenDraftId(null);
+    setStep(0);
+  };
+
+  const openSignInPrompt = (title: string, description: string) => {
+    const returnStep: 1 | 2 = step === 2 ? 2 : 1;
+
+    setIsAccountMenuOpen(false);
+    setSignInPrompt({
+      title,
+      description,
+      returnStep,
+    });
+  };
+
+  const closeSignInPrompt = () => {
+    setSignInPrompt(null);
+  };
+
+  const continueAsMember = () => {
+    const returnStep = signInPrompt?.returnStep ?? 0;
+
+    setSignInPrompt(null);
+    setPrototypeMode("member");
+    setStep(returnStep);
   };
 
   const showMemberHome = () => {
@@ -668,7 +744,8 @@ function App() {
   const showUpdates = () => {
     setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
-    setStep(16);
+    setSignInPrompt(null);
+    setStep(17);
   };
 
   const openAddJourney = () => {
@@ -748,23 +825,46 @@ function App() {
         <PhoneFrame
           screenKey={step}
           accountControl={
-            <button
-              className="phone-account-button"
-              type="button"
-              aria-label="Open account menu"
-              aria-haspopup="dialog"
-              onClick={openAccountMenu}>
-              HD
-            </button>
+            prototypeMode === "member" ? (
+              <button
+                className="phone-account-button"
+                type="button"
+                aria-label="Open account menu"
+                aria-haspopup="dialog"
+                onClick={openAccountMenu}>
+                HD
+              </button>
+            ) : prototypeMode === "guest" ? (
+              <button
+                className="phone-account-button phone-account-button-guest"
+                type="button"
+                onClick={() =>
+                  openSignInPrompt(
+                    "Sign in or create an account",
+                    "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
+                  )
+                }>
+                Sign in
+              </button>
+            ) : null
           }
           navigation={
-            <BottomNavigation
-              step={step}
-              onExplore={showExplore}
-              onAdd={openAddJourney}
-              onMySpecimens={showMemberHome}
-              onUpdates={showUpdates}
-            />
+            prototypeMode ? (
+              <BottomNavigation
+                step={step}
+                isGuest={isGuest}
+                onExplore={showExplore}
+                onAdd={openAddJourney}
+                onMySpecimens={showMemberHome}
+                onUpdates={showUpdates}
+                onRequestSignIn={() =>
+                  openSignInPrompt(
+                    "Sign in or create an account",
+                    "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
+                  )
+                }
+              />
+            ) : null
           }
           overlay={
             <>
@@ -779,8 +879,21 @@ function App() {
               {isAccountMenuOpen ? (
                 <AccountMenu onClose={closeAccountMenu} onOpenPreferences={openPreferences} />
               ) : null}
+
+              {signInPrompt ? (
+                <SignInPrompt
+                  title={signInPrompt.title}
+                  description={signInPrompt.description}
+                  onClose={closeSignInPrompt}
+                  onContinueAsMember={continueAsMember}
+                />
+              ) : null}
             </>
           }>
+          {step === 18 && (
+            <PrototypeModeScreen onContinueAsGuest={startGuestPrototype} onContinueAsMember={startMemberPrototype} />
+          )}
+
           {step === 0 && (
             <WelcomeScreen
               drafts={specimenDrafts}
@@ -791,9 +904,11 @@ function App() {
 
           {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
 
-          {step === 16 && <UpdatesScreen />}
+          {step === 17 && <UpdatesScreen />}
 
-          {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
+          {step === 2 && (
+            <FindDetailScreen isGuest={isGuest} onBack={() => setStep(1)} onRequestSignIn={openSignInPrompt} />
+          )}
 
           {step === 14 && (
             <SettingsScreen

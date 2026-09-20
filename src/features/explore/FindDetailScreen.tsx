@@ -1,16 +1,18 @@
 type FindDetailScreenProps = {
+  isGuest: boolean;
   onBack: () => void;
+  onRequestSignIn: (title: string, description: string) => void;
 };
 
-export function FindDetailScreen({ onBack }: FindDetailScreenProps) {
+export function FindDetailScreen({ isGuest, onBack, onRequestSignIn }: FindDetailScreenProps) {
   return (
     <>
       <header className="mobile-header">
-        <button className="back-button" onClick={onBack}>
+        <button className="back-button" type="button" onClick={onBack}>
           ← Back
         </button>
 
-        <button className="icon-button" aria-label="More options">
+        <button className="icon-button" type="button" aria-label="More options">
           ···
         </button>
       </header>
@@ -54,7 +56,7 @@ export function FindDetailScreen({ onBack }: FindDetailScreenProps) {
           <h3>What people have said</h3>
 
           <div className="determination-item">
-            <span>Collector’s note</span>
+            <span>Contributor’s note</span>
             <p>“Possible ammonite”</p>
           </div>
 
@@ -62,11 +64,46 @@ export function FindDetailScreen({ onBack }: FindDetailScreenProps) {
         </section>
 
         <p className="detail-extra-copy">
-          The collector has provided images from the front and side, plus a view with a scale. More information about
+          The contributor has provided images from the front and side, plus a view with a scale. More information about
           the geological context may help the community respond.
         </p>
 
-        <button className="primary-button detail-help-button">Request help with this find</button>
+        {isGuest ? (
+          <div className="detail-guest-actions">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() =>
+                onRequestSignIn(
+                  "Sign in to contribute",
+                  "Create an account to contribute an observation when a specimen owner invites community input.",
+                )
+              }>
+              Sign in to contribute
+            </button>
+
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() =>
+                onRequestSignIn(
+                  "Sign in to follow this specimen",
+                  "Create an account to follow selected specimens and receive meaningful updates later.",
+                )
+              }>
+              Sign in to follow
+            </button>
+          </div>
+        ) : (
+          <div className="detail-member-note">
+            <strong>Community input</strong>
+
+            <span>
+              Owners will later decide whether to invite observations or request verified-specialist help for an
+              individual specimen.
+            </span>
+          </div>
+        )}
       </section>
     </>
   );

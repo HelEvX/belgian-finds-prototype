@@ -11,32 +11,34 @@ type NotesPanelProps = {
 export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: NotesPanelProps) {
   const note = stepNotes[step];
 
-  const isJourneyEnd = step === 2 || step === 6;
+  const isJourneyEnd = step === 2 || step === 6 || step === 17;
 
   const nextLabel =
-    step === 4
-      ? "Add specimen photos"
-      : step === 6
-        ? "Back to add specimen"
-        : step === 7
-          ? "Continue to specimen type"
-          : step === 10
-            ? "Continue to identification"
-            : step === 13
-              ? "Continue to privacy"
-              : step === 14
-                ? "Back"
-                : step === 15
-                  ? "Finish privacy choices"
-                  : step === 11
-                    ? "Add a specimen"
-                    : step === 12
-                      ? "Back to My specimens"
-                      : step === 16
+    step === 18
+      ? "Explore as guest"
+      : step === 4
+        ? "Add specimen photos"
+        : step === 6
+          ? "Back to add specimen"
+          : step === 7
+            ? "Continue to specimen type"
+            : step === 10
+              ? "Continue to identification"
+              : step === 13
+                ? "Continue to privacy"
+                : step === 14
+                  ? "Back"
+                  : step === 15
+                    ? "Finish privacy choices"
+                    : step === 11
+                      ? "Add a specimen"
+                      : step === 12
                         ? "Back to My specimens"
-                        : isJourneyEnd
-                          ? "Restart journey"
-                          : "Next";
+                        : step === 17
+                          ? "Back to My specimens"
+                          : isJourneyEnd
+                            ? "Restart journey"
+                            : "Next";
 
   return (
     <aside className="notes-panel">
@@ -68,7 +70,7 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
       </div>
 
       <div className="notes-actions">
-        <button className="outline-button" type="button" onClick={onPrevious} disabled={step === 0}>
+        <button className="outline-button" type="button" onClick={onPrevious} disabled={step === 0 || step === 18}>
           Previous
         </button>
 
