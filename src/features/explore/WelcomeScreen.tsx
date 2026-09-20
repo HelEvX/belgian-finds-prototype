@@ -134,7 +134,7 @@ function SpecimenGroup({ title, drafts, onOpenSpecimen }: SpecimenGroupProps) {
 }
 
 export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: WelcomeScreenProps) {
-  const hasDrafts = drafts.length > 0;
+  const hasSpecimens = drafts.length > 0;
 
   const sortedDrafts = [...drafts].sort((firstDraft, secondDraft) =>
     secondDraft.updatedAt.localeCompare(firstDraft.updatedAt),
@@ -196,56 +196,6 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
 
       {hasSpecimens && (
         <>
-          <section className="mobile-section">
-            <div className="section-heading">
-              <h3>Private drafts</h3>
-
-              <span className="status-label">
-                {drafts.length} {drafts.length === 1 ? "specimen" : "specimens"}
-              </span>
-            </div>
-
-            <div className="member-draft-list">
-              {sortedDrafts.map((draft) => {
-                const firstImage = draft.images[0];
-                const title = getSpecimenTitle(draft);
-                const progressLabel = getProgressLabel(draft);
-
-                return (
-                  <button
-                    className="member-draft-card"
-                    type="button"
-                    key={draft.id}
-                    onClick={() => onResumeSpecimen(draft.id)}>
-                    {firstImage ? (
-                      <img className="member-draft-thumbnail" src={firstImage.previewUrl} alt="" />
-                    ) : (
-                      <span className="member-draft-thumbnail member-draft-thumbnail-empty" aria-hidden="true">
-                        No image
-                      </span>
-                    )}
-
-                    <span className="member-draft-copy">
-                      <span className="status-label">Private draft</span>
-
-                      <strong>{title}</strong>
-
-                      <span>{progressLabel}</span>
-
-                      <small>
-                        {draft.images.length} {draft.images.length === 1 ? "image" : "images"}
-                      </small>
-                    </span>
-
-                    <span className="member-draft-arrow" aria-hidden="true">
-                      →
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
           <SpecimenGroup title="Needs information" drafts={needsInformation} onOpenSpecimen={onResumeSpecimen} />
 
           <SpecimenGroup title="Ready for review" drafts={readyForReview} onOpenSpecimen={onResumeSpecimen} />

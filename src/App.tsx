@@ -161,6 +161,8 @@ function App() {
 
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const [prototypeMode, setPrototypeMode] = useState<PrototypeMode | null>(null);
