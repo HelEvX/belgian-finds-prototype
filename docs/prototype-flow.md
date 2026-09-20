@@ -37,9 +37,11 @@ Measurements and condition"]
     MEASURE --> DESCRIPTION["Identification and observations
 Optional help preference"]
     DESCRIPTION --> PRIVACY["Privacy and sharing preferences"]
-    PRIVACY --> READY["Ready for review
-Current prototype boundary"]
-    READY --> HOME
+    PRIVACY --> REVIEW["Review specimen
+Check and edit each section"]
+    REVIEW --> SAVE["Save private specimen"]
+    SAVE --> HOME
+
 
     %% Save and resume
     FIRST_IMAGE -. "save and finish later" .-> HOME
@@ -49,11 +51,6 @@ Current prototype boundary"]
     MEASURE -. "save and finish later" .-> HOME
     DESCRIPTION -. "save and finish later" .-> HOME
     PRIVACY -. "save and finish later" .-> HOME
-
-    %% Next intended product slice
-    READY -. "next MVP slice" .-> REVIEW["Review specimen"]
-    REVIEW --> SAVE["Save private specimen"]
-    SAVE --> HOME
 
     %% Future sharing and human collaboration
     SAVE -. "later" .-> SHARE["Review and share a selected specimen"]
@@ -86,9 +83,10 @@ duplicate catalogue numbers"]
     classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.64;
     classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.76;
 
-    class OPEN,HOME,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SETTINGS,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,READY implemented;
+    class OPEN,HOME,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SETTINGS,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE implemented;
     class FIRST_TIME decision;
-    class REVIEW,SAVE,SHARE,REQUEST,RESPONSE,FOLLOW,UPDATES planned;
+    class SHARE,REQUEST,RESPONSE,FOLLOW,UPDATES planned;
+
     class CSV_SETUP,CSV_UPLOAD,CSV_VALIDATE,CSV_DRAFTS,IMAGE_MATCH,REVISION_QUEUE future;
 ```
 
@@ -105,10 +103,12 @@ duplicate catalogue numbers"]
 SIGNED-IN HOME
 │
 ├── My specimens
-│   ├── Private drafts
-│   │   ├── Show a thumbnail and current stage
+│   ├── Needs information
 │   │   └── Resume directly at the saved stage
-│   ├── Later: private specimens
+│   ├── Ready for review
+│   │   └── Open Review specimen
+│   ├── Private specimens
+│   │   └── Open Review specimen
 │   └── Later: shared specimens
 │
 ├── Explore specimens
@@ -150,16 +150,22 @@ SPECIMEN DOCUMENTATION
 ├── Identification and observations
 │   └── Optional suggested identification and help preference
 │
-└── Privacy and sharing preferences
-    ├── Private by default
-    ├── Exact site details remain private
-    └── Finish current slice as Ready for review
+├── Privacy and sharing preferences
+│   ├── Private by default
+│   └── Exact site details remain private
+│
+├── Review specimen
+│   ├── Read-only summary of every meaningful section
+│   ├── Direct Edit action for each existing screen
+│   └── At least one image required for private save
+│
+└── Save private specimen
                     │
                     ▼
 MY SPECIMENS
 │
-└── Ready for review
-    └── Later: Review specimen → Save private specimen
+└── Private specimens
+    └── Open Review specimen again
 ```
 
 ## Draft creation and image ownership
@@ -170,32 +176,27 @@ A private draft is created only after the first supported, non-duplicate image i
 
 After draft creation, `SpecimenDraft.images` is the only owner of the selected files and preview URLs. Returning from specimen type to images edits that same array. Navigation and save-for-later actions do not recreate or transfer preview URLs.
 
-Removing a non-final image removes it from the active draft and revokes only that image’s preview URL. Removing the final image requires confirmation because it discards the private draft and any information entered for it.
+Removing an image removes it from the active draft and revokes only that image’s preview URL. Removing the final image preserves the draft and all entered information, sets its resume stage to Images, and prevents continuation or private save until a replacement image is added. No native confirmation dialog is used.
 
 ## Save and resume behavior
 
 Field changes are written to the active draft as they occur.
 
-**Save and finish later** records the current domain-level stage and returns to My specimens. Selecting a private draft resumes it directly at that stage. It does not require a second queue-selection action.
+**Save and finish later** records the current domain-level stage and returns to My specimens. Selecting an incomplete draft resumes it directly at that stage. Selecting an entry that is Ready for review or already saved as a Private specimen opens Review specimen.
 
 Opening Settings preserves the active draft and current flow screen. Closing Settings returns to the exact previous screen.
 
 The current prototype stores drafts only in React memory. Refreshing the page loses unfinished drafts, files, preview URLs, and annotations. Only onboarding and guidance preferences use local storage.
 
-## Current endpoint
+## Review and private save
 
-Completing privacy and sharing choices marks the draft **Ready for review** and returns to My specimens.
+Completing privacy and sharing choices opens **Review specimen**. The review screen presents a read-only summary of images, type, provenance, find location, physical details, identification and observations, help preference, and privacy settings.
 
-This is not yet a completed private specimen. The following transition belongs to the next MVP slice:
+Each section has an Edit action that opens the relevant existing screen. Completing or backing out of that focused edit returns to Review with the same draft data and image ownership.
 
-```text
-Ready for review
-→ Review specimen
-→ Save private specimen
-→ My specimens
-```
+**Save private specimen** requires at least one image. It changes the local status to Private specimen, updates the modification time, keeps all data and images in local state, and returns to My specimens.
 
-Publication is a separate later action. Nothing is published from the current privacy screen.
+Saving privately does not publish the specimen, apply the future sharing preference, or expose exact locality data. The current prototype still loses all specimen data on browser refresh.
 
 ## Legacy prototype routes
 

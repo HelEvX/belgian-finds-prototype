@@ -84,7 +84,11 @@ export type SpecimenDraftImage = {
 
 export type SpecimenDraftSource = "single-specimen" | "batch-import";
 
-export type SpecimenDraftStatus = "ready-to-annotate" | "annotation-in-progress" | "ready-for-review";
+export type SpecimenDraftStatus =
+  | "ready-to-annotate"
+  | "annotation-in-progress"
+  | "ready-for-review"
+  | "private-specimen";
 
 /*
  * This is deliberately a domain-level stage rather than a numeric

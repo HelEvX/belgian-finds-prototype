@@ -9,7 +9,7 @@ export const stepNotes: StepNote[] = [
     matters:
       "A contributor should be able to continue a specific specimen directly rather than entering an annotation queue and selecting it again.",
     decision:
-      "My specimens lists private drafts and resumes each draft at its saved stage. Nothing is shared automatically.",
+      "My specimens groups entries that need information, are ready for review, or have been saved as private specimens. Drafts resume at their saved stage; reviewable and private specimens open Review.",
   },
   {
     label: "Public exploration · Step 1 of 2",
@@ -141,7 +141,17 @@ export const stepNotes: StepNote[] = [
     matters:
       "Private documentation and public disclosure are separate decisions. Find locations may be scientifically useful and sensitive.",
     decision:
-      "Exact site details remain private. Finishing this screen marks the draft Ready for review and returns to My specimens; Review and Save private specimen are not implemented yet.",
+      "Exact site details remain private. The primary action continues to Review specimen and does not publish or save the specimen yet.",
+  },
+  {
+    label: "Specimen completion",
+    title: "Review specimen",
+    purpose:
+      "Let the contributor check every meaningful section, correct mistakes directly, and save the result as a private specimen.",
+    matters:
+      "Review separates a completed private specimen from an unfinished draft and makes the privacy boundary explicit before save.",
+    decision:
+      "Each section links back to its existing editor and then returns to Review. Saving requires at least one image, creates a private specimen in local state, and never publishes anything.",
   },
   {
     label: "Review and save · Reserved next slice",

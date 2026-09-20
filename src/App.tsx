@@ -40,6 +40,7 @@ import { PhysicalDetailsScreen } from "./features/record-find/PhysicalDetailsScr
 import { PrivacySharingScreen } from "./features/record-find/PrivacySharingScreen";
 import { ProvenanceScreen } from "./features/record-find/ProvenanceScreen";
 import { RecordTypeScreen } from "./features/record-find/RecordTypeScreen";
+import { ReviewSpecimenScreen } from "./features/record-find/ReviewSpecimenScreen";
 
 import {
   MAX_FIND_PHOTOS,
@@ -185,6 +186,8 @@ function App() {
   );
 
   const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(0);
+
+  const [returnToReviewAfterEdit, setReturnToReviewAfterEdit] = useState(false);
 
   const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
 
@@ -339,7 +342,10 @@ function App() {
             ...draft,
             updatedAt: new Date().toISOString(),
             resumeStep: "images" as const,
-            status: draft.status === "ready-for-review" ? ("annotation-in-progress" as const) : draft.status,
+            status:
+              draft.status === "ready-for-review" || draft.status === "private-specimen"
+                ? ("annotation-in-progress" as const)
+                : draft.status,
             images: remainingImages,
           }
         : draft,
@@ -397,14 +403,86 @@ function App() {
 
   const saveActiveDraftForLater = (resumeStep: SpecimenDraftStep) => {
     if (!activeSpecimenDraftId) {
+      setReturnToReviewAfterEdit(false);
       setStep(0);
       return;
     }
 
+    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+
     updateActiveSpecimenDraft({
       resumeStep,
+      status:
+        currentDraft?.status === "ready-for-review" || currentDraft?.status === "private-specimen"
+          ? "annotation-in-progress"
+          : currentDraft?.status,
     });
 
+    setReturnToReviewAfterEdit(false);
+    setActiveSpecimenDraftId(null);
+    setStep(0);
+  };
+
+  const returnToReviewFromEdit = () => {
+    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+
+    if (!currentDraft) {
+      setReturnToReviewAfterEdit(false);
+      setStep(0);
+      return;
+    }
+
+    /*
+     * Removing the final image changes a reviewable or saved specimen
+     * back to an in-progress draft. If an image has since been restored,
+     * it can return to Ready for review.
+     */
+    if (currentDraft.images.length > 0 && currentDraft.status === "annotation-in-progress") {
+      updateActiveSpecimenDraft({
+        status: "ready-for-review",
+      });
+    }
+
+    setReturnToReviewAfterEdit(false);
+    setStep(16);
+  };
+
+  const editActiveSpecimenFromReview = (resumeStep: SpecimenDraftStep) => {
+    if (!activeSpecimenDraftId) {
+      return;
+    }
+
+    setReturnToReviewAfterEdit(true);
+    setStep(specimenDraftStepToPrototypeStep[resumeStep]);
+  };
+
+  const openReviewFromPrivacy = () => {
+    if (!activeSpecimenDraftId) {
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      status: "ready-for-review",
+      resumeStep: "privacy",
+    });
+
+    setReturnToReviewAfterEdit(false);
+    setStep(16);
+  };
+
+  const savePrivateSpecimen = () => {
+    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+
+    if (!currentDraft || currentDraft.images.length === 0) {
+      return;
+    }
+
+    updateActiveSpecimenDraft({
+      status: "private-specimen",
+      resumeStep: "privacy",
+    });
+
+    setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(null);
     setStep(0);
   };
@@ -417,22 +495,15 @@ function App() {
     }
 
     setIsBulkImportOpen(false);
+    setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(draft.id);
-    setStep(specimenDraftStepToPrototypeStep[draft.resumeStep]);
-  };
 
-  const finishPrivacyForCurrentSlice = () => {
-    if (!activeSpecimenDraftId) {
+    if (draft.status === "ready-for-review" || draft.status === "private-specimen") {
+      setStep(16);
       return;
     }
 
-    updateActiveSpecimenDraft({
-      status: "ready-for-review",
-      resumeStep: "privacy",
-    });
-
-    setActiveSpecimenDraftId(null);
-    setStep(0);
+    setStep(specimenDraftStepToPrototypeStep[draft.resumeStep]);
   };
 
   const finishSingleFindImageIntake = () => {
@@ -497,6 +568,7 @@ function App() {
      * Existing drafts remain untouched. The first accepted image will
      * create and activate a new single-specimen draft.
      */
+    setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(null);
     setStep(7);
   };
@@ -564,6 +636,11 @@ function App() {
         return;
 
       case 13:
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
         moveActiveDraftToStep("physical-details", 10);
         return;
 
@@ -572,11 +649,16 @@ function App() {
         return;
 
       case 15:
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
         moveActiveDraftToStep("identification-observations", 13);
         return;
 
       case 16:
-        setStep(0);
+        editActiveSpecimenFromReview("privacy");
         return;
 
       case 17:
@@ -615,9 +697,16 @@ function App() {
         return;
 
       case 5:
-        if (activeSpecimenDraft?.recordKind) {
-          moveActiveDraftToStep("provenance", 8);
+        if (!activeSpecimenDraft?.recordKind) {
+          return;
         }
+
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
+        moveActiveDraftToStep("provenance", 8);
         return;
 
       case 6:
@@ -625,28 +714,63 @@ function App() {
         return;
 
       case 7:
+        if (activeSingleSpecimenPhotos.length === 0) {
+          return;
+        }
+
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
         finishSingleFindImageIntake();
         return;
 
       case 8:
-        if (activeSpecimenDraft?.provenance) {
-          moveActiveDraftToStep("find-location", 9);
+        if (!activeSpecimenDraft?.provenance) {
+          return;
         }
+
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
+        moveActiveDraftToStep("find-location", 9);
         return;
 
       case 9:
-        if (activeSpecimenDraft?.locationContext.knowledge) {
-          moveActiveDraftToStep("physical-details", 10);
+        if (!activeSpecimenDraft?.locationContext.knowledge) {
+          return;
         }
+
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
+        moveActiveDraftToStep("physical-details", 10);
         return;
 
       case 10:
-        if (activeSpecimenDraft?.physicalDetails.measurementStatus) {
-          moveActiveDraftToStep("identification-observations", 13);
+        if (!activeSpecimenDraft?.physicalDetails.measurementStatus) {
+          return;
         }
+
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
+        moveActiveDraftToStep("identification-observations", 13);
         return;
 
       case 13:
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
         moveActiveDraftToStep("privacy", 15);
         return;
 
@@ -664,11 +788,16 @@ function App() {
         return;
 
       case 15:
-        finishPrivacyForCurrentSlice();
+        if (returnToReviewAfterEdit) {
+          returnToReviewFromEdit();
+          return;
+        }
+
+        openReviewFromPrivacy();
         return;
 
       case 16:
-        setStep(0);
+        savePrivateSpecimen();
         return;
 
       case 17:
@@ -731,6 +860,7 @@ function App() {
      * therefore keeps the current draft without copying or transferring
      * its images.
      */
+    setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(null);
     setStep(0);
   };
@@ -738,6 +868,7 @@ function App() {
   const showExplore = () => {
     setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
+    setReturnToReviewAfterEdit(false);
     setStep(1);
   };
 
@@ -751,6 +882,7 @@ function App() {
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
+    setReturnToReviewAfterEdit(false);
     setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
@@ -956,8 +1088,22 @@ function App() {
                   recordKind,
                 })
               }
-              onBack={() => moveActiveDraftToStep("images", 7)}
-              onContinue={() => moveActiveDraftToStep("provenance", 8)}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("images", 7);
+              }}
+              onContinue={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("provenance", 8);
+              }}
               onSaveForLater={() => saveActiveDraftForLater("type")}
             />
           )}
@@ -969,6 +1115,11 @@ function App() {
               onAddPhotos={addFindPhotos}
               onRemovePhoto={removeFindPhoto}
               onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
                 if (activeSpecimenDraft) {
                   saveActiveDraftForLater("images");
                   return;
@@ -976,7 +1127,14 @@ function App() {
 
                 setStep(0);
               }}
-              onContinue={finishSingleFindImageIntake}
+              onContinue={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                finishSingleFindImageIntake();
+              }}
               onSaveForLater={() => saveActiveDraftForLater("images")}
               showImageGuidance={showImageGuidance}
             />
@@ -990,8 +1148,22 @@ function App() {
                   provenance,
                 })
               }
-              onBack={() => moveActiveDraftToStep("type", 5)}
-              onContinue={() => moveActiveDraftToStep("find-location", 9)}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("type", 5);
+              }}
+              onContinue={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("find-location", 9);
+              }}
               onSaveForLater={() => saveActiveDraftForLater("provenance")}
             />
           )}
@@ -1005,8 +1177,22 @@ function App() {
                   locationContext,
                 })
               }
-              onBack={() => moveActiveDraftToStep("provenance", 8)}
-              onContinue={() => moveActiveDraftToStep("physical-details", 10)}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("provenance", 8);
+              }}
+              onContinue={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("physical-details", 10);
+              }}
               onSaveForLater={() => saveActiveDraftForLater("find-location")}
             />
           )}
@@ -1020,8 +1206,22 @@ function App() {
                   physicalDetails,
                 })
               }
-              onBack={() => moveActiveDraftToStep("find-location", 9)}
-              onContinue={() => moveActiveDraftToStep("identification-observations", 13)}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("find-location", 9);
+              }}
+              onContinue={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("identification-observations", 13);
+              }}
               onSaveForLater={() => saveActiveDraftForLater("physical-details")}
             />
           )}
@@ -1035,8 +1235,22 @@ function App() {
                   description,
                 })
               }
-              onBack={() => moveActiveDraftToStep("physical-details", 10)}
-              onFinish={() => moveActiveDraftToStep("privacy", 15)}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("physical-details", 10);
+              }}
+              onFinish={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("privacy", 15);
+              }}
               onSaveForLater={() => saveActiveDraftForLater("identification-observations")}
             />
           )}
@@ -1049,9 +1263,32 @@ function App() {
                   privacySettings,
                 })
               }
-              onBack={() => moveActiveDraftToStep("identification-observations", 13)}
-              onFinish={finishPrivacyForCurrentSlice}
+              onBack={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                moveActiveDraftToStep("identification-observations", 13);
+              }}
+              onFinish={() => {
+                if (returnToReviewAfterEdit) {
+                  returnToReviewFromEdit();
+                  return;
+                }
+
+                openReviewFromPrivacy();
+              }}
               onSaveForLater={() => saveActiveDraftForLater("privacy")}
+            />
+          )}
+
+          {step === 16 && activeSpecimenDraft && (
+            <ReviewSpecimenScreen
+              draft={activeSpecimenDraft}
+              onBack={showMemberHome}
+              onEdit={editActiveSpecimenFromReview}
+              onSavePrivate={savePrivateSpecimen}
             />
           )}
         </PhoneFrame>
@@ -1065,7 +1302,8 @@ function App() {
             (step === 7 && activeSingleSpecimenPhotos.length === 0) ||
             (step === 8 && activeSpecimenDraft?.provenance === null) ||
             (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
-            (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null)
+            (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null) ||
+            (step === 16 && activeSpecimenDraft?.images.length === 0)
           }
         />
       </section>

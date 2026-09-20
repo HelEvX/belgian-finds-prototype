@@ -17,14 +17,14 @@ const sharingOptions: Array<{
   {
     id: "private",
     symbol: "◌",
-    title: "Keep as a private draft",
-    description: "Only you can see this draft. You can review and share the specimen later.",
+    title: "Keep this specimen private",
+    description: "Saving creates a private specimen visible only to you. You can decide whether to share it later.",
   },
   {
     id: "community",
     symbol: "◎",
-    title: "Prepare to share with other members",
-    description: "After final review, the specimen can be shared with the location detail you choose below.",
+    title: "Prepare for possible sharing later",
+    description: "Saving still creates a private specimen. This preference can be reviewed before any future sharing.",
   },
 ];
 
@@ -170,7 +170,7 @@ export function PrivacySharingScreen({ value, onChange, onBack, onFinish, onSave
 
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onFinish}>
-            Finish privacy choices
+            Review specimen
           </button>
 
           <button className="secondary-button" type="button" onClick={onSaveForLater}>

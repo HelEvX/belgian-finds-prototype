@@ -7,6 +7,12 @@ type WelcomeScreenProps = {
   onAddSpecimen: () => void;
 };
 
+type SpecimenGroupProps = {
+  title: string;
+  drafts: SpecimenDraft[];
+  onOpenSpecimen: (draftId: string) => void;
+};
+
 const resumeStepLabels: Record<SpecimenDraftStep, string> = {
   images: "Adding images",
   type: "Choosing specimen type",
@@ -17,16 +23,114 @@ const resumeStepLabels: Record<SpecimenDraftStep, string> = {
   privacy: "Choosing privacy and sharing",
 };
 
-function getDraftTitle(draft: SpecimenDraft) {
-  return recordKinds.find((recordKind) => recordKind.id === draft.recordKind)?.title ?? "Unidentified specimen";
+function getSpecimenTitle(draft: SpecimenDraft) {
+  return recordKinds.find((recordKind) => recordKind.id === draft.recordKind)?.title ?? "Type not yet recorded";
 }
 
-function getDraftProgressLabel(draft: SpecimenDraft) {
+function getStatusLabel(draft: SpecimenDraft) {
+  if (draft.status === "private-specimen") {
+    return "Private specimen";
+  }
+
   if (draft.status === "ready-for-review") {
     return "Ready for review";
   }
 
+  return "Needs information";
+}
+
+function getProgressLabel(draft: SpecimenDraft) {
+  if (draft.status === "private-specimen") {
+    return "Saved privately";
+  }
+
+  if (draft.status === "ready-for-review") {
+    return "Review before saving privately";
+  }
+
   return resumeStepLabels[draft.resumeStep];
+}
+
+function getContextLabel(draft: SpecimenDraft) {
+  const suggestedIdentification = draft.description.suggestedIdentification.trim();
+
+  if (suggestedIdentification) {
+    return suggestedIdentification;
+  }
+
+  const place = [draft.locationContext.municipality.trim(), draft.locationContext.province.trim()]
+    .filter(Boolean)
+    .join(", ");
+
+  return place || null;
+}
+
+function SpecimenGroup({ title, drafts, onOpenSpecimen }: SpecimenGroupProps) {
+  if (drafts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mobile-section member-specimen-group">
+      <div className="section-heading">
+        <h3>{title}</h3>
+
+        <span className="status-label">
+          {drafts.length} {drafts.length === 1 ? "specimen" : "specimens"}
+        </span>
+      </div>
+
+      <div className="member-draft-list">
+        {drafts.map((draft) => {
+          const firstImage = draft.images[0];
+          const title = getSpecimenTitle(draft);
+          const context = getContextLabel(draft);
+          const isPrivateSpecimen = draft.status === "private-specimen";
+          const isReadyForReview = draft.status === "ready-for-review";
+
+          return (
+            <button
+              className={`member-draft-card ${isPrivateSpecimen ? "member-draft-card-private" : ""}`}
+              type="button"
+              key={draft.id}
+              aria-label={`Open ${title}`}
+              onClick={() => onOpenSpecimen(draft.id)}>
+              {firstImage ? (
+                <img className="member-draft-thumbnail" src={firstImage.previewUrl} alt="" />
+              ) : (
+                <span className="member-draft-thumbnail member-draft-thumbnail-empty" aria-hidden="true">
+                  No image
+                </span>
+              )}
+
+              <span className="member-draft-copy">
+                <span
+                  className={`status-label ${
+                    isPrivateSpecimen ? "member-status-private" : isReadyForReview ? "member-status-ready" : ""
+                  }`}>
+                  {getStatusLabel(draft)}
+                </span>
+
+                <strong>{title}</strong>
+
+                {context && <span>{context}</span>}
+
+                <small>
+                  {getProgressLabel(draft)}
+                  {" · "}
+                  {draft.images.length} {draft.images.length === 1 ? "image" : "images"}
+                </small>
+              </span>
+
+              <span className="member-draft-arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: WelcomeScreenProps) {
@@ -36,6 +140,20 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
     secondDraft.updatedAt.localeCompare(firstDraft.updatedAt),
   );
 
+  const needsInformation = sortedDrafts.filter(
+    (draft) => draft.status === "ready-to-annotate" || draft.status === "annotation-in-progress",
+  );
+
+  const readyForReview = sortedDrafts.filter((draft) => draft.status === "ready-for-review");
+
+  const privateSpecimens = sortedDrafts.filter((draft) => draft.status === "private-specimen");
+
+  const summaryParts = [
+    needsInformation.length > 0 ? `${needsInformation.length} need information` : null,
+    readyForReview.length > 0 ? `${readyForReview.length} ready for review` : null,
+    privateSpecimens.length > 0 ? `${privateSpecimens.length} saved privately` : null,
+  ].filter(Boolean);
+
   return (
     <>
       <header className="mobile-header">
@@ -44,25 +162,31 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
 
           <h2>My specimens</h2>
         </div>
+
+        <div className="member-identity" aria-label="Signed in as Helen Deleuze">
+          <span>Helen</span>
+
+          <span className="member-avatar" aria-hidden="true">
+            HD
+          </span>
+        </div>
       </header>
 
       <section className="member-summary-card">
-        <p className="card-kicker">{hasDrafts ? "Your private drafts" : "Your private area"}</p>
+        <p className="card-kicker">{hasSpecimens ? "Your specimens" : "Your private area"}</p>
 
         <h3>
-          {hasDrafts
-            ? `${drafts.length} ${drafts.length === 1 ? "private draft" : "private drafts"}`
-            : "No specimens yet"}
+          {hasSpecimens ? `${drafts.length} ${drafts.length === 1 ? "specimen" : "specimens"}` : "No specimens yet"}
         </h3>
 
         <p>
-          {hasDrafts
-            ? "Continue any unfinished specimen when you are ready. Nothing is shared automatically."
+          {hasSpecimens
+            ? `${summaryParts.join(" · ")}. Nothing is shared automatically.`
             : "Start with one specimen, its photographs, and whatever context you know. Nothing is shared automatically."}
         </p>
       </section>
 
-      {!hasDrafts && (
+      {!hasSpecimens && (
         <div className="mobile-actions">
           <button className="primary-button" type="button" onClick={onAddSpecimen}>
             Add a specimen
@@ -70,7 +194,7 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
         </div>
       )}
 
-      {hasDrafts && (
+      {hasSpecimens && (
         <>
           <section className="mobile-section">
             <div className="section-heading">
@@ -84,8 +208,8 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
             <div className="member-draft-list">
               {sortedDrafts.map((draft) => {
                 const firstImage = draft.images[0];
-                const title = getDraftTitle(draft);
-                const progressLabel = getDraftProgressLabel(draft);
+                const title = getSpecimenTitle(draft);
+                const progressLabel = getProgressLabel(draft);
 
                 return (
                   <button
@@ -121,6 +245,12 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
               })}
             </div>
           </section>
+
+          <SpecimenGroup title="Needs information" drafts={needsInformation} onOpenSpecimen={onResumeSpecimen} />
+
+          <SpecimenGroup title="Ready for review" drafts={readyForReview} onOpenSpecimen={onResumeSpecimen} />
+
+          <SpecimenGroup title="Private specimens" drafts={privateSpecimens} onOpenSpecimen={onResumeSpecimen} />
 
           <div className="mobile-actions">
             <button className="secondary-button" type="button" onClick={onAddSpecimen}>

@@ -102,6 +102,23 @@
   font-weight: 700;
 }
 
+.member-specimen-group + .member-specimen-group {
+  margin-top: var(--space-6);
+}
+
+.member-draft-card-private {
+  border-color: var(--primary-blue-200);
+  background: var(--color-choice-active-surface);
+}
+
+.member-status-ready {
+  color: var(--primary-orange-700);
+}
+
+.member-status-private {
+  color: var(--color-action-primary);
+}
+
 /* Member Updates */
 .updates-empty {
   display: grid;
