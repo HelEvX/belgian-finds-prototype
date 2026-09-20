@@ -126,12 +126,12 @@ export const stepNotes: StepNote[] = [
       "A suggested identification remains the contributor’s own statement. It does not create a verified determination.",
   },
   {
-    label: "Settings",
+    label: "Account · Preferences",
     title: "Guidance preferences",
-    purpose: "Let experienced contributors reduce optional workflow and image guidance.",
+    purpose: "Let experienced contributors reduce optional workflow and image guidance from their account menu.",
     matters: "Guidance should support beginners without slowing down people documenting many specimens.",
     decision:
-      "Opening Settings preserves the exact current flow screen and active draft. Closing Settings returns to that screen.",
+      "Preferences are available through the persistent account control. Opening Preferences preserves the exact current flow screen and active draft; Done returns to that screen.",
   },
   {
     label: "Specimen details · Privacy",
@@ -142,5 +142,15 @@ export const stepNotes: StepNote[] = [
       "Private documentation and public disclosure are separate decisions. Find locations may be scientifically useful and sensitive.",
     decision:
       "Exact site details remain private. Finishing this screen marks the draft Ready for review and returns to My specimens; Review and Save private specimen are not implemented yet.",
+  },
+  {
+    label: "Member activity",
+    title: "Updates",
+    purpose:
+      "Reserve one calm place for meaningful changes to specimens the member owns, follows, or later contributes to.",
+    matters:
+      "The project should not create an unbounded social feed or notify members about every public change across the platform.",
+    decision:
+      "Updates is an intentionally empty placeholder in this prototype. Future notifications will be limited to owned, followed, or contributed-to specimens.",
   },
 ];

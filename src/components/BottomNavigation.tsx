@@ -5,10 +5,10 @@ type BottomNavigationProps = {
   onExplore: () => void;
   onAdd: () => void;
   onMySpecimens: () => void;
-  onSettings: () => void;
+  onUpdates: () => void;
 };
 
-export function BottomNavigation({ step, onExplore, onAdd, onMySpecimens, onSettings }: BottomNavigationProps) {
+export function BottomNavigation({ step, onExplore, onAdd, onMySpecimens, onUpdates }: BottomNavigationProps) {
   const isAddActive = (step >= 3 && step <= 10) || step === 13 || step === 15;
 
   const isMySpecimensActive = step === 0 || step === 11 || step === 12;
@@ -24,7 +24,7 @@ export function BottomNavigation({ step, onExplore, onAdd, onMySpecimens, onSett
       </button>
 
       <button className={`nav-item ${isAddActive ? "nav-item-active" : ""}`} type="button" onClick={onAdd}>
-        <span>🞦</span>
+        <span>+</span>
         Add
       </button>
 
@@ -32,13 +32,13 @@ export function BottomNavigation({ step, onExplore, onAdd, onMySpecimens, onSett
         className={`nav-item ${isMySpecimensActive ? "nav-item-active" : ""}`}
         type="button"
         onClick={onMySpecimens}>
-        <span>🞛</span>
+        <span>◈</span>
         My specimens
       </button>
 
-      <button className={`nav-item ${step === 14 ? "nav-item-active" : ""}`} type="button" onClick={onSettings}>
-        <span>⚙</span>
-        Settings
+      <button className={`nav-item ${step === 16 ? "nav-item-active" : ""}`} type="button" onClick={onUpdates}>
+        <span>◌</span>
+        Updates
       </button>
     </nav>
   );

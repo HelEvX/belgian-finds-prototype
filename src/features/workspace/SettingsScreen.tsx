@@ -22,21 +22,21 @@ export function SettingsScreen({
           ← Back
         </button>
 
-        <p className="mobile-eyebrow">Settings</p>
+        <p className="mobile-eyebrow">Account</p>
       </header>
 
       <section className="record-flow">
-        <p className="record-progress">Guidance preferences</p>
+        <p className="record-progress">Preferences</p>
 
         <div className="record-heading">
-          <h2>Guidance preferences</h2>
+          <h2>Preferences</h2>
 
           <p>Choose how much optional guidance you would like to see while documenting specimens.</p>
         </div>
 
         <section className="settings-section">
           <div className="settings-section-heading">
-            <h3>Guidance</h3>
+            <h3>Optional guidance</h3>
 
             <p>These options do not hide fields, validation messages, or important specimen status information.</p>
           </div>
@@ -76,7 +76,7 @@ export function SettingsScreen({
           <div className="settings-section-heading">
             <h3>Contribution scope</h3>
 
-            <p>Review the one-time introduction if you would like to revisit which specimens this project accepts.</p>
+            <p>Review the first-time introduction if you would like to revisit which specimens this project accepts.</p>
           </div>
 
           <button className="secondary-button" type="button" onClick={onReviewContributionScope}>

@@ -32,9 +32,11 @@ export function NotesPanel({ step, onPrevious, onNext, nextDisabled = false }: N
                     ? "Add a specimen"
                     : step === 12
                       ? "Back to My specimens"
-                      : isJourneyEnd
-                        ? "Restart journey"
-                        : "Next";
+                      : step === 16
+                        ? "Back to My specimens"
+                        : isJourneyEnd
+                          ? "Restart journey"
+                          : "Next";
 
   return (
     <aside className="notes-panel">

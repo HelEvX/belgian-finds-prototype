@@ -5,9 +5,10 @@ type PhoneFrameProps = {
   children: ReactNode;
   navigation: ReactNode;
   overlay?: ReactNode;
+  accountControl?: ReactNode;
 };
 
-export function PhoneFrame({ screenKey, children, navigation, overlay }: PhoneFrameProps) {
+export function PhoneFrame({ screenKey, children, navigation, overlay, accountControl }: PhoneFrameProps) {
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
   const dragStartScrollTop = useRef(0);
@@ -74,7 +75,8 @@ export function PhoneFrame({ screenKey, children, navigation, overlay }: PhoneFr
         <div className="phone-screen">
           <div className="mobile-status-bar">
             <span>9:41</span>
-            <span>● ● ●</span>
+
+            {accountControl ?? <span>● ● ●</span>}
           </div>
 
           <div className="scroll-hint" aria-hidden="true">

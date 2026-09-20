@@ -7,30 +7,36 @@ export function BrowseScreen({ onOpenFind }: BrowseScreenProps) {
     <>
       <header className="mobile-header">
         <div>
-          <p className="mobile-eyebrow">Belgian fossil community</p>
-          <h2>Browse finds</h2>
+          <p className="mobile-eyebrow">Belgian Fossil Finds</p>
+          <h2>Explore specimens</h2>
         </div>
-        {/* can we filter for 'my finds' (only finds by the user) here?? */}
-        <button className="icon-button" aria-label="Open filters">
+
+        <button className="icon-button" type="button" aria-label="Open filters">
           ☷
         </button>
       </header>
 
       <div className="search-placeholder">
         <span>⌕</span>
-        <span>Search finds, places or names</span>
+        <span>Search specimens, places or names</span>
       </div>
 
       <div className="filter-row">
-        <button className="filter-chip filter-chip-active">All finds</button>
+        <button className="filter-chip filter-chip-active" type="button">
+          All specimens
+        </button>
 
-        <button className="filter-chip">Needs help</button>
+        <button className="filter-chip" type="button">
+          Needs help
+        </button>
 
-        <button className="filter-chip">Reviewed</button>
+        <button className="filter-chip" type="button">
+          Reviewed
+        </button>
       </div>
 
       <section className="browse-list">
-        <button className="browse-card" onClick={onOpenFind}>
+        <button className="browse-card" type="button" onClick={onOpenFind}>
           <div className="find-image-placeholder image-ammonite">IMAGE</div>
 
           <div className="browse-card-content">
@@ -41,18 +47,18 @@ export function BrowseScreen({ onOpenFind }: BrowseScreenProps) {
           </div>
         </button>
 
-        <button className="browse-card">
+        <button className="browse-card" type="button">
           <div className="find-image-placeholder image-shell">IMAGE</div>
 
           <div className="browse-card-content">
             <span className="status-label status-reviewed">Specialist reviewed</span>
             <h3>Fossil shell fragment</h3>
             <p>Limburg, Belgium</p>
-            <small>2 views · Reviewed record</small>
+            <small>2 views · Reviewed specimen</small>
           </div>
         </button>
 
-        <button className="browse-card">
+        <button className="browse-card" type="button">
           <div className="find-image-placeholder image-rock">IMAGE</div>
 
           <div className="browse-card-content">
@@ -63,7 +69,7 @@ export function BrowseScreen({ onOpenFind }: BrowseScreenProps) {
           </div>
         </button>
 
-        <button className="browse-card">
+        <button className="browse-card" type="button">
           <div className="find-image-placeholder image-shell">IMAGE</div>
 
           <div className="browse-card-content">

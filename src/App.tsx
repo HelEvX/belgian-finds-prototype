@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BottomNavigation } from "./components/BottomNavigation";
 import { NotesPanel } from "./components/NotesPanel";
 import { PhoneFrame } from "./components/PhoneFrame";
+import { AccountMenu } from "./components/AccountMenu";
 
 // explore
 import { BrowseScreen } from "./features/explore/BrowseScreen";
@@ -13,6 +14,9 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 // features/workspace
 import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
 import { SettingsScreen } from "./features/workspace/SettingsScreen";
+
+// features/updates
+import { UpdatesScreen } from "./features/updates/UpdatesScreen";
 
 // features/record-find
 
@@ -144,7 +148,7 @@ function App() {
 
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
-  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const [addReturnStep, setAddReturnStep] = useState<0>(0);
 
@@ -481,6 +485,7 @@ function App() {
 
   const goToPreviousStep = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
 
     switch (step) {
       case 0:
@@ -550,11 +555,16 @@ function App() {
       case 15:
         moveActiveDraftToStep("identification-observations", 13);
         return;
+
+      case 16:
+        setStep(0);
+        return;
     }
   };
 
   const goToNextStep = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
 
     switch (step) {
       case 0:
@@ -629,11 +639,16 @@ function App() {
       case 15:
         finishPrivacyForCurrentSlice();
         return;
+
+      case 16:
+        setStep(0);
+        return;
     }
   };
 
   const showMemberHome = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
 
     /*
      * Draft values are already stored as fields change. Leaving the flow
@@ -646,11 +661,19 @@ function App() {
 
   const showExplore = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
     setStep(1);
+  };
+
+  const showUpdates = () => {
+    setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
+    setStep(16);
   };
 
   const openAddJourney = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
     setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
@@ -684,12 +707,28 @@ function App() {
 
   const openSettings = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
     setSettingsReturnStep(step);
     setStep(14);
   };
 
+  const openAccountMenu = () => {
+    setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(true);
+  };
+
+  const closeAccountMenu = () => {
+    setIsAccountMenuOpen(false);
+  };
+
+  const openPreferences = () => {
+    setIsAccountMenuOpen(false);
+    openSettings();
+  };
+
   const reviewContributionScope = () => {
     setIsBulkImportOpen(false);
+    setIsAccountMenuOpen(false);
     setOnboardingReturnStep(14);
     setStep(4);
   };
@@ -708,23 +747,39 @@ function App() {
       <section className="prototype-workspace">
         <PhoneFrame
           screenKey={step}
+          accountControl={
+            <button
+              className="phone-account-button"
+              type="button"
+              aria-label="Open account menu"
+              aria-haspopup="dialog"
+              onClick={openAccountMenu}>
+              HD
+            </button>
+          }
           navigation={
             <BottomNavigation
               step={step}
               onExplore={showExplore}
               onAdd={openAddJourney}
               onMySpecimens={showMemberHome}
-              onSettings={openSettings}
+              onUpdates={showUpdates}
             />
           }
           overlay={
-            isBulkImportOpen ? (
-              <BulkImportModal
-                showWorkflowGuidance={showWorkflowGuidance}
-                onClose={closeBulkImport}
-                onAddToQueue={addBatchDraftsToQueue}
-              />
-            ) : null
+            <>
+              {isBulkImportOpen ? (
+                <BulkImportModal
+                  showWorkflowGuidance={showWorkflowGuidance}
+                  onClose={closeBulkImport}
+                  onAddToQueue={addBatchDraftsToQueue}
+                />
+              ) : null}
+
+              {isAccountMenuOpen ? (
+                <AccountMenu onClose={closeAccountMenu} onOpenPreferences={openPreferences} />
+              ) : null}
+            </>
           }>
           {step === 0 && (
             <WelcomeScreen
@@ -735,6 +790,8 @@ function App() {
           )}
 
           {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
+
+          {step === 16 && <UpdatesScreen />}
 
           {step === 2 && <FindDetailScreen onBack={() => setStep(1)} />}
 
