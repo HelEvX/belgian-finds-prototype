@@ -1,5 +1,5 @@
-import { recordKinds } from "../record-find/recordKinds";
-import type { SpecimenDraft } from "../record-find/types";
+import { recordKinds } from "../features/record-find/recordKinds";
+import type { SpecimenDraft } from "../features/record-find/types";
 
 type SpecimenQueueScreenProps = {
   drafts: SpecimenDraft[];

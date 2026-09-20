@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { BulkImportGroupingStep } from "./BulkImportGroupingStep";
 import type { LocalImportImage, SpecimenDraftGroup } from "./bulkImportTypes";
-import type { SpecimenDraftImage } from "./types";
+import type { SpecimenDraftImage } from "../features/record-find/types";
 
 type BulkImportModalProps = {
   showWorkflowGuidance: boolean;

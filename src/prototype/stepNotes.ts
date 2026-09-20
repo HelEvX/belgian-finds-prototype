@@ -29,14 +29,13 @@ export const stepNotes: StepNote[] = [
     decision: "Future interaction remains controlled by the specimen owner and is outside this prototype step.",
   },
   {
-    label: "Legacy prototype route",
-    title: "Image-intake route choice",
-    purpose:
-      "Preserve access to the older single-image and batch-grouping prototype while its remaining behavior is reviewed separately.",
+    label: "Archived prototype route",
+    title: "Previous image-intake route choice",
+    purpose: "Document the superseded choice between one-specimen entry and arbitrary batch-image grouping.",
     matters:
-      "The active mobile single-specimen journey no longer asks the contributor to choose an intake architecture.",
+      "The active mobile Add action now opens the direct single-specimen journey. A future catalogue import will begin with structured CSV rows rather than ungrouped images.",
     decision:
-      "Normal mobile Add navigation bypasses this screen and opens specimen photos directly. Future catalogue import will be a separate desktop-only route.",
+      "This route is no longer imported or rendered by the application. Its component is retained under src/obsolete for historical reference.",
   },
   {
     label: "First contribution only",
@@ -57,14 +56,13 @@ export const stepNotes: StepNote[] = [
       "The contributor continues directly from images to type. Back returns to the same draft-owned images without recreating preview URLs.",
   },
   {
-    label: "Legacy prototype route",
-    title: "Batch image grouping",
-    purpose:
-      "Retain the existing batch-image grouping prototype without treating it as part of the current mobile product flow.",
+    label: "Archived prototype route",
+    title: "Previous batch-image grouping",
+    purpose: "Document the superseded workflow that grouped arbitrary image thumbnails into specimen drafts.",
     matters:
-      "Arbitrary image grouping has been superseded conceptually by a future desktop-only catalogue-import workflow.",
+      "Selecting several images in the active photo screen means several views of one specimen. It is not a bulk import operation.",
     decision:
-      "This screen remains isolated for now. It must not influence the state model or copy of the direct single-specimen journey.",
+      "The old grouping component is retained under src/obsolete. Future catalogue import will be a separate desktop-oriented CSV workflow.",
   },
   {
     label: "Add a specimen · Photos",
@@ -101,20 +99,20 @@ export const stepNotes: StepNote[] = [
       "Measurements are encouraged rather than required. Contributors distinguish measured values, estimates, and details not yet recorded.",
   },
   {
-    label: "Legacy prototype route",
+    label: "Archived prototype route",
     title: "Previous workspace screen",
-    purpose: "Document a superseded contributor-area screen retained in the source for reference.",
-    matters: "The active signed-in home is My specimens, not a separate workspace.",
-    decision:
-      "Do not route the direct single-specimen journey through this screen. Remove it only during a separate verified cleanup.",
+    purpose: "Document a superseded contributor-area screen retained only for historical reference.",
+    matters:
+      "The active signed-in home is My specimens, including unfinished drafts, items ready for review, and private specimens.",
+    decision: "This route is no longer imported or rendered by the application.",
   },
   {
-    label: "Legacy batch route",
-    title: "Annotation queue",
-    purpose: "Retain the existing queue used by the older batch-image prototype.",
-    matters: "The queue exposes implementation architecture and adds unnecessary selection steps for one specimen.",
-    decision:
-      "New mobile single-specimen drafts resume directly from My specimens. The queue is not part of that journey.",
+    label: "Archived prototype route",
+    title: "Previous annotation queue",
+    purpose: "Document the queue that previously sat between image selection and specimen documentation.",
+    matters:
+      "The queue exposed implementation architecture and added unnecessary steps to the single-specimen journey.",
+    decision: "The queue is no longer imported or rendered. Incomplete drafts resume directly from My specimens.",
   },
   {
     label: "Specimen details · Identification",

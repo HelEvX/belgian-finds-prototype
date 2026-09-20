@@ -198,24 +198,32 @@ Each section has an Edit action that opens the relevant existing screen. Complet
 
 Saving privately does not publish the specimen, apply the future sharing preference, or expose exact locality data. The current prototype still loses all specimen data on browser refresh.
 
-## Legacy prototype routes
+## Archived prototype routes
 
-The source still contains the earlier batch-image grouping and annotation-queue components. They are preserved temporarily so this refactor does not mix direct-flow work with removal of the legacy prototype.
+The earlier arbitrary batch-image grouping, image-route choice, workspace, and annotation-queue components are no longer imported or rendered by the active application.
 
-They are not part of the canonical mobile single-specimen journey.
+Their source remains temporarily under `src/obsolete/` for historical reference. Their CSS is not included in the active application bundle.
 
-The arbitrary-thumbnail grouping concept has been superseded by a future desktop-only catalogue-import route:
+Selecting several files in the normal specimen-photo screen means:
+
+> These photographs are different views of one physical specimen.
+
+It does not create several specimens and is not a bulk-import feature.
+
+The future catalogue-import workflow is separate:
 
 ```text
-Choose source catalogue and defaults
+Import an existing catalogue
+→ Choose or describe the source catalogue
 → Upload one flat CSV
-→ Validate rows
-→ Create one private draft per valid row
-→ Attach images record by record
-→ Complete missing or invalid information
+→ Validate columns and rows
+→ One valid row creates one private draft
+→ Attach images specimen by specimen
+→ Resolve missing or invalid information
+→ My specimens
 ```
 
-CSV import is not implemented or designed by the current refactor.
+The future catalogue import must not reuse the archived arbitrary-thumbnail grouping model.
 
 ## Product boundaries
 

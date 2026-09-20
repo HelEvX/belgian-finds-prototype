@@ -11,9 +11,8 @@ import { BrowseScreen } from "./features/explore/BrowseScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 
-// features/workspace
-import { SpecimenQueueScreen } from "./features/workspace/SpecimenQueueScreen";
-import { SettingsScreen } from "./features/workspace/SettingsScreen";
+// features/account
+import { SettingsScreen } from "./features/account/SettingsScreen";
 
 // features/updates
 import { UpdatesScreen } from "./features/updates/UpdatesScreen";
@@ -23,14 +22,6 @@ import { SignInPrompt } from "./features/access/SignInPrompt";
 import { PrototypeModeScreen } from "./features/access/PrototypeModeScreen";
 
 // features/record-find
-
-{
-  /* The AddMethodScreen import, render block, and bulk-import state can remain for now. 
-  This keeps the excluded batch prototype intact even though normal mobile navigation no longer enters it. */
-}
-import { AddMethodScreen } from "./features/record-find/AddMethodScreen";
-import { BulkImportModal } from "./features/record-find/BulkImportModal";
-
 import { ContributionOnboardingScreen } from "./features/record-find/ContributionOnboardingScreen";
 import { DescriptionHelpScreen } from "./features/record-find/DescriptionHelpScreen";
 import { LocationContextScreen } from "./features/record-find/LocationContextScreen";
@@ -161,8 +152,6 @@ function App() {
 
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
-  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
-
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const [prototypeMode, setPrototypeMode] = useState<PrototypeMode | null>(null);
@@ -170,8 +159,6 @@ function App() {
   const [signInPrompt, setSignInPrompt] = useState<SignInPromptState | null>(null);
 
   const isGuest = prototypeMode === "guest";
-
-  const [addReturnStep, setAddReturnStep] = useState<0>(0);
 
   const [onboardingReturnStep, setOnboardingReturnStep] = useState<0 | 14>(0);
 
@@ -496,7 +483,6 @@ function App() {
       return;
     }
 
-    setIsBulkImportOpen(false);
     setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(draft.id);
 
@@ -527,44 +513,6 @@ function App() {
     setStep(5);
   };
 
-  const addBatchDraftsToQueue = (draftImageSets: SpecimenDraftImage[][]) => {
-    const newDrafts = draftImageSets
-      .filter((imageSet) => imageSet.length > 0)
-      .map((images) =>
-        createSpecimenDraft({
-          source: "batch-import",
-          images,
-        }),
-      );
-
-    if (newDrafts.length === 0) {
-      return;
-    }
-
-    replaceSpecimenDrafts([...specimenDraftsRef.current, ...newDrafts]);
-
-    setActiveSpecimenDraftId(newDrafts[0].id);
-    setIsBulkImportOpen(false);
-    setStep(12);
-  };
-
-  const startAnnotation = () => {
-    if (!activeSpecimenDraft) {
-      return;
-    }
-
-    updateActiveSpecimenDraft({
-      status: "annotation-in-progress",
-      resumeStep: "type",
-    });
-
-    setStep(5);
-  };
-
-  const closeBulkImport = () => {
-    setIsBulkImportOpen(false);
-  };
-
   const startSingleFindJourney = () => {
     /*
      * Existing drafts remain untouched. The first accepted image will
@@ -576,7 +524,6 @@ function App() {
   };
 
   const goToPreviousStep = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
 
@@ -592,20 +539,12 @@ function App() {
         setStep(1);
         return;
 
-      case 3:
-        setStep(addReturnStep);
-        return;
-
       case 4:
         setStep(onboardingReturnStep);
         return;
 
       case 5:
         moveActiveDraftToStep("images", 7);
-        return;
-
-      case 6:
-        setStep(3);
         return;
 
       case 7:
@@ -627,14 +566,6 @@ function App() {
 
       case 10:
         moveActiveDraftToStep("find-location", 9);
-        return;
-
-      case 11:
-        setStep(0);
-        return;
-
-      case 12:
-        setStep(0);
         return;
 
       case 13:
@@ -673,7 +604,6 @@ function App() {
   };
 
   const goToNextStep = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
 
@@ -688,10 +618,6 @@ function App() {
 
       case 2:
         setStep(0);
-        return;
-
-      case 3:
-        setStep(7);
         return;
 
       case 4:
@@ -709,10 +635,6 @@ function App() {
         }
 
         moveActiveDraftToStep("provenance", 8);
-        return;
-
-      case 6:
-        setStep(3);
         return;
 
       case 7:
@@ -776,15 +698,6 @@ function App() {
         moveActiveDraftToStep("privacy", 15);
         return;
 
-      case 11:
-        setAddReturnStep(0);
-        setStep(3);
-        return;
-
-      case 12:
-        setStep(0);
-        return;
-
       case 14:
         setStep(settingsReturnStep);
         return;
@@ -813,7 +726,6 @@ function App() {
   };
 
   const startGuestPrototype = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
     setPrototypeMode("guest");
@@ -822,7 +734,6 @@ function App() {
   };
 
   const startMemberPrototype = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
     setPrototypeMode("member");
@@ -854,7 +765,6 @@ function App() {
   };
 
   const showMemberHome = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
 
     /*
@@ -868,24 +778,20 @@ function App() {
   };
 
   const showExplore = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
     setStep(1);
   };
 
   const showUpdates = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
     setStep(17);
   };
 
   const openAddJourney = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
-    setAddReturnStep(0);
 
     if (hasSeenContributionOnboarding) {
       startSingleFindJourney();
@@ -917,14 +823,12 @@ function App() {
   };
 
   const openSettings = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setSettingsReturnStep(step);
     setStep(14);
   };
 
   const openAccountMenu = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(true);
   };
 
@@ -938,7 +842,6 @@ function App() {
   };
 
   const reviewContributionScope = () => {
-    setIsBulkImportOpen(false);
     setIsAccountMenuOpen(false);
     setOnboardingReturnStep(14);
     setStep(4);
@@ -1002,14 +905,6 @@ function App() {
           }
           overlay={
             <>
-              {isBulkImportOpen ? (
-                <BulkImportModal
-                  showWorkflowGuidance={showWorkflowGuidance}
-                  onClose={closeBulkImport}
-                  onAddToQueue={addBatchDraftsToQueue}
-                />
-              ) : null}
-
               {isAccountMenuOpen ? (
                 <AccountMenu onClose={closeAccountMenu} onOpenPreferences={openPreferences} />
               ) : null}
@@ -1052,25 +947,6 @@ function App() {
               onShowImageGuidanceChange={setShowImageGuidance}
               onReviewContributionScope={reviewContributionScope}
               onBack={() => setStep(settingsReturnStep)}
-            />
-          )}
-
-          {step === 12 && (
-            <SpecimenQueueScreen
-              drafts={specimenDrafts}
-              activeDraftId={activeSpecimenDraftId}
-              onSelectDraft={setActiveSpecimenDraftId}
-              onStartAnnotation={startAnnotation}
-              onBack={() => setStep(11)}
-              onAddMaterial={openAddFromMySpecimens}
-            />
-          )}
-
-          {step === 3 && (
-            <AddMethodScreen
-              onRecordOne={startSingleFindJourney}
-              onImportBatch={() => setIsBulkImportOpen(true)}
-              onCancel={() => setStep(addReturnStep)}
             />
           )}
 
