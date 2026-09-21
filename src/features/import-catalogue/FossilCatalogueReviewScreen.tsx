@@ -1,16 +1,31 @@
 import { useState } from "react";
-import type { FossilTemplateInspection } from "./fossilCatalogueImport";
+
+import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
 
 type FossilCatalogueReviewScreenProps = {
   inspection: FossilTemplateInspection;
   filename: string;
   onBack: () => void;
+  onImportPrivateRecords: (rows: FossilTemplateInspectionRow[]) => void;
 };
 
 const REVIEW_PAGE_SIZE = 20;
 
-export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: FossilCatalogueReviewScreenProps) {
+export function FossilCatalogueReviewScreen({
+  inspection,
+  filename,
+  onBack,
+  onImportPrivateRecords,
+}: FossilCatalogueReviewScreenProps) {
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [hasImported, setHasImported] = useState(false);
+
+  const rowsWithErrors = inspection.rows.filter((row) => row.errors.length > 0).length;
+
+  const rowsWithWarnings = inspection.rows.filter((row) => row.warnings.length > 0).length;
+
+  const validRows = inspection.rows.filter((row) => row.errors.length === 0);
 
   const totalPages = Math.max(1, Math.ceil(inspection.rows.length / REVIEW_PAGE_SIZE));
 
@@ -20,9 +35,14 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
 
   const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
 
-  const rowsWithErrors = inspection.rows.filter((row) => row.errors.length > 0).length;
+  const importPrivateRecords = () => {
+    if (hasImported || rowsWithErrors > 0 || validRows.length === 0) {
+      return;
+    }
 
-  const rowsWithWarnings = inspection.rows.filter((row) => row.warnings.length > 0).length;
+    onImportPrivateRecords(validRows);
+    setHasImported(true);
+  };
 
   return (
     <>
@@ -49,11 +69,6 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
         <div>
           <span>Specimen rows</span>
           <strong>{inspection.specimenRowCount}</strong>
-
-          <small>
-            Showing {inspection.specimenRowCount === 0 ? 0 : firstRowIndex + 1}–
-            {Math.min(firstRowIndex + visibleRows.length, inspection.specimenRowCount)}
-          </small>
         </div>
 
         <div>
@@ -150,15 +165,6 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
               })}
             </tbody>
           </table>
-          <colgroup>
-            <col className="catalogue-review-col-row" />
-            <col className="catalogue-review-col-number" />
-            <col className="catalogue-review-col-identification" />
-            <col className="catalogue-review-col-anatomy" />
-            <col className="catalogue-review-col-formation" />
-            <col className="catalogue-review-col-age" />
-            <col className="catalogue-review-col-status" />
-          </colgroup>
         </div>
 
         <nav className="catalogue-review-pagination" aria-label="Specimen review pages">
@@ -184,10 +190,20 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
         </nav>
 
         <div className="catalogue-review-actions">
-          <p>Rows marked Error must be corrected in the spreadsheet and uploaded again.</p>
+          <p>
+            {hasImported
+              ? `${validRows.length} private records imported.`
+              : rowsWithErrors > 0
+                ? "Correct the rows marked Error and upload the CSV again."
+                : `${validRows.length} records are ready to import privately.`}
+          </p>
 
-          <button className="primary-button" type="button" disabled={rowsWithErrors > 0}>
-            Import private records
+          <button
+            className="primary-button"
+            type="button"
+            disabled={hasImported || rowsWithErrors > 0 || validRows.length === 0}
+            onClick={importPrivateRecords}>
+            {hasImported ? "Records imported" : "Import private records"}
           </button>
         </div>
       </section>

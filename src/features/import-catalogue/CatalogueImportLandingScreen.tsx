@@ -1,18 +1,23 @@
 import { useState, type ChangeEvent } from "react";
 import { FossilCatalogueReviewScreen } from "./FossilCatalogueReviewScreen";
-
 import {
   inspectFossilCatalogueTemplate,
   MAX_CATALOGUE_CSV_BYTES,
   type FossilTemplateInspection,
+  type FossilTemplateInspectionRow,
 } from "./fossilCatalogueImport";
 
 type CatalogueImportLandingScreenProps = {
   onBack: () => void;
   onGetTemplate: () => void;
+  onImportPrivateRecords: (rows: FossilTemplateInspectionRow[]) => void;
 };
 
-export function CatalogueImportLandingScreen({ onBack, onGetTemplate }: CatalogueImportLandingScreenProps) {
+export function CatalogueImportLandingScreen({
+  onBack,
+  onGetTemplate,
+  onImportPrivateRecords,
+}: CatalogueImportLandingScreenProps) {
   const [uploadedFilename, setUploadedFilename] = useState<string | null>(null);
 
   const [inspection, setInspection] = useState<FossilTemplateInspection | null>(null);
@@ -69,6 +74,7 @@ export function CatalogueImportLandingScreen({ onBack, onGetTemplate }: Catalogu
         inspection={inspection}
         filename={uploadedFilename ?? ""}
         onBack={() => setShowReview(false)}
+        onImportPrivateRecords={onImportPrivateRecords}
       />
     );
   }
