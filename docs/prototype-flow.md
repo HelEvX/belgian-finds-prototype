@@ -2,102 +2,128 @@
 
 ```mermaid
 flowchart TD
-    OPEN["Open app"] --> HOME["My specimens
-Signed-in home"]
+    OPEN["Open prototype"] --> ACCESS{"Choose prototype view"}
 
-    %% Primary signed-in navigation
-    HOME --> ADD["Add a specimen"]
-    HOME --> RESUME["Resume a private draft
-at its saved stage"]
-    HOME --> EXPLORE["Explore specimens"]
-    HOME --> ACCOUNT["Account menu"]
-    ACCOUNT --> PREFERENCES["Preferences
-Guidance and display choices"]
+    %% Guest journey
+    ACCESS -- "Browse as guest" --> GUEST["Guest browsing"]
+    GUEST --> BROWSE["Browse public specimens"]
+    BROWSE --> DETAIL["View specimen detail<br/>Images, visible context and determination history"]
+    DETAIL -. "Guest attempts to follow<br/>or contribute" .-> GUEST_SIGNIN["Sign in / create account<br/>Mock access prompt"]
+    GUEST_SIGNIN -- "Continue as Helen" --> MEMBER_HOME
 
-    %% Public exploration
-    EXPLORE --> BROWSE["Browse publicly shared specimens"]
-    BROWSE --> DETAIL["View specimen detail
-Images, context and determination history"]
+    %% Signed-in member mobile workspace
+    ACCESS -- "Continue as Helen" --> MEMBER_HOME["My specimens<br/>Signed-in member home"]
 
-    %% Direct mobile single-specimen flow
-    ADD --> FIRST_TIME{"First time adding
-a specimen?"}
-    FIRST_TIME -- Yes --> SCOPE["Contribution scope
-Belgian finds and documented collections"]
-    FIRST_TIME -- No --> PHOTOS["Add specimen photos"]
+    MEMBER_HOME --> ADD["Add one specimen"]
+    MEMBER_HOME --> RESUME["Resume incomplete private draft<br/>at its saved documentation stage"]
+    MEMBER_HOME --> OPEN_PRIVATE["Open saved private specimen<br/>or reviewable draft"]
+    OPEN_PRIVATE --> REVIEW["Review specimen<br/>Check and edit every section"]
+
+    MEMBER_HOME --> BROWSE
+    MEMBER_HOME --> ACCOUNT["Account menu"]
+    ACCOUNT --> PREFERENCES["Preferences<br/>Guidance and display choices"]
+    MEMBER_HOME --> UPDATES_PLACEHOLDER["Updates<br/>Current empty-state placeholder"]
+
+    %% Direct mobile one-specimen route
+    ADD --> FIRST_TIME{"First contribution?"}
+
+    FIRST_TIME -- "Yes" --> SCOPE["Contribution scope<br/>Belgian finds and documented collections"]
+    FIRST_TIME -- "No" --> PHOTOS["Add specimen photos"]
 
     SCOPE --> PHOTOS
-    PHOTOS --> FIRST_IMAGE["First valid image creates
-a private draft"]
+    PHOTOS --> FIRST_IMAGE["First valid image creates<br/>one private specimen draft"]
     FIRST_IMAGE --> TYPE["What does this appear to be?"]
-    TYPE --> PROVENANCE["Provenance
-Who originally found or collected it?"]
-    PROVENANCE --> CONTEXT["Find location and
-collecting context"]
-    CONTEXT --> MEASURE["Physical details
-Measurements and condition"]
-    MEASURE --> DESCRIPTION["Identification and observations
-Optional help preference"]
-    DESCRIPTION --> PRIVACY["Privacy and sharing preferences"]
-    PRIVACY --> REVIEW["Review specimen
-Check and edit each section"]
+    TYPE --> PROVENANCE["Provenance<br/>Who originally found or collected it?"]
+    PROVENANCE --> CONTEXT["Find location and<br/>collecting context"]
+    CONTEXT --> MEASURE["Physical details<br/>Measurements and condition"]
+    MEASURE --> DESCRIPTION["Identification and observations<br/>Optional help preference"]
+    DESCRIPTION --> PRIVACY["Privacy and future sharing preference"]
+    PRIVACY --> REVIEW
     REVIEW --> SAVE["Save private specimen"]
-    SAVE --> HOME
+    SAVE --> MEMBER_HOME
 
+    %% Save and resume from the mobile route
+    FIRST_IMAGE -. "Save and finish later" .-> MEMBER_HOME
+    TYPE -. "Save and finish later" .-> MEMBER_HOME
+    PROVENANCE -. "Save and finish later" .-> MEMBER_HOME
+    CONTEXT -. "Save and finish later" .-> MEMBER_HOME
+    MEASURE -. "Save and finish later" .-> MEMBER_HOME
+    DESCRIPTION -. "Save and finish later" .-> MEMBER_HOME
+    PRIVACY -. "Save and finish later" .-> MEMBER_HOME
 
-    %% Save and resume
-    FIRST_IMAGE -. "save and finish later" .-> HOME
-    TYPE -. "save and finish later" .-> HOME
-    PROVENANCE -. "save and finish later" .-> HOME
-    CONTEXT -. "save and finish later" .-> HOME
-    MEASURE -. "save and finish later" .-> HOME
-    DESCRIPTION -. "save and finish later" .-> HOME
-    PRIVACY -. "save and finish later" .-> HOME
+    %% Desktop member workspace and catalogue import
+    MEMBER_HOME --> DESKTOP_SWITCH["Switch to desktop workspace"]
+    DESKTOP_SWITCH --> DESKTOP_SPECIMENS["Desktop specimen workspace<br/>View specimens and import a catalogue"]
+    DESKTOP_SPECIMENS --> OPEN_PRIVATE
+    DESKTOP_SPECIMENS --> CSV_LANDING["Import an existing catalogue<br/>Desktop only"]
 
-    %% Future sharing and human collaboration
-    SAVE -. "later" .-> SHARE["Review and share a selected specimen"]
-    SHARE --> DETAIL
-    SHARE --> REQUEST["Invite member input
-or request verified-specialist help"]
-    REQUEST --> RESPONSE["Attributed observation
-or determination"]
+    CSV_LANDING --> CSV_TEMPLATE["Choose collection template<br/>Fossil template currently available"]
+    CSV_TEMPLATE --> CSV_CONTEXT["Choose collecting-context mode<br/>Shared defaults or per-record values"]
+    CSV_CONTEXT --> CSV_DOWNLOAD["Download generated CSV template"]
+    CSV_DOWNLOAD --> CSV_SPREADSHEET["Complete spreadsheet offline<br/>Excel, Google Sheets or equivalent"]
+    CSV_SPREADSHEET --> CSV_UPLOAD["Upload completed CSV"]
+
+    CSV_LANDING --> CSV_UPLOAD
+    CSV_UPLOAD --> CSV_VALIDATE["Validate template metadata,<br/>columns, row values and duplicate catalogue numbers"]
+    CSV_VALIDATE --> CSV_REVIEW["Review rows, warnings and errors<br/>Paginated desktop review"]
+
+    CSV_REVIEW -. "Correct errors offline" .-> CSV_FIX["Amend spreadsheet<br/>and export CSV again"]
+    CSV_FIX -. "Upload revised file" .-> CSV_UPLOAD
+
+    CSV_REVIEW --> CSV_STOP["Valid CSV review complete<br/>Draft creation not connected yet"]
+
+    %% Planned catalogue-record connection
+    CSV_STOP -. "Next integration step" .-> CSV_DRAFTS["Create imported specimen drafts<br/>One valid row = one draft"]
+    CSV_DRAFTS -. "Later" .-> IMAGE_MATCH["Attach images<br/>record by record"]
+    IMAGE_MATCH -. "Later" .-> REVISION_QUEUE["Resolve missing information<br/>and validation gaps"]
+    REVISION_QUEUE -. "Later" .-> REVIEW
+
+    %% Planned owner-controlled sharing
+    OPEN_PRIVATE -. "Later" .-> SHARE["Prepare to share"]
+    SHARE --> SHARE_CHOICES["Choose public visibility,<br/>locality precision and interaction policy"]
+    SHARE_CHOICES --> SHARED_RECORD["Shared specimen<br/>Visible to members"]
+    SHARED_RECORD -. "Later: appears in" .-> BROWSE
+
+    SHARE_CHOICES -. "Later: owner may choose" .-> REQUEST["Invite member observations<br/>or request verified-specialist help"]
+    REQUEST --> RESPONSE["Attributed observation<br/>or determination"]
     RESPONSE --> DETAIL
 
-    DETAIL -. "later" .-> FOLLOW["Follow specimen"]
-    FOLLOW -. "later" .-> UPDATES["Updates
-Meaningful specimen changes"]
-    RESPONSE -. "later" .-> UPDATES
+    %% Planned following and meaningful updates
+    DETAIL -. "Later" .-> FOLLOW["Follow specimen"]
+    FOLLOW -. "Later: creates" .-> UPDATE_EVENTS["Meaningful specimen updates"]
+    RESPONSE -. "Later: creates" .-> UPDATE_EVENTS
+    UPDATE_EVENTS -. "Later: shown in" .-> UPDATES_PLACEHOLDER
 
-    %% Future desktop-only catalogue import
-    ADD -. "later · desktop only" .-> CSV_SETUP["Import an existing catalogue
-Choose source catalogue and defaults"]
-    CSV_SETUP --> CSV_UPLOAD["Upload one flat CSV
-One row = one specimen"]
-    CSV_UPLOAD --> CSV_VALIDATE["Validate columns, values and
-duplicate catalogue numbers"]
-    CSV_VALIDATE --> CSV_DRAFTS["Create private specimen drafts"]
-    CSV_DRAFTS --> IMAGE_MATCH["Attach images record by record"]
-    IMAGE_MATCH --> REVISION_QUEUE["Complete missing or invalid information"]
-
-    %% Styles
+    %% Visual styles
     classDef implemented fill:#d8e9f0,stroke:#10546f,color:#172229,stroke-width:2px;
     classDef decision fill:#fbe5d3,stroke:#d96f2d,color:#172229,stroke-width:2px;
-    classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.64;
-    classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.76;
+    classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.66;
+    classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.78;
+    classDef external fill:#faf9f6,stroke:#aca397,color:#5c675d,stroke-width:1px,stroke-dasharray:2 3,opacity:0.9;
 
-    class OPEN,HOME,ACCOUNT,PREFERENCES,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE implemented;
-    class FIRST_TIME decision;
-    class SHARE,REQUEST,RESPONSE,FOLLOW,UPDATES planned;
+    %% Implemented interactive prototype routes
+    class OPEN,GUEST,GUEST_SIGNIN,MEMBER_HOME,RESUME,OPEN_PRIVATE,BROWSE,DETAIL,ACCOUNT,PREFERENCES,UPDATES_PLACEHOLDER,ADD,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE,DESKTOP_SWITCH,DESKTOP_SPECIMENS,CSV_LANDING,CSV_TEMPLATE,CSV_CONTEXT,CSV_DOWNLOAD,CSV_UPLOAD,CSV_VALIDATE,CSV_REVIEW,CSV_STOP implemented;
 
-    class CSV_SETUP,CSV_UPLOAD,CSV_VALIDATE,CSV_DRAFTS,IMAGE_MATCH,REVISION_QUEUE future;
+    %% Implemented decisions
+    class ACCESS,FIRST_TIME decision;
+
+    %% External/off-app actions
+    class CSV_SPREADSHEET,CSV_FIX external;
+
+    %% Agreed next community-sharing work
+    class SHARE,SHARE_CHOICES,SHARED_RECORD,REQUEST,RESPONSE,FOLLOW,UPDATE_EVENTS planned;
+
+    %% Future desktop catalogue-completion work
+    class CSV_DRAFTS,IMAGE_MATCH,REVISION_QUEUE future;
 ```
 
 ## Legend
 
-- **Blue, solid:** Implemented in the current interactive prototype.
-- **Orange, solid:** Implemented decision point.
-- **Faded, dashed:** Agreed next MVP work that is not yet implemented.
-- **Warm yellow, dashed:** Future desktop-only catalogue import.
+- **Blue, solid:** Implemented and currently interactive in the prototype.
+- **Orange, solid:** Implemented choice or entry decision.
+- **Grey, dotted:** An action outside the app, such as completing or correcting a spreadsheet.
+- **Faded, dashed:** Agreed next MVP work, not yet implemented.
+- **Warm yellow, dashed:** Future catalogue-import completion work after CSV review.
 
 # Current product model
 
@@ -219,7 +245,7 @@ Import an existing catalogue
 → Choose or describe the source catalogue
 → Upload one flat CSV
 → Validate columns and rows
-→ One valid row creates one private draft
+→ Valid rows are reviewed before private-record creation
 → Attach images specimen by specimen
 → Resolve missing or invalid information
 → My specimens
