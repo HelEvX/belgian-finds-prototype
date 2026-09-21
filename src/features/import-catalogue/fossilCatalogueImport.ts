@@ -1,19 +1,34 @@
-import { parseDelimitedText } from "./csvFormat";
-
+import { normalizeCsvDecimal, parseDelimitedText } from "./csvFormat";
 import {
   FOSSIL_CATALOGUE_TEMPLATE_VERSION,
   fossilSpecimenColumns,
   perRecordContextColumns,
 } from "./fossilCatalogueTemplate";
-
 import type { CatalogueContextMode } from "./catalogueImportTypes";
 
 export const MAX_CATALOGUE_CSV_BYTES = 5 * 1024 * 1024;
+
+export type FossilTemplateInspectionRow = {
+  rowNumber: number;
+  catalogueNumber: string;
+  identification: string;
+  anatomicalElement: string;
+  formation: string;
+  member: string;
+  geologicalAge: string;
+  ageMinMa: string;
+  ageMaxMa: string;
+  preparation: string;
+  specimenNotes: string;
+  errors: string[];
+  warnings: string[];
+};
 
 export type FossilTemplateInspection = {
   collectionName: string;
   contextMode: CatalogueContextMode | null;
   specimenRowCount: number;
+  rows: FossilTemplateInspectionRow[];
   errors: string[];
   warnings: string[];
 };
@@ -23,6 +38,99 @@ function normalizeKey(value: string) {
     .replace(/^\uFEFF/, "")
     .trim()
     .toLowerCase();
+}
+
+function valueAt(cells: string[], indexes: Map<string, number>, column: string) {
+  const index = indexes.get(column);
+  return index === undefined ? "" : (cells[index] ?? "").trim();
+}
+
+function createReviewRow(
+  rowNumber: number,
+  cells: string[],
+  indexes: Map<string, number>,
+): FossilTemplateInspectionRow {
+  const catalogueNumber = valueAt(cells, indexes, "catalogue_number");
+
+  const identification = valueAt(cells, indexes, "identification");
+
+  const anatomicalElement = valueAt(cells, indexes, "anatomical_element");
+
+  const formation = valueAt(cells, indexes, "formation");
+
+  const member = valueAt(cells, indexes, "member");
+
+  const geologicalAge = valueAt(cells, indexes, "geological_age");
+
+  const ageMinMa = valueAt(cells, indexes, "age_min_ma");
+
+  const ageMaxMa = valueAt(cells, indexes, "age_max_ma");
+
+  const preparation = valueAt(cells, indexes, "preparation");
+
+  const specimenNotes = valueAt(cells, indexes, "specimen_notes");
+
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!catalogueNumber) {
+    errors.push("Catalogue number is required.");
+  }
+
+  if (catalogueNumber.length > 80) {
+    errors.push("Catalogue number must be 80 characters or fewer.");
+  }
+
+  if (!identification) {
+    warnings.push("Identification is blank.");
+  }
+
+  if (!anatomicalElement) {
+    warnings.push("Anatomical element is blank.");
+  }
+
+  const numericValues = [
+    ["Youngest age", ageMinMa],
+    ["Oldest age", ageMaxMa],
+  ] as const;
+
+  numericValues.forEach(([label, value]) => {
+    if (!value) {
+      return;
+    }
+
+    const normalizedValue = normalizeCsvDecimal(value);
+
+    if (!normalizedValue || Number(normalizedValue) < 0) {
+      errors.push(`${label} must be a valid positive number or zero.`);
+    }
+  });
+
+  if (
+    ageMinMa &&
+    ageMaxMa &&
+    normalizeCsvDecimal(ageMinMa) &&
+    normalizeCsvDecimal(ageMaxMa) &&
+    Number(normalizeCsvDecimal(ageMinMa)) > Number(normalizeCsvDecimal(ageMaxMa))
+  ) {
+    errors.push("The youngest age cannot be older than the oldest age.");
+  }
+
+  return {
+    rowNumber,
+    catalogueNumber,
+    identification,
+    anatomicalElement,
+    formation,
+    member,
+    geologicalAge,
+    ageMinMa,
+    ageMaxMa,
+    preparation,
+    specimenNotes,
+    errors,
+    warnings,
+  };
 }
 
 export function inspectFossilCatalogueTemplate(text: string): FossilTemplateInspection {
@@ -39,6 +147,7 @@ export function inspectFossilCatalogueTemplate(text: string): FossilTemplateInsp
       collectionName: "",
       contextMode: null,
       specimenRowCount: 0,
+      rows: [],
       errors: [...errors, "This file does not contain a catalogue_number column from a supported template."],
       warnings,
     };
@@ -96,12 +205,20 @@ export function inspectFossilCatalogueTemplate(text: string): FossilTemplateInsp
     errors.push("This file is missing its collection name.");
   }
 
-  const headers = new Set(parsed.rows[headerRowIndex].map(normalizeKey).filter(Boolean));
+  const headers = parsed.rows[headerRowIndex].map(normalizeKey);
+
+  const indexes = new Map<string, number>();
+
+  headers.forEach((header, index) => {
+    if (header && !indexes.has(header)) {
+      indexes.set(header, index);
+    }
+  });
 
   const requiredColumns =
     contextMode === "per-record" ? [...perRecordContextColumns, ...fossilSpecimenColumns] : fossilSpecimenColumns;
 
-  const missingColumns = requiredColumns.filter((column) => !headers.has(column));
+  const missingColumns = requiredColumns.filter((column) => !indexes.has(column));
 
   if (missingColumns.length > 0) {
     errors.push(`The template is missing required columns: ${missingColumns.join(", ")}.`);
@@ -109,26 +226,59 @@ export function inspectFossilCatalogueTemplate(text: string): FossilTemplateInsp
 
   const knownColumns = new Set([...perRecordContextColumns, ...fossilSpecimenColumns]);
 
-  const unknownColumns = [...headers].filter(
-    (column) => !knownColumns.has(column as (typeof fossilSpecimenColumns)[number]),
-  );
+  const unknownColumns = [...indexes.keys()].filter((column) => !knownColumns.has(column as never));
 
   if (unknownColumns.length > 0) {
     warnings.push(`Unrecognised columns will be ignored: ${unknownColumns.join(", ")}.`);
   }
 
-  const specimenRowCount = parsed.rows
+  const rows = parsed.rows
     .slice(headerRowIndex + 1)
-    .filter((row) => row.some((value) => value.trim())).length;
+    .map((cells, index) => ({
+      cells,
+      rowNumber: headerRowIndex + index + 2,
+    }))
+    .filter(({ cells }) => cells.some((value) => value.trim()))
+    .map(({ cells, rowNumber }) => createReviewRow(rowNumber, cells, indexes));
 
-  if (specimenRowCount === 0) {
+  if (rows.length === 0) {
     errors.push("The template does not contain any specimen rows.");
   }
+
+  const catalogueNumberRows = new Map<string, number[]>();
+
+  rows.forEach((row) => {
+    if (!row.catalogueNumber) {
+      return;
+    }
+
+    const key = row.catalogueNumber.toLowerCase();
+
+    const existing = catalogueNumberRows.get(key) ?? [];
+
+    existing.push(row.rowNumber);
+    catalogueNumberRows.set(key, existing);
+  });
+
+  catalogueNumberRows.forEach((rowNumbers) => {
+    if (rowNumbers.length < 2) {
+      return;
+    }
+
+    const message = `Catalogue number is repeated in rows ${rowNumbers.join(", ")}.`;
+
+    rowNumbers.forEach((rowNumber) => {
+      const row = rows.find((candidate) => candidate.rowNumber === rowNumber);
+
+      row?.errors.push(message);
+    });
+  });
 
   return {
     collectionName,
     contextMode,
-    specimenRowCount,
+    specimenRowCount: rows.length,
+    rows,
     errors,
     warnings,
   };

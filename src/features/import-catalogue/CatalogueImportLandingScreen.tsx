@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from "react";
+import { FossilCatalogueReviewScreen } from "./FossilCatalogueReviewScreen";
 
 import {
   inspectFossilCatalogueTemplate,
@@ -19,6 +20,8 @@ export function CatalogueImportLandingScreen({ onBack, onGetTemplate }: Catalogu
   const [fileError, setFileError] = useState<string | null>(null);
 
   const [isReadingFile, setIsReadingFile] = useState(false);
+
+  const [showReview, setShowReview] = useState(false);
 
   const clearFile = () => {
     setUploadedFilename(null);
@@ -59,6 +62,16 @@ export function CatalogueImportLandingScreen({ onBack, onGetTemplate }: Catalogu
       setIsReadingFile(false);
     }
   };
+
+  if (showReview && inspection) {
+    return (
+      <FossilCatalogueReviewScreen
+        inspection={inspection}
+        filename={uploadedFilename ?? ""}
+        onBack={() => setShowReview(false)}
+      />
+    );
+  }
 
   return (
     <>
@@ -186,8 +199,8 @@ export function CatalogueImportLandingScreen({ onBack, onGetTemplate }: Catalogu
                 </div>
               </dl>
 
-              <button className="primary-button" type="button" disabled>
-                Review specimen data — next step
+              <button className="primary-button" type="button" onClick={() => setShowReview(true)}>
+                Review data
               </button>
             </div>
           )}

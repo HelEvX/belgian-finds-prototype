@@ -78,3 +78,110 @@
     border-radius: 0;
   }
 }
+
+/* ------------- */
+/* Desktop frame */
+/* ------------- */
+
+@media (max-width: 1050px) {
+  .desktop-frame {
+    grid-template-columns: 205px minmax(0, 1fr);
+  }
+
+  .desktop-content {
+    padding: var(--space-6);
+  }
+
+  .desktop-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .desktop-import-intro {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-template-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-import-paths {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .prototype-header {
+    align-items: flex-start;
+  }
+
+  .prototype-header-actions {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+
+  .desktop-page-header-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .catalogue-file-zone,
+  .catalogue-preview-heading,
+  .catalogue-confirmation-bar,
+  .catalogue-setup-heading-with-action,
+  .catalogue-setup-actions,
+  .catalogue-context-form-heading,
+  .catalogue-upload-result-heading,
+  .catalogue-upload-summary,
+  .catalogue-review-heading,
+  .catalogue-review-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .catalogue-preview-counts {
+    justify-content: flex-start;
+  }
+
+  .catalogue-context-grid,
+  .catalogue-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue-field-wide,
+  .catalogue-form-divider {
+    grid-column: auto;
+  }
+
+  .catalogue-review-summary,
+  .catalogue-upload-summary dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .desktop-frame {
+    display: none;
+  }
+
+  .desktop-size-guard {
+    display: grid;
+    min-height: 100dvh;
+    align-content: center;
+    justify-items: start;
+    padding: var(--space-6);
+    background: var(--color-app-surface);
+  }
+
+  .desktop-size-guard h2 {
+    margin: var(--space-3) 0 var(--space-2);
+    font-size: 1.7rem;
+    letter-spacing: -0.04em;
+  }
+
+  .desktop-size-guard p:not(.eyebrow) {
+    max-width: 440px;
+    margin: 0 0 var(--space-5);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+}
