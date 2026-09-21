@@ -152,16 +152,6 @@ export const stepNotes: StepNote[] = [
       "Each section links back to its existing editor and then returns to Review. Saving requires at least one image, creates a private specimen in local state, and never publishes anything.",
   },
   {
-    label: "Review and save · Reserved next slice",
-    title: "Review specimen",
-    purpose:
-      "Reserve the next route for reviewing completed private-draft information before saving a private specimen.",
-    matters:
-      "Review and saving must be separate from future publication. The contributor needs a precise place to correct information before the entry is treated as complete.",
-    decision:
-      "Step 16 is reserved for the Review specimen implementation so it does not collide with guest-access or account-navigation work.",
-  },
-  {
     label: "Member activity",
     title: "Updates",
     purpose:
