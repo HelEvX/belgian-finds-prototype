@@ -79,6 +79,25 @@
   }
 }
 
+@media (min-width: 1920px) {
+  .prototype-header,
+  .prototype-workspace {
+    max-width: 1360px;
+  }
+
+  .prototype-workspace {
+    grid-template-columns: minmax(430px, 520px) minmax(520px, 640px);
+  }
+
+  .prototype-header {
+    margin-bottom: 60px;
+  }
+
+  .desktop-preview {
+    max-width: 1600px;
+  }
+}
+
 /* ------------- */
 /* Desktop frame */
 /* ------------- */
@@ -156,6 +175,14 @@
   .catalogue-upload-summary dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .catalogue-review-pagination {
+    justify-content: space-between;
+  }
+
+  .catalogue-review-pagination span {
+    min-width: auto;
+  }
 }
 
 @media (max-width: 760px) {
@@ -174,7 +201,7 @@
 
   .desktop-size-guard h2 {
     margin: var(--space-3) 0 var(--space-2);
-    font-size: 1.7rem;
+    font-size: var(--text-5xl);
     letter-spacing: -0.04em;
   }
 

@@ -10,7 +10,7 @@
   background: var(--color-choice-active-surface);
   color: var(--color-action-primary);
   font: inherit;
-  font-size: 0.58rem;
+  font-size: var(--text-3xs);
   font-weight: 800;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -32,7 +32,7 @@
   min-width: 54px;
   padding: 0 var(--space-2);
   border-radius: 999px;
-  font-size: 0.6rem;
+  font-size: var(--text-2xs);
 }
 
 /* Prototype entry */
@@ -40,13 +40,13 @@
   margin-top: var(--space-6);
   padding: var(--space-5);
   border: 1px solid var(--color-action-primary-border);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--color-choice-active-surface);
 }
 
 .prototype-mode-intro h3 {
   margin: 10px 0 var(--space-2);
-  font-size: 1.3rem;
+  font-size: var(--text-2xl);
   line-height: 1.15;
   letter-spacing: -0.04em;
 }
@@ -55,7 +55,7 @@
   max-width: 280px;
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 
@@ -99,10 +99,10 @@
   width: 40px;
   height: 40px;
   place-items: center;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--color-choice-symbol-surface);
   color: var(--color-action-primary);
-  font-size: 0.82rem;
+  font-size: var(--text-md);
   font-weight: 800;
 }
 
@@ -113,18 +113,18 @@
 }
 
 .prototype-mode-copy strong {
-  font-size: 0.8rem;
+  font-size: var(--text-md);
 }
 
 .prototype-mode-copy span {
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   line-height: 1.4;
 }
 
 .prototype-mode-arrow {
   color: var(--color-action-primary);
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   text-align: center;
 }
@@ -132,7 +132,7 @@
 .prototype-mode-note {
   margin: var(--space-4) 0 0;
   color: var(--color-text-subtle);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   line-height: 1.45;
 }
 
@@ -171,7 +171,7 @@
 
 .sign-in-prompt-header h2 {
   margin: var(--space-1) 0 0;
-  font-size: 1.2rem;
+  font-size: var(--text-2xl);
   line-height: 1.2;
   letter-spacing: -0.04em;
 }
@@ -187,7 +187,7 @@
   border-radius: 50%;
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 1.2rem;
+  font-size: var(--text-2xl);
   line-height: 0.2em;
   cursor: pointer;
 }
@@ -195,14 +195,14 @@
 .sign-in-prompt-description {
   margin: var(--space-4) 0 0;
   color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 
 .sign-in-prompt-note {
   margin: var(--space-4) 0 0;
   color: var(--color-text-subtle);
-  font-size: 0.65rem;
+  font-size: var(--text-2xs);
   line-height: 1.45;
 }
 
@@ -228,11 +228,11 @@
 }
 
 .detail-member-note strong {
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
 }
 
 .detail-member-note span {
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   line-height: 1.4;
 }

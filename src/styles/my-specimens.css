@@ -2,13 +2,13 @@
   margin-top: var(--space-6);
   padding: var(--space-5);
   border: 1px solid var(--color-action-primary-border);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--color-choice-active-surface);
 }
 
 .member-summary-card h3 {
   margin: 10px 0 var(--space-2);
-  font-size: 1.3rem;
+  font-size: var(--text-2xl);
   line-height: 1.15;
   letter-spacing: -0.04em;
 }
@@ -17,7 +17,7 @@
   max-width: 270px;
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 
@@ -59,7 +59,7 @@
   display: block;
   width: 72px;
   height: 72px;
-  border-radius: 11px;
+  border-radius: var(--radius-control);
   background: var(--color-placeholder-surface);
   object-fit: cover;
 }
@@ -68,7 +68,7 @@
   display: grid;
   place-items: center;
   color: var(--color-placeholder-text);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   text-align: center;
 }
@@ -81,24 +81,24 @@
 
 .member-draft-copy strong {
   overflow: hidden;
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .member-draft-copy > span:not(.status-label) {
   color: var(--color-card-text);
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
 }
 
 .member-draft-copy small {
   color: var(--color-placeholder-muted);
-  font-size: 0.64rem;
+  font-size: var(--text-2xs);
 }
 
 .member-draft-arrow {
   color: var(--color-action-primary);
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
@@ -126,7 +126,7 @@
   margin-top: var(--space-7);
   padding: var(--space-6) var(--space-5);
   border: 1px solid var(--color-card-border);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   text-align: center;
 }
@@ -140,13 +140,13 @@
   border-radius: 50%;
   background: var(--color-choice-active-surface);
   color: var(--color-action-primary);
-  font-size: 1.5rem;
+  font-size: var(--text-4xl);
   font-weight: 700;
 }
 
 .updates-empty h3 {
   margin: 10px 0 var(--space-2);
-  font-size: 1.15rem;
+  font-size: var(--text-xl);
   letter-spacing: -0.03em;
 }
 
@@ -154,6 +154,6 @@
   max-width: 250px;
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.74rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { FossilTemplateInspection } from "./fossilCatalogueImport";
 
 type FossilCatalogueReviewScreenProps = {
@@ -6,7 +7,17 @@ type FossilCatalogueReviewScreenProps = {
   onBack: () => void;
 };
 
+const REVIEW_PAGE_SIZE = 20;
+
 export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: FossilCatalogueReviewScreenProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(inspection.rows.length / REVIEW_PAGE_SIZE));
+
+  const firstRowIndex = (currentPage - 1) * REVIEW_PAGE_SIZE;
+
+  const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
+
   const rowsWithErrors = inspection.rows.filter((row) => row.errors.length > 0).length;
 
   const rowsWithWarnings = inspection.rows.filter((row) => row.warnings.length > 0).length;
@@ -36,6 +47,10 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
         <div>
           <span>Specimen rows</span>
           <strong>{inspection.specimenRowCount}</strong>
+          <small>
+            Showing {Math.min(firstRowIndex + 1, inspection.specimenRowCount)}–
+            {Math.min(firstRowIndex + visibleRows.length, inspection.specimenRowCount)}
+          </small>
         </div>
 
         <div>
@@ -75,7 +90,7 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
             </thead>
 
             <tbody>
-              {inspection.rows.map((row) => {
+              {visibleRows.map((row) => {
                 const hasErrors = row.errors.length > 0;
 
                 const hasWarnings = row.warnings.length > 0;
@@ -126,6 +141,27 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
               })}
             </tbody>
           </table>
+          <nav className="catalogue-review-pagination" aria-label="Specimen review pages">
+            <button
+              className="outline-button"
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
+              Previous
+            </button>
+
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              className="outline-button"
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>
+              Next
+            </button>
+          </nav>
         </div>
 
         <div className="catalogue-review-actions">

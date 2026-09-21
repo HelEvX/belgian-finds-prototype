@@ -4,7 +4,7 @@
   justify-content: space-between;
   padding: 14px 22px var(--space-2);
   color: var(--color-status-text);
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
@@ -61,7 +61,7 @@
 .mobile-header h2,
 .detail-content h2 {
   margin: 5px 0 0;
-  font-size: 1.45rem;
+  font-size: var(--text-4xl);
   letter-spacing: -0.04em;
 }
 
@@ -77,7 +77,7 @@
 
 .section-heading h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-lg);
 }
 
 /* Persistent navigation and scroll cue */
@@ -112,11 +112,11 @@
   gap: 3px;
   justify-items: center;
   color: var(--color-navigation-text);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
 }
 
 .nav-item span {
-  font-size: 1.1rem;
+  font-size: var(--text-xl);
 }
 .nav-item-active {
   color: var(--color-action-primary);
@@ -136,14 +136,14 @@
   border-radius: 999px;
   background: var(--color-app-surface-hint);
   color: var(--color-text-subtle);
-  font-size: 0.58rem;
+  font-size: var(--text-3xs);
   font-weight: 700;
   pointer-events: none;
   animation: fade-scroll-hint 5s ease-out forwards;
 }
 
 .scroll-hint span:first-child {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
 }
 
 @keyframes fade-scroll-hint {

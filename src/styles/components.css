@@ -1,7 +1,7 @@
 /* Typography */
 .prototype-header h1 {
   margin: var(--space-1) 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-size: var(--text-display-sm);
   letter-spacing: -0.04em;
 }
 
@@ -10,7 +10,7 @@
 .card-kicker {
   margin: 0;
   color: var(--color-text-subtle);
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -21,12 +21,12 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
   color: var(--color-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 
 .notes-panel h2 {
   margin: var(--space-2) 0 var(--space-7);
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: var(--text-display-lg);
   letter-spacing: -0.06em;
 }
 
@@ -37,7 +37,7 @@
 
 .note-block h3 {
   margin: 0 0 var(--space-2);
-  font-size: 0.82rem;
+  font-size: var(--text-md);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -65,7 +65,7 @@
   min-height: 44px;
   padding: 0 17px;
   border-radius: var(--radius-control);
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   font-weight: 700;
   cursor: pointer;
 }
@@ -97,18 +97,18 @@
 
 .text-button {
   color: var(--color-button-text);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
 .icon-button {
   color: var(--color-button-text);
-  font-size: 1.5rem;
+  font-size: var(--text-4xl);
 }
 
 .back-button {
   color: var(--color-action-primary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
