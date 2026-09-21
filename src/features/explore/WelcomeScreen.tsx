@@ -163,13 +163,13 @@ export function WelcomeScreen({ drafts, onResumeSpecimen, onAddSpecimen }: Welco
           <h2>My specimens</h2>
         </div>
 
-        <div className="member-identity" aria-label="Signed in as Helen Deleuze">
+        {/* <div className="member-identity" aria-label="Signed in as Helen Deleuze">
           <span>Helen</span>
 
           <span className="member-avatar" aria-hidden="true">
             HD
           </span>
-        </div>
+        </div> */}
       </header>
 
       <section className="member-summary-card">

@@ -2,14 +2,20 @@ import { useEffect, useRef, useState } from "react";
 
 // components
 import { BottomNavigation } from "./components/BottomNavigation";
+import { DesktopFrame, type DesktopSection } from "./components/DesktopFrame";
+
 import { NotesPanel } from "./components/NotesPanel";
 import { PhoneFrame } from "./components/PhoneFrame";
 import { AccountMenu } from "./components/AccountMenu";
 
 // explore
 import { BrowseScreen } from "./features/explore/BrowseScreen";
+import { DesktopSpecimensScreen } from "./features/explore/DesktopSpecimensScreen";
 import { FindDetailScreen } from "./features/explore/FindDetailScreen";
 import { WelcomeScreen } from "./features/explore/WelcomeScreen";
+
+// features/import-catalogue
+import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
 
 // features/account
 import { SettingsScreen } from "./features/account/SettingsScreen";
@@ -139,6 +145,8 @@ const specimenDraftStepToPrototypeStep: Record<SpecimenDraftStep, PrototypeStep>
 
 type PrototypeMode = "guest" | "member";
 
+type PrototypeViewport = "mobile" | "desktop";
+
 type SignInPromptState = {
   title: string;
   description: string;
@@ -147,6 +155,10 @@ type SignInPromptState = {
 
 function App() {
   const [step, setStep] = useState<PrototypeStep>(18);
+
+  const [prototypeViewport, setPrototypeViewport] = useState<PrototypeViewport>("mobile");
+
+  const [desktopSection, setDesktopSection] = useState<DesktopSection>("specimens");
 
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
 
@@ -847,6 +859,22 @@ function App() {
     setStep(4);
   };
 
+  const showDesktopPrototype = () => {
+    setIsAccountMenuOpen(false);
+    setSignInPrompt(null);
+    setPrototypeViewport("desktop");
+  };
+
+  const showMobilePrototype = () => {
+    setPrototypeViewport("mobile");
+  };
+
+  const openSpecimenFromDesktop = (draftId: string) => {
+    setPrototypeMode("member");
+    resumeSpecimenDraft(draftId);
+    setPrototypeViewport("mobile");
+  };
+
   return (
     <main className="prototype-shell">
       <header className="prototype-header">
@@ -855,336 +883,377 @@ function App() {
           <h1>Belgian Fossil Finds</h1>
         </div>
 
-        <span className="prototype-status">Mock data · No live submissions</span>
+        <div className="prototype-header-actions">
+          <div className="prototype-view-switch" role="group" aria-label="Prototype preview">
+            <button
+              className={`prototype-view-button ${
+                prototypeViewport === "mobile" ? "prototype-view-button-active" : ""
+              }`}
+              type="button"
+              aria-pressed={prototypeViewport === "mobile"}
+              onClick={showMobilePrototype}>
+              Mobile
+            </button>
+
+            <button
+              className={`prototype-view-button ${
+                prototypeViewport === "desktop" ? "prototype-view-button-active" : ""
+              }`}
+              type="button"
+              aria-pressed={prototypeViewport === "desktop"}
+              onClick={showDesktopPrototype}>
+              Desktop
+            </button>
+          </div>
+
+          <span className="prototype-status">Mock data · No live submissions</span>
+        </div>
       </header>
 
-      <section className="prototype-workspace">
-        <PhoneFrame
-          screenKey={step}
-          accountControl={
-            prototypeMode === "member" ? (
-              <button
-                className="phone-account-button"
-                type="button"
-                aria-label="Open account menu"
-                aria-haspopup="dialog"
-                onClick={openAccountMenu}>
-                HD
-              </button>
-            ) : prototypeMode === "guest" ? (
-              <button
-                className="phone-account-button phone-account-button-guest"
-                type="button"
-                onClick={() =>
-                  openSignInPrompt(
-                    "Sign in or create an account",
-                    "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
-                  )
-                }>
-                Sign in
-              </button>
-            ) : null
-          }
-          navigation={
-            prototypeMode ? (
-              <BottomNavigation
-                step={step}
-                isGuest={isGuest}
-                onExplore={showExplore}
-                onAdd={openAddJourney}
-                onMySpecimens={showMemberHome}
-                onUpdates={showUpdates}
-                onRequestSignIn={() =>
-                  openSignInPrompt(
-                    "Sign in or create an account",
-                    "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
-                  )
-                }
-              />
-            ) : null
-          }
-          overlay={
-            <>
-              {isAccountMenuOpen ? (
-                <AccountMenu onClose={closeAccountMenu} onOpenPreferences={openPreferences} />
-              ) : null}
-
-              {signInPrompt ? (
-                <SignInPrompt
-                  title={signInPrompt.title}
-                  description={signInPrompt.description}
-                  onClose={closeSignInPrompt}
-                  onContinueAsMember={continueAsMember}
+      {prototypeViewport === "mobile" ? (
+        <section className="prototype-workspace">
+          <PhoneFrame
+            screenKey={step}
+            accountControl={
+              prototypeMode === "member" ? (
+                <button
+                  className="phone-account-button"
+                  type="button"
+                  aria-label="Open account menu"
+                  aria-haspopup="dialog"
+                  onClick={openAccountMenu}>
+                  HD
+                </button>
+              ) : prototypeMode === "guest" ? (
+                <button
+                  className="phone-account-button phone-account-button-guest"
+                  type="button"
+                  onClick={() =>
+                    openSignInPrompt(
+                      "Sign in or create an account",
+                      "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
+                    )
+                  }>
+                  Sign in
+                </button>
+              ) : null
+            }
+            navigation={
+              prototypeMode ? (
+                <BottomNavigation
+                  step={step}
+                  isGuest={isGuest}
+                  onExplore={showExplore}
+                  onAdd={openAddJourney}
+                  onMySpecimens={showMemberHome}
+                  onUpdates={showUpdates}
+                  onRequestSignIn={() =>
+                    openSignInPrompt(
+                      "Sign in or create an account",
+                      "Create an account to keep private specimen drafts, follow selected specimens, and contribute when an owner invites input.",
+                    )
+                  }
                 />
-              ) : null}
-            </>
-          }>
-          {step === 18 && (
-            <PrototypeModeScreen onContinueAsGuest={startGuestPrototype} onContinueAsMember={startMemberPrototype} />
-          )}
+              ) : null
+            }
+            overlay={
+              <>
+                {isAccountMenuOpen ? (
+                  <AccountMenu onClose={closeAccountMenu} onOpenPreferences={openPreferences} />
+                ) : null}
 
-          {step === 0 && (
-            <WelcomeScreen
+                {signInPrompt ? (
+                  <SignInPrompt
+                    title={signInPrompt.title}
+                    description={signInPrompt.description}
+                    onClose={closeSignInPrompt}
+                    onContinueAsMember={continueAsMember}
+                  />
+                ) : null}
+              </>
+            }>
+            {step === 18 && (
+              <PrototypeModeScreen onContinueAsGuest={startGuestPrototype} onContinueAsMember={startMemberPrototype} />
+            )}
+
+            {step === 0 && (
+              <WelcomeScreen
+                drafts={specimenDrafts}
+                onResumeSpecimen={resumeSpecimenDraft}
+                onAddSpecimen={openAddFromMySpecimens}
+              />
+            )}
+
+            {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
+
+            {step === 17 && <UpdatesScreen />}
+
+            {step === 2 && (
+              <FindDetailScreen isGuest={isGuest} onBack={() => setStep(1)} onRequestSignIn={openSignInPrompt} />
+            )}
+
+            {step === 14 && (
+              <SettingsScreen
+                showWorkflowGuidance={showWorkflowGuidance}
+                showImageGuidance={showImageGuidance}
+                onShowWorkflowGuidanceChange={setShowWorkflowGuidance}
+                onShowImageGuidanceChange={setShowImageGuidance}
+                onReviewContributionScope={reviewContributionScope}
+                onBack={() => setStep(settingsReturnStep)}
+              />
+            )}
+
+            {step === 4 && (
+              <ContributionOnboardingScreen
+                returnToSettings={onboardingReturnStep === 14}
+                onContinue={finishContributionOnboarding}
+                onCancel={dismissContributionOnboarding}
+              />
+            )}
+
+            {step === 5 && activeSpecimenDraft && (
+              <RecordTypeScreen
+                selectedKind={activeSpecimenDraft.recordKind}
+                onSelect={(recordKind) =>
+                  updateActiveSpecimenDraft({
+                    recordKind,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("images", 7);
+                }}
+                onContinue={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("provenance", 8);
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("type")}
+              />
+            )}
+
+            {step === 7 && (
+              <PhotoScreen
+                photos={activeSingleSpecimenPhotos}
+                hasDraft={Boolean(activeSpecimenDraft)}
+                onAddPhotos={addFindPhotos}
+                onRemovePhoto={removeFindPhoto}
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  if (activeSpecimenDraft) {
+                    saveActiveDraftForLater("images");
+                    return;
+                  }
+
+                  setStep(0);
+                }}
+                onContinue={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  finishSingleFindImageIntake();
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("images")}
+                showImageGuidance={showImageGuidance}
+              />
+            )}
+
+            {step === 8 && activeSpecimenDraft && (
+              <ProvenanceScreen
+                selectedProvenance={activeSpecimenDraft.provenance}
+                onSelect={(provenance) =>
+                  updateActiveSpecimenDraft({
+                    provenance,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("type", 5);
+                }}
+                onContinue={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("find-location", 9);
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("provenance")}
+              />
+            )}
+
+            {step === 9 && activeSpecimenDraft && activeSpecimenDraft.provenance && (
+              <LocationContextScreen
+                provenance={activeSpecimenDraft.provenance}
+                value={activeSpecimenDraft.locationContext}
+                onChange={(locationContext) =>
+                  updateActiveSpecimenDraft({
+                    locationContext,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("provenance", 8);
+                }}
+                onContinue={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("physical-details", 10);
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("find-location")}
+              />
+            )}
+
+            {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
+              <PhysicalDetailsScreen
+                recordKind={activeSpecimenDraft.recordKind}
+                value={activeSpecimenDraft.physicalDetails}
+                onChange={(physicalDetails) =>
+                  updateActiveSpecimenDraft({
+                    physicalDetails,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("find-location", 9);
+                }}
+                onContinue={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("identification-observations", 13);
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("physical-details")}
+              />
+            )}
+
+            {step === 13 && activeSpecimenDraft && (
+              <DescriptionHelpScreen
+                showWorkflowGuidance={showWorkflowGuidance}
+                value={activeSpecimenDraft.description}
+                onChange={(description) =>
+                  updateActiveSpecimenDraft({
+                    description,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("physical-details", 10);
+                }}
+                onFinish={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("privacy", 15);
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("identification-observations")}
+              />
+            )}
+
+            {step === 15 && activeSpecimenDraft && (
+              <PrivacySharingScreen
+                value={activeSpecimenDraft.privacySettings}
+                onChange={(privacySettings) =>
+                  updateActiveSpecimenDraft({
+                    privacySettings,
+                  })
+                }
+                onBack={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  moveActiveDraftToStep("identification-observations", 13);
+                }}
+                onFinish={() => {
+                  if (returnToReviewAfterEdit) {
+                    returnToReviewFromEdit();
+                    return;
+                  }
+
+                  openReviewFromPrivacy();
+                }}
+                onSaveForLater={() => saveActiveDraftForLater("privacy")}
+              />
+            )}
+
+            {step === 16 && activeSpecimenDraft && (
+              <ReviewSpecimenScreen
+                draft={activeSpecimenDraft}
+                onBack={showMemberHome}
+                onEdit={editActiveSpecimenFromReview}
+                onSavePrivate={savePrivateSpecimen}
+              />
+            )}
+          </PhoneFrame>
+
+          <NotesPanel
+            step={step}
+            onPrevious={goToPreviousStep}
+            onNext={goToNextStep}
+            nextDisabled={
+              (step === 5 && activeSpecimenDraft?.recordKind === null) ||
+              (step === 7 && activeSingleSpecimenPhotos.length === 0) ||
+              (step === 8 && activeSpecimenDraft?.provenance === null) ||
+              (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
+              (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null) ||
+              (step === 16 && activeSpecimenDraft?.images.length === 0)
+            }
+          />
+        </section>
+      ) : (
+        <DesktopFrame
+          activeSection={desktopSection}
+          onSelectSection={setDesktopSection}
+          onSwitchToMobile={showMobilePrototype}>
+          {desktopSection === "specimens" ? (
+            <DesktopSpecimensScreen
               drafts={specimenDrafts}
-              onResumeSpecimen={resumeSpecimenDraft}
-              onAddSpecimen={openAddFromMySpecimens}
+              onImportCatalogue={() => setDesktopSection("catalogue-import")}
+              onOpenSpecimen={openSpecimenFromDesktop}
             />
+          ) : (
+            <CatalogueImportIntroScreen onBack={() => setDesktopSection("specimens")} />
           )}
-
-          {step === 1 && <BrowseScreen onOpenFind={() => setStep(2)} />}
-
-          {step === 17 && <UpdatesScreen />}
-
-          {step === 2 && (
-            <FindDetailScreen isGuest={isGuest} onBack={() => setStep(1)} onRequestSignIn={openSignInPrompt} />
-          )}
-
-          {step === 14 && (
-            <SettingsScreen
-              showWorkflowGuidance={showWorkflowGuidance}
-              showImageGuidance={showImageGuidance}
-              onShowWorkflowGuidanceChange={setShowWorkflowGuidance}
-              onShowImageGuidanceChange={setShowImageGuidance}
-              onReviewContributionScope={reviewContributionScope}
-              onBack={() => setStep(settingsReturnStep)}
-            />
-          )}
-
-          {step === 4 && (
-            <ContributionOnboardingScreen
-              returnToSettings={onboardingReturnStep === 14}
-              onContinue={finishContributionOnboarding}
-              onCancel={dismissContributionOnboarding}
-            />
-          )}
-
-          {step === 5 && activeSpecimenDraft && (
-            <RecordTypeScreen
-              selectedKind={activeSpecimenDraft.recordKind}
-              onSelect={(recordKind) =>
-                updateActiveSpecimenDraft({
-                  recordKind,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("images", 7);
-              }}
-              onContinue={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("provenance", 8);
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("type")}
-            />
-          )}
-
-          {step === 7 && (
-            <PhotoScreen
-              photos={activeSingleSpecimenPhotos}
-              hasDraft={Boolean(activeSpecimenDraft)}
-              onAddPhotos={addFindPhotos}
-              onRemovePhoto={removeFindPhoto}
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                if (activeSpecimenDraft) {
-                  saveActiveDraftForLater("images");
-                  return;
-                }
-
-                setStep(0);
-              }}
-              onContinue={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                finishSingleFindImageIntake();
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("images")}
-              showImageGuidance={showImageGuidance}
-            />
-          )}
-
-          {step === 8 && activeSpecimenDraft && (
-            <ProvenanceScreen
-              selectedProvenance={activeSpecimenDraft.provenance}
-              onSelect={(provenance) =>
-                updateActiveSpecimenDraft({
-                  provenance,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("type", 5);
-              }}
-              onContinue={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("find-location", 9);
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("provenance")}
-            />
-          )}
-
-          {step === 9 && activeSpecimenDraft && activeSpecimenDraft.provenance && (
-            <LocationContextScreen
-              provenance={activeSpecimenDraft.provenance}
-              value={activeSpecimenDraft.locationContext}
-              onChange={(locationContext) =>
-                updateActiveSpecimenDraft({
-                  locationContext,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("provenance", 8);
-              }}
-              onContinue={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("physical-details", 10);
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("find-location")}
-            />
-          )}
-
-          {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
-            <PhysicalDetailsScreen
-              recordKind={activeSpecimenDraft.recordKind}
-              value={activeSpecimenDraft.physicalDetails}
-              onChange={(physicalDetails) =>
-                updateActiveSpecimenDraft({
-                  physicalDetails,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("find-location", 9);
-              }}
-              onContinue={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("identification-observations", 13);
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("physical-details")}
-            />
-          )}
-
-          {step === 13 && activeSpecimenDraft && (
-            <DescriptionHelpScreen
-              showWorkflowGuidance={showWorkflowGuidance}
-              value={activeSpecimenDraft.description}
-              onChange={(description) =>
-                updateActiveSpecimenDraft({
-                  description,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("physical-details", 10);
-              }}
-              onFinish={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("privacy", 15);
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("identification-observations")}
-            />
-          )}
-
-          {step === 15 && activeSpecimenDraft && (
-            <PrivacySharingScreen
-              value={activeSpecimenDraft.privacySettings}
-              onChange={(privacySettings) =>
-                updateActiveSpecimenDraft({
-                  privacySettings,
-                })
-              }
-              onBack={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                moveActiveDraftToStep("identification-observations", 13);
-              }}
-              onFinish={() => {
-                if (returnToReviewAfterEdit) {
-                  returnToReviewFromEdit();
-                  return;
-                }
-
-                openReviewFromPrivacy();
-              }}
-              onSaveForLater={() => saveActiveDraftForLater("privacy")}
-            />
-          )}
-
-          {step === 16 && activeSpecimenDraft && (
-            <ReviewSpecimenScreen
-              draft={activeSpecimenDraft}
-              onBack={showMemberHome}
-              onEdit={editActiveSpecimenFromReview}
-              onSavePrivate={savePrivateSpecimen}
-            />
-          )}
-        </PhoneFrame>
-
-        <NotesPanel
-          step={step}
-          onPrevious={goToPreviousStep}
-          onNext={goToNextStep}
-          nextDisabled={
-            (step === 5 && activeSpecimenDraft?.recordKind === null) ||
-            (step === 7 && activeSingleSpecimenPhotos.length === 0) ||
-            (step === 8 && activeSpecimenDraft?.provenance === null) ||
-            (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
-            (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null) ||
-            (step === 16 && activeSpecimenDraft?.images.length === 0)
-          }
-        />
-      </section>
+        </DesktopFrame>
+      )}
     </main>
   );
 }

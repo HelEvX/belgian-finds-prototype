@@ -16,7 +16,7 @@
 .prototype-workspace {
   display: grid;
   grid-template-columns: minmax(320px, 430px) minmax(320px, 520px);
-  align-items: center;
+  align-items: start;
   justify-content: center;
   gap: clamp(48px, 9vw, 140px);
   max-width: 1080px;

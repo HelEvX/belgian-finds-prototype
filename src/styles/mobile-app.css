@@ -10,7 +10,7 @@
 
 .mobile-app {
   position: absolute;
-  top: 34px;
+  top: 50px;
   right: 0;
   bottom: 0;
   left: 0;
@@ -126,8 +126,8 @@
 .scroll-hint {
   position: absolute;
   z-index: 20;
-  top: 39px;
-  right: 18px;
+  top: 29px;
+  right: calc(50% / 2);
   display: flex;
   align-items: center;
   gap: 5px;

@@ -10,7 +10,9 @@ Signed-in home"]
     HOME --> RESUME["Resume a private draft
 at its saved stage"]
     HOME --> EXPLORE["Explore specimens"]
-    HOME --> SETTINGS["Settings"]
+    HOME --> ACCOUNT["Account menu"]
+    ACCOUNT --> PREFERENCES["Preferences
+Guidance and display choices"]
 
     %% Public exploration
     EXPLORE --> BROWSE["Browse publicly shared specimens"]
@@ -83,7 +85,7 @@ duplicate catalogue numbers"]
     classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.64;
     classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.76;
 
-    class OPEN,HOME,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SETTINGS,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE implemented;
+    class OPEN,HOME,ACCOUNT,PREFERENCES,ADD,RESUME,EXPLORE,BROWSE,DETAIL,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE implemented;
     class FIRST_TIME decision;
     class SHARE,REQUEST,RESPONSE,FOLLOW,UPDATES planned;
 
@@ -115,7 +117,7 @@ SIGNED-IN HOME
 │   ├── Browse publicly shared specimens
 │   └── View specimen details
 │
-├── Settings
+├── Account menu
 │   ├── Workflow-guidance preference
 │   ├── Image-guidance preference
 │   └── Review contribution scope
