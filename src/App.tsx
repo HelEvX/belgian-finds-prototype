@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // components
 import { BottomNavigation } from "./components/BottomNavigation";
@@ -43,77 +43,14 @@ import {
   MAX_FIND_PHOTOS,
   type FindPhotoSource,
   type LocalFindPhoto,
-  type LocationContext,
-  type PhysicalDetails,
-  type PrivacySettings,
-  type RecordKind,
-  type SpecimenDescription,
   type SpecimenDraft,
   type SpecimenDraftImage,
-  type SpecimenDraftSource,
   type SpecimenDraftStep,
 } from "./features/record-find/types";
+
+import { specimenService, type SpecimenDraftUpdate } from "./services/specimenService";
+
 import type { PrototypeStep } from "./prototype/types";
-
-const createEmptyLocationContext = (): LocationContext => ({
-  knowledge: null,
-  municipality: "",
-  province: "",
-  siteDescription: "",
-  geologicalContext: "",
-  collectionDateQualifier: null,
-  collectionDateValue: "",
-  sourceNotes: "",
-});
-
-const createEmptyPhysicalDetails = (): PhysicalDetails => ({
-  measurementStatus: null,
-  lengthCm: "",
-  widthCm: "",
-  heightCm: "",
-  weightG: "",
-  condition: null,
-});
-
-const createEmptySpecimenDescription = (): SpecimenDescription => ({
-  suggestedIdentification: "",
-  identificationConfidence: null,
-  observations: "",
-  helpRequest: null,
-});
-
-const createEmptyPrivacySettings = (): PrivacySettings => ({
-  sharingPreference: "private",
-  locationVisibility: "country",
-});
-
-const createSpecimenDraft = ({
-  source,
-  images,
-  recordKind = null,
-}: {
-  source: SpecimenDraftSource;
-  images: SpecimenDraftImage[];
-  recordKind?: RecordKind | null;
-}): SpecimenDraft => {
-  const now = new Date().toISOString();
-
-  return {
-    id: crypto.randomUUID(),
-    createdAt: now,
-    updatedAt: now,
-    source,
-    status: "ready-to-annotate",
-    resumeStep: source === "single-specimen" ? "images" : "type",
-    images,
-    recordKind,
-    provenance: null,
-    locationContext: createEmptyLocationContext(),
-    physicalDetails: createEmptyPhysicalDetails(),
-    description: createEmptySpecimenDescription(),
-    privacySettings: createEmptyPrivacySettings(),
-  };
-};
 
 function readStoredBoolean(key: string, fallback: boolean) {
   if (typeof window === "undefined") {
@@ -160,7 +97,7 @@ function App() {
 
   const [desktopSection, setDesktopSection] = useState<DesktopSection>("specimens");
 
-  const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>([]);
+  const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>(() => specimenService.list());
 
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
@@ -189,8 +126,6 @@ function App() {
   const [settingsReturnStep, setSettingsReturnStep] = useState<PrototypeStep>(0);
 
   const [returnToReviewAfterEdit, setReturnToReviewAfterEdit] = useState(false);
-
-  const specimenDraftsRef = useRef<SpecimenDraft[]>([]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -224,13 +159,15 @@ function App() {
       : [];
 
   useEffect(() => {
-    specimenDraftsRef.current = specimenDrafts;
-  }, [specimenDrafts]);
+    return specimenService.subscribe((drafts) => {
+      setSpecimenDrafts(drafts);
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
       const previewUrls = new Set(
-        specimenDraftsRef.current.flatMap((draft) => draft.images.map((image) => image.previewUrl)),
+        specimenService.list().flatMap((draft) => draft.images.map((image) => image.previewUrl)),
       );
 
       previewUrls.forEach((previewUrl) => {
@@ -239,15 +176,8 @@ function App() {
     };
   }, []);
 
-  const replaceSpecimenDrafts = (nextDrafts: SpecimenDraft[]) => {
-    specimenDraftsRef.current = nextDrafts;
-    setSpecimenDrafts(nextDrafts);
-  };
-
   const addFindPhotos = (files: File[], source: FindPhotoSource) => {
-    const currentDrafts = specimenDraftsRef.current;
-
-    const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
     const activeSingleDraft = currentActiveDraft?.source === "single-specimen" ? currentActiveDraft : null;
 
@@ -292,38 +222,28 @@ function App() {
     }
 
     if (activeSingleDraft) {
-      const nextDrafts = currentDrafts.map((draft) =>
-        draft.id === activeSingleDraft.id
-          ? {
-              ...draft,
-              updatedAt: new Date().toISOString(),
-              images: [...draft.images, ...newImages],
-            }
-          : draft,
-      );
+      specimenService.update(activeSingleDraft.id, {
+        images: [...activeSingleDraft.images, ...newImages],
+      });
 
-      replaceSpecimenDrafts(nextDrafts);
       return;
     }
 
     /*
-     * The private draft now begins with the first accepted image.
-     * There is no separate temporary photo collection and no later
-     * transfer of object-URL ownership.
+     * The private draft begins with the first accepted image.
+     * There is no temporary photo collection and no later transfer
+     * of object-URL ownership.
      */
-    const newDraft = createSpecimenDraft({
+    const newDraft = specimenService.create({
       source: "single-specimen",
       images: newImages,
     });
 
-    replaceSpecimenDrafts([...currentDrafts, newDraft]);
     setActiveSpecimenDraftId(newDraft.id);
   };
 
   const removeFindPhoto = (photoId: string): boolean => {
-    const currentDrafts = specimenDraftsRef.current;
-
-    const currentActiveDraft = currentDrafts.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
     if (!currentActiveDraft || currentActiveDraft.source !== "single-specimen") {
       return false;
@@ -337,57 +257,28 @@ function App() {
 
     const remainingImages = currentActiveDraft.images.filter((image) => image.id !== photoId);
 
-    const nextDrafts = currentDrafts.map((draft) =>
-      draft.id === currentActiveDraft.id
-        ? {
-            ...draft,
-            updatedAt: new Date().toISOString(),
-            resumeStep: "images" as const,
-            status:
-              draft.status === "ready-for-review" || draft.status === "private-specimen"
-                ? ("annotation-in-progress" as const)
-                : draft.status,
-            images: remainingImages,
-          }
-        : draft,
-    );
+    const nextStatus =
+      currentActiveDraft.status === "ready-for-review" || currentActiveDraft.status === "private-specimen"
+        ? "annotation-in-progress"
+        : currentActiveDraft.status;
 
-    replaceSpecimenDrafts(nextDrafts);
+    specimenService.update(currentActiveDraft.id, {
+      images: remainingImages,
+      resumeStep: "images",
+      status: nextStatus,
+    });
+
     URL.revokeObjectURL(photoToRemove.previewUrl);
 
     return true;
   };
 
-  const updateActiveSpecimenDraft = (
-    updates: Partial<
-      Pick<
-        SpecimenDraft,
-        | "recordKind"
-        | "provenance"
-        | "locationContext"
-        | "physicalDetails"
-        | "description"
-        | "privacySettings"
-        | "status"
-        | "resumeStep"
-      >
-    >,
-  ) => {
+  const updateActiveSpecimenDraft = (updates: SpecimenDraftUpdate) => {
     if (!activeSpecimenDraftId) {
       return;
     }
 
-    const nextDrafts = specimenDraftsRef.current.map((draft) =>
-      draft.id === activeSpecimenDraftId
-        ? {
-            ...draft,
-            ...updates,
-            updatedAt: new Date().toISOString(),
-          }
-        : draft,
-    );
-
-    replaceSpecimenDrafts(nextDrafts);
+    specimenService.update(activeSpecimenDraftId, updates);
   };
 
   const moveActiveDraftToStep = (resumeStep: SpecimenDraftStep, nextStep: PrototypeStep) => {
@@ -409,7 +300,7 @@ function App() {
       return;
     }
 
-    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentDraft = specimenService.getById(activeSpecimenDraftId);
 
     updateActiveSpecimenDraft({
       resumeStep,
@@ -425,7 +316,7 @@ function App() {
   };
 
   const returnToReviewFromEdit = () => {
-    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
     if (!currentDraft) {
       setReturnToReviewAfterEdit(false);
@@ -472,7 +363,7 @@ function App() {
   };
 
   const savePrivateSpecimen = () => {
-    const currentDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
     if (!currentDraft || currentDraft.images.length === 0) {
       return;
@@ -489,7 +380,7 @@ function App() {
   };
 
   const resumeSpecimenDraft = (draftId: string) => {
-    const draft = specimenDraftsRef.current.find((candidate) => candidate.id === draftId);
+    const draft = specimenService.getById(draftId);
 
     if (!draft) {
       return;
@@ -507,7 +398,7 @@ function App() {
   };
 
   const finishSingleFindImageIntake = () => {
-    const currentActiveDraft = specimenDraftsRef.current.find((draft) => draft.id === activeSpecimenDraftId);
+    const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
     if (
       !currentActiveDraft ||

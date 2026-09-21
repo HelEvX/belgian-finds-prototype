@@ -6,7 +6,7 @@ type FossilCatalogueReviewScreenProps = {
   inspection: FossilTemplateInspection;
   filename: string;
   onBack: () => void;
-  onImportPrivateRecords: (rows: FossilTemplateInspectionRow[]) => void;
+  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
 };
 
 const REVIEW_PAGE_SIZE = 20;
@@ -27,6 +27,8 @@ export function FossilCatalogueReviewScreen({
 
   const validRows = inspection.rows.filter((row) => row.errors.length === 0);
 
+  const canCreatePrivateRecords = Boolean(onImportPrivateRecords);
+
   const totalPages = Math.max(1, Math.ceil(inspection.rows.length / REVIEW_PAGE_SIZE));
 
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
@@ -36,7 +38,7 @@ export function FossilCatalogueReviewScreen({
   const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
 
   const importPrivateRecords = () => {
-    if (hasImported || rowsWithErrors > 0 || validRows.length === 0) {
+    if (!onImportPrivateRecords || hasImported || rowsWithErrors > 0 || validRows.length === 0) {
       return;
     }
 
@@ -195,15 +197,21 @@ export function FossilCatalogueReviewScreen({
               ? `${validRows.length} private records imported.`
               : rowsWithErrors > 0
                 ? "Correct the rows marked Error and upload the CSV again."
-                : `${validRows.length} records are ready to import privately.`}
+                : !canCreatePrivateRecords
+                  ? "The CSV is valid. Creating specimen drafts and matching images are not connected in this prototype yet."
+                  : `${validRows.length} records are ready to import privately.`}
           </p>
 
           <button
             className="primary-button"
             type="button"
-            disabled={hasImported || rowsWithErrors > 0 || validRows.length === 0}
+            disabled={!canCreatePrivateRecords || hasImported || rowsWithErrors > 0 || validRows.length === 0}
             onClick={importPrivateRecords}>
-            {hasImported ? "Records imported" : "Import private records"}
+            {hasImported
+              ? "Records imported"
+              : canCreatePrivateRecords
+                ? "Import private records"
+                : "Draft creation not connected"}
           </button>
         </div>
       </section>

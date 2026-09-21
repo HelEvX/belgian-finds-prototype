@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import { CatalogueImportLandingScreen } from "./CatalogueImportLandingScreen";
+import type { FossilTemplateInspectionRow } from "./fossilCatalogueImport";
+
 import {
   createEmptySharedCollectingContext,
   type CatalogueContextMode,
@@ -11,6 +13,7 @@ import { buildFossilCatalogueTemplate, createFossilTemplateFilename } from "./fo
 
 type CatalogueImportIntroScreenProps = {
   onBack: () => void;
+  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
 };
 
 type SetupStep = "template" | "context";
@@ -71,7 +74,7 @@ const contextOptions: Array<{
   },
 ];
 
-export function CatalogueImportIntroScreen({ onBack }: CatalogueImportIntroScreenProps) {
+export function CatalogueImportIntroScreen({ onBack, onImportPrivateRecords }: CatalogueImportIntroScreenProps) {
   const [isBuildingTemplate, setIsBuildingTemplate] = useState(false);
 
   const [setupStep, setSetupStep] = useState<SetupStep>("template");
@@ -131,6 +134,7 @@ export function CatalogueImportIntroScreen({ onBack }: CatalogueImportIntroScree
           setSetupStep("template");
           setIsBuildingTemplate(true);
         }}
+        onImportPrivateRecords={onImportPrivateRecords}
       />
     );
   }

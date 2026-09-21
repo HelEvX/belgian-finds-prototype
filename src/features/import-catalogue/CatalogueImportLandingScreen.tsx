@@ -10,7 +10,7 @@ import {
 type CatalogueImportLandingScreenProps = {
   onBack: () => void;
   onGetTemplate: () => void;
-  onImportPrivateRecords: (rows: FossilTemplateInspectionRow[]) => void;
+  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
 };
 
 export function CatalogueImportLandingScreen({
