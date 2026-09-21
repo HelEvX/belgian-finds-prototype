@@ -14,7 +14,9 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
 
   const totalPages = Math.max(1, Math.ceil(inspection.rows.length / REVIEW_PAGE_SIZE));
 
-  const firstRowIndex = (currentPage - 1) * REVIEW_PAGE_SIZE;
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+  const firstRowIndex = (safeCurrentPage - 1) * REVIEW_PAGE_SIZE;
 
   const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
 
@@ -47,8 +49,9 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
         <div>
           <span>Specimen rows</span>
           <strong>{inspection.specimenRowCount}</strong>
+
           <small>
-            Showing {Math.min(firstRowIndex + 1, inspection.specimenRowCount)}–
+            Showing {inspection.specimenRowCount === 0 ? 0 : firstRowIndex + 1}–
             {Math.min(firstRowIndex + visibleRows.length, inspection.specimenRowCount)}
           </small>
         </div>
@@ -79,7 +82,7 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
           <table className="catalogue-review-table">
             <thead>
               <tr>
-                <th scope="col">Row</th>
+                <th scope="col">Record</th>
                 <th scope="col">Catalogue number</th>
                 <th scope="col">Identification</th>
                 <th scope="col">Anatomical element</th>
@@ -90,7 +93,7 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
             </thead>
 
             <tbody>
-              {visibleRows.map((row) => {
+              {visibleRows.map((row, visibleIndex) => {
                 const hasErrors = row.errors.length > 0;
 
                 const hasWarnings = row.warnings.length > 0;
@@ -101,7 +104,7 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
                     className={
                       hasErrors ? "catalogue-review-row-error" : hasWarnings ? "catalogue-review-row-warning" : ""
                     }>
-                    <td>{row.rowNumber}</td>
+                    <td>{firstRowIndex + visibleIndex + 1}</td>
 
                     <td>
                       <strong>{row.catalogueNumber || "Missing"}</strong>
@@ -115,7 +118,7 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
 
                     <td>{row.geologicalAge || "Not provided"}</td>
 
-                    <td>
+                    <td className="catalogue-review-status-cell">
                       {hasErrors ? (
                         <span className="catalogue-row-status catalogue-row-status-error">Error</span>
                       ) : hasWarnings ? (
@@ -125,15 +128,21 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
                       )}
 
                       {(hasErrors || hasWarnings) && (
-                        <ul className="catalogue-row-messages">
-                          {row.errors.map((message) => (
-                            <li key={message}>{message}</li>
-                          ))}
+                        <span className="catalogue-row-message-tooltip">
+                          <span className="catalogue-row-message-tooltip-title">
+                            {hasErrors ? "Needs correction" : "Check recommended"}
+                          </span>
 
-                          {row.warnings.map((message) => (
-                            <li key={message}>{message}</li>
-                          ))}
-                        </ul>
+                          <span className="catalogue-row-message-tooltip-list">
+                            {row.errors.map((message) => (
+                              <span key={`error-${message}`}>{message}</span>
+                            ))}
+
+                            {row.warnings.map((message) => (
+                              <span key={`warning-${message}`}>{message}</span>
+                            ))}
+                          </span>
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -141,28 +150,38 @@ export function FossilCatalogueReviewScreen({ inspection, filename, onBack }: Fo
               })}
             </tbody>
           </table>
-          <nav className="catalogue-review-pagination" aria-label="Specimen review pages">
-            <button
-              className="outline-button"
-              type="button"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
-              Previous
-            </button>
-
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              className="outline-button"
-              type="button"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>
-              Next
-            </button>
-          </nav>
+          <colgroup>
+            <col className="catalogue-review-col-row" />
+            <col className="catalogue-review-col-number" />
+            <col className="catalogue-review-col-identification" />
+            <col className="catalogue-review-col-anatomy" />
+            <col className="catalogue-review-col-formation" />
+            <col className="catalogue-review-col-age" />
+            <col className="catalogue-review-col-status" />
+          </colgroup>
         </div>
+
+        <nav className="catalogue-review-pagination" aria-label="Specimen review pages">
+          <button
+            className="outline-button"
+            type="button"
+            disabled={safeCurrentPage === 1}
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
+            Previous
+          </button>
+
+          <span>
+            Page {safeCurrentPage} of {totalPages}
+          </span>
+
+          <button
+            className="outline-button"
+            type="button"
+            disabled={safeCurrentPage === totalPages}
+            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>
+            Next
+          </button>
+        </nav>
 
         <div className="catalogue-review-actions">
           <p>Rows marked Error must be corrected in the spreadsheet and uploaded again.</p>

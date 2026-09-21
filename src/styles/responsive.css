@@ -151,7 +151,6 @@
   .catalogue-context-form-heading,
   .catalogue-upload-result-heading,
   .catalogue-upload-summary,
-  .catalogue-review-heading,
   .catalogue-review-actions {
     align-items: stretch;
     flex-direction: column;
@@ -182,6 +181,15 @@
 
   .catalogue-review-pagination span {
     min-width: auto;
+  }
+
+  .catalogue-row-message-tooltip {
+    position: fixed;
+    top: auto;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    left: var(--space-4);
+    width: auto;
   }
 }
 

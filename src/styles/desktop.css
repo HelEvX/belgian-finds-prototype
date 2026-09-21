@@ -47,7 +47,8 @@
 .desktop-frame {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  min-height: 720px;
+  /* min-height: 720px; */
+  height: 80vh;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 24px;
@@ -60,6 +61,7 @@
 }
 
 .desktop-sidebar {
+  height: 80vh;
   display: flex;
   flex-direction: column;
   padding: var(--space-6) var(--space-4);
@@ -159,8 +161,12 @@
 
 .desktop-content {
   min-width: 0;
+  height: 80vh;
   padding: clamp(28px, 4vw, 48px);
   background: var(--color-app-surface);
+  overflow-y: auto;
+  scrollbar-color: var(--color-scrollbar) transparent;
+  scrollbar-width: thin;
 }
 
 .desktop-page-header-actions {
@@ -395,6 +401,8 @@
   font-size: var(--text-md);
   line-height: 1.6;
 }
+
+/* CATALOGUE */
 
 .catalogue-import-paths {
   display: grid;
@@ -1172,12 +1180,15 @@
 }
 
 .catalogue-review-table-wrap {
+  width: 100%;
   overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .catalogue-review-table {
   width: 100%;
-  min-width: 980px;
+  min-width: 0;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: var(--text-sm);
 }
@@ -1186,8 +1197,10 @@
 .catalogue-review-table td {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border-subtle);
+  overflow-wrap: anywhere;
   text-align: left;
   vertical-align: top;
+  white-space: nowrap;
 }
 
 .catalogue-review-table th {
@@ -1197,19 +1210,88 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: initial;
+  word-wrap: break-word;
 }
 
 .catalogue-review-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
+.catalogue-review-col-row {
+  width: 4%;
+}
+
+.catalogue-review-col-number {
+  width: 8%;
+}
+
+.catalogue-review-col-identification {
+  width: 20%;
+}
+
+.catalogue-review-col-anatomy {
+  width: 20%;
+}
+
+.catalogue-review-col-formation {
+  width: 20%;
+}
+
+.catalogue-review-col-age {
+  width: 20%;
+}
+
+.catalogue-review-col-status {
+  width: 8%;
+}
+
+.catalogue-review-status-cell {
+  position: relative;
+  white-space: nowrap;
+}
+
+.catalogue-row-message-tooltip {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% - var(--space-2));
+  right: var(--space-3);
+  display: none;
+  width: min(320px, 28vw);
+  padding: var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  white-space: normal;
+}
+
+.catalogue-review-status-cell:hover .catalogue-row-message-tooltip,
+.catalogue-review-status-cell:focus-within .catalogue-row-message-tooltip {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.catalogue-row-message-tooltip-title {
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.catalogue-row-message-tooltip-list {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
 .catalogue-review-row-error {
-  background: var(--color-danger-surface);
+  background: var(--primary-orange-50);
 }
 
 .catalogue-review-row-warning {
-  background: var(--color-warning-surface);
+  background: var(--primary-stone-50);
 }
 
 .catalogue-row-status {
@@ -1218,32 +1300,6 @@
   border-radius: 999px;
   font-size: var(--text-2xs);
   font-weight: 800;
-}
-
-.catalogue-row-status-ready {
-  background: var(--color-success-surface);
-  color: var(--color-success);
-}
-
-.catalogue-row-status-warning {
-  background: var(--color-warning-surface);
-  color: var(--color-warning);
-}
-
-.catalogue-row-status-error {
-  background: var(--color-danger-surface);
-  color: var(--color-danger);
-}
-
-.catalogue-row-messages {
-  display: grid;
-  gap: 3px;
-  min-width: 190px;
-  margin: var(--space-2) 0 0;
-  padding-left: var(--space-4);
-  color: var(--color-text-muted);
-  font-size: var(--text-2xs);
-  line-height: 1.4;
 }
 
 .catalogue-review-actions {
@@ -1269,6 +1325,9 @@
 
 .catalogue-review-pagination {
   display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   gap: var(--space-4);
   align-items: center;
   justify-content: center;
