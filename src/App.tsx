@@ -16,6 +16,12 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 
 // features/import-catalogue
 import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
+import { mapFossilCatalogueRowsToDraftInputs } from "./features/import-catalogue/mapFossilCatalogueRowsToDraftInputs";
+import type {
+  FossilTemplateInspection,
+  FossilTemplateInspectionRow,
+} from "./features/import-catalogue/fossilCatalogueImport";
+import type { CatalogueImportCommitResult } from "./features/import-catalogue/catalogueImportTypes";
 
 // features/account
 import { SettingsScreen } from "./features/account/SettingsScreen";
@@ -145,18 +151,18 @@ function App() {
   const activeSpecimenDraft = specimenDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
   /*
-   * PhotoScreen currently expects LocalFindPhoto[].
+   * PhotoScreen expects LocalFindPhoto[].
    *
-   * A single-specimen draft can contain only camera or existing-device
-   * images, so this narrowing is safe. Batch-import images never enter
-   * the one-specimen photo editor.
+   * Imported catalogue records begin without images, but once a member
+   * attaches camera or existing-device images, they use this same shape.
+   * The future desktop image-matching workflow can replace this entry
+   * point without changing draft ownership.
    */
-  const activeSingleSpecimenPhotos: LocalFindPhoto[] =
-    activeSpecimenDraft?.source === "single-specimen"
-      ? activeSpecimenDraft.images.filter(
-          (image): image is LocalFindPhoto => image.source === "camera" || image.source === "existing",
-        )
-      : [];
+  const activeEditablePhotos: LocalFindPhoto[] = activeSpecimenDraft
+    ? activeSpecimenDraft.images.filter(
+        (image): image is LocalFindPhoto => image.source === "camera" || image.source === "existing",
+      )
+    : [];
 
   useEffect(() => {
     return specimenService.subscribe((drafts) => {
@@ -179,9 +185,11 @@ function App() {
   const addFindPhotos = (files: File[], source: FindPhotoSource) => {
     const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
-    const activeSingleDraft = currentActiveDraft?.source === "single-specimen" ? currentActiveDraft : null;
+    const activePhotoDraft =
+      currentActiveDraft && currentActiveDraft.source !== "batch-import" ? currentActiveDraft : null;
 
-    const currentImages = activeSingleDraft?.images ?? [];
+    const currentImages = activePhotoDraft?.images ?? [];
+
     const remainingSlots = MAX_FIND_PHOTOS - currentImages.length;
 
     if (remainingSlots <= 0) {
@@ -221,9 +229,9 @@ function App() {
       return;
     }
 
-    if (activeSingleDraft) {
-      specimenService.update(activeSingleDraft.id, {
-        images: [...activeSingleDraft.images, ...newImages],
+    if (activePhotoDraft) {
+      specimenService.update(activePhotoDraft.id, {
+        images: [...activePhotoDraft.images, ...newImages],
       });
 
       return;
@@ -245,7 +253,7 @@ function App() {
   const removeFindPhoto = (photoId: string): boolean => {
     const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
-    if (!currentActiveDraft || currentActiveDraft.source !== "single-specimen") {
+    if (!currentActiveDraft || currentActiveDraft.source === "batch-import") {
       return false;
     }
 
@@ -400,11 +408,7 @@ function App() {
   const finishSingleFindImageIntake = () => {
     const currentActiveDraft = activeSpecimenDraftId ? specimenService.getById(activeSpecimenDraftId) : undefined;
 
-    if (
-      !currentActiveDraft ||
-      currentActiveDraft.source !== "single-specimen" ||
-      currentActiveDraft.images.length === 0
-    ) {
+    if (!currentActiveDraft || currentActiveDraft.source === "batch-import" || currentActiveDraft.images.length === 0) {
       return;
     }
 
@@ -541,7 +545,7 @@ function App() {
         return;
 
       case 7:
-        if (activeSingleSpecimenPhotos.length === 0) {
+        if (activeEditablePhotos.length === 0) {
           return;
         }
 
@@ -760,6 +764,20 @@ function App() {
     setPrototypeViewport("mobile");
   };
 
+  const importPrivateRecords = (
+    inspection: FossilTemplateInspection,
+    rows: FossilTemplateInspectionRow[],
+  ): CatalogueImportCommitResult => {
+    const result = specimenService.importCatalogueRecords(mapFossilCatalogueRowsToDraftInputs(inspection, rows));
+
+    setDesktopSection("specimens");
+
+    return {
+      createdCount: result.created.length,
+      skippedDuplicateCount: result.skippedDuplicateCount,
+    };
+  };
+
   const openSpecimenFromDesktop = (draftId: string) => {
     setPrototypeMode("member");
     resumeSpecimenDraft(draftId);
@@ -932,7 +950,7 @@ function App() {
 
             {step === 7 && (
               <PhotoScreen
-                photos={activeSingleSpecimenPhotos}
+                photos={activeEditablePhotos}
                 hasDraft={Boolean(activeSpecimenDraft)}
                 onAddPhotos={addFindPhotos}
                 onRemovePhoto={removeFindPhoto}
@@ -1121,7 +1139,7 @@ function App() {
             onNext={goToNextStep}
             nextDisabled={
               (step === 5 && activeSpecimenDraft?.recordKind === null) ||
-              (step === 7 && activeSingleSpecimenPhotos.length === 0) ||
+              (step === 7 && activeEditablePhotos.length === 0) ||
               (step === 8 && activeSpecimenDraft?.provenance === null) ||
               (step === 9 && activeSpecimenDraft?.locationContext.knowledge === null) ||
               (step === 10 && activeSpecimenDraft?.physicalDetails.measurementStatus === null) ||
@@ -1141,7 +1159,10 @@ function App() {
               onOpenSpecimen={openSpecimenFromDesktop}
             />
           ) : (
-            <CatalogueImportIntroScreen onBack={() => setDesktopSection("specimens")} />
+            <CatalogueImportIntroScreen
+              onBack={() => setDesktopSection("specimens")}
+              onImportPrivateRecords={importPrivateRecords}
+            />
           )}
         </DesktopFrame>
       )}

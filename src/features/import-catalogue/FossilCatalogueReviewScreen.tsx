@@ -2,11 +2,16 @@ import { useState } from "react";
 
 import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
 
+import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
+
 type FossilCatalogueReviewScreenProps = {
   inspection: FossilTemplateInspection;
   filename: string;
   onBack: () => void;
-  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
+  onImportPrivateRecords: (
+    inspection: FossilTemplateInspection,
+    rows: FossilTemplateInspectionRow[],
+  ) => CatalogueImportCommitResult;
 };
 
 const REVIEW_PAGE_SIZE = 20;
@@ -19,15 +24,13 @@ export function FossilCatalogueReviewScreen({
 }: FossilCatalogueReviewScreenProps) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [hasImported, setHasImported] = useState(false);
+  const [importResult, setImportResult] = useState<CatalogueImportCommitResult | null>(null);
 
   const rowsWithErrors = inspection.rows.filter((row) => row.errors.length > 0).length;
 
   const rowsWithWarnings = inspection.rows.filter((row) => row.warnings.length > 0).length;
 
   const validRows = inspection.rows.filter((row) => row.errors.length === 0);
-
-  const canCreatePrivateRecords = Boolean(onImportPrivateRecords);
 
   const totalPages = Math.max(1, Math.ceil(inspection.rows.length / REVIEW_PAGE_SIZE));
 
@@ -38,12 +41,11 @@ export function FossilCatalogueReviewScreen({
   const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
 
   const importPrivateRecords = () => {
-    if (!onImportPrivateRecords || hasImported || rowsWithErrors > 0 || validRows.length === 0) {
+    if (importResult || rowsWithErrors > 0 || validRows.length === 0) {
       return;
     }
 
-    onImportPrivateRecords(validRows);
-    setHasImported(true);
+    setImportResult(onImportPrivateRecords(inspection, validRows));
   };
 
   return (
@@ -193,25 +195,27 @@ export function FossilCatalogueReviewScreen({
 
         <div className="catalogue-review-actions">
           <p>
-            {hasImported
-              ? `${validRows.length} private records imported.`
+            {importResult
+              ? importResult.createdCount > 0
+                ? `${importResult.createdCount} private draft${importResult.createdCount === 1 ? "" : "s"} created.${
+                    importResult.skippedDuplicateCount > 0
+                      ? ` ${importResult.skippedDuplicateCount} existing catalogue record${
+                          importResult.skippedDuplicateCount === 1 ? " was" : "s were"
+                        } skipped.`
+                      : ""
+                  }`
+                : "No new private drafts were created because every catalogue number already exists in this collection."
               : rowsWithErrors > 0
                 ? "Correct the rows marked Error and upload the CSV again."
-                : !canCreatePrivateRecords
-                  ? "The CSV is valid. Creating specimen drafts and matching images are not connected in this prototype yet."
-                  : `${validRows.length} records are ready to import privately.`}
+                : `${validRows.length} record${validRows.length === 1 ? "" : "s"} ready to import privately.`}
           </p>
 
           <button
             className="primary-button"
             type="button"
-            disabled={!canCreatePrivateRecords || hasImported || rowsWithErrors > 0 || validRows.length === 0}
+            disabled={Boolean(importResult) || rowsWithErrors > 0 || validRows.length === 0}
             onClick={importPrivateRecords}>
-            {hasImported
-              ? "Records imported"
-              : canCreatePrivateRecords
-                ? "Import private records"
-                : "Draft creation not connected"}
+            {importResult ? "Records imported" : "Import private records"}
           </button>
         </div>
       </section>

@@ -2,6 +2,11 @@ export type CatalogueTemplateKind = "fossil" | "rock-mineral" | "mixed";
 
 export type CatalogueContextMode = "shared" | "per-record";
 
+export type CatalogueImportCommitResult = {
+  createdCount: number;
+  skippedDuplicateCount: number;
+};
+
 export type SharedCollectingContext = {
   collectionName: string;
   provenance: string;

@@ -82,7 +82,7 @@ export type SpecimenDraftImage = {
   source: FindPhotoSource | "batch-import";
 };
 
-export type SpecimenDraftSource = "single-specimen" | "batch-import";
+export type SpecimenDraftSource = "single-specimen" | "catalogue-import" | "batch-import";
 
 export type SpecimenDraftStatus =
   | "ready-to-annotate"
@@ -93,7 +93,7 @@ export type SpecimenDraftStatus =
 /*
  * This is deliberately a domain-level stage rather than a numeric
  * PrototypeStep. Prototype screen numbers also include Explore,
- * Settings, and legacy batch screens and should not be persisted as
+ * Settings, and archived routes and should not be persisted as
  * specimen progress.
  */
 export type SpecimenDraftStep =
@@ -104,6 +104,33 @@ export type SpecimenDraftStep =
   | "physical-details"
   | "identification-observations"
   | "privacy";
+
+/*
+ * These values preserve information that belongs to an established
+ * catalogue but does not yet have a dedicated mobile editing surface.
+ *
+ * Existing fields such as type, location, dimensions, provenance and
+ * suggested identification are also mapped into the standard draft.
+ */
+export type CatalogueImportDetails = {
+  collectionName: string;
+  catalogueNumber: string;
+  anatomicalElement: string;
+  formation: string;
+  member: string;
+  geologicalAge: string;
+  ageMinMa: string;
+  ageMaxMa: string;
+  preparation: string;
+  sourceProvenance: string;
+  collectedBy: string;
+  country: string;
+  collectionDateFrom: string;
+  collectionDateTo: string;
+  collectingContextNotes: string;
+  measurementStatusValue: string;
+  sourceRowNumber: number;
+};
 
 export type SpecimenDraft = {
   id: string;
@@ -119,4 +146,5 @@ export type SpecimenDraft = {
   physicalDetails: PhysicalDetails;
   description: SpecimenDescription;
   privacySettings: PrivacySettings;
+  catalogueImport: CatalogueImportDetails | null;
 };

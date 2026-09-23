@@ -6,11 +6,15 @@ import {
   type FossilTemplateInspection,
   type FossilTemplateInspectionRow,
 } from "./fossilCatalogueImport";
+import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
 
 type CatalogueImportLandingScreenProps = {
   onBack: () => void;
   onGetTemplate: () => void;
-  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
+  onImportPrivateRecords: (
+    inspection: FossilTemplateInspection,
+    rows: FossilTemplateInspectionRow[],
+  ) => CatalogueImportCommitResult;
 };
 
 export function CatalogueImportLandingScreen({

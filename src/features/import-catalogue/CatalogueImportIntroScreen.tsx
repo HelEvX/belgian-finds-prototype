@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 import { CatalogueImportLandingScreen } from "./CatalogueImportLandingScreen";
-import type { FossilTemplateInspectionRow } from "./fossilCatalogueImport";
+import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
+import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
 
 import {
   createEmptySharedCollectingContext,
@@ -13,7 +14,10 @@ import { buildFossilCatalogueTemplate, createFossilTemplateFilename } from "./fo
 
 type CatalogueImportIntroScreenProps = {
   onBack: () => void;
-  onImportPrivateRecords?: (rows: FossilTemplateInspectionRow[]) => void;
+  onImportPrivateRecords: (
+    inspection: FossilTemplateInspection,
+    rows: FossilTemplateInspectionRow[],
+  ) => CatalogueImportCommitResult;
 };
 
 type SetupStep = "template" | "context";
