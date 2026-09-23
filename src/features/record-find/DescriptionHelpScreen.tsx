@@ -111,14 +111,14 @@ export function DescriptionHelpScreen({
           <h2>What do you know about this specimen?</h2>
 
           <p>
-            Add your own observations and, if you know it, a suggested identification. You do not need to know its exact
-            name.
+            Add your own observations and, if you know it, a current identification. This becomes the title shown on
+            your specimen record, and you can update it at any time.
           </p>
         </div>
 
         <div className="location-fields">
           <label className="location-field">
-            <span>Your suggested identification</span>
+            <span>Current identification</span>
 
             <input
               type="text"
@@ -129,8 +129,8 @@ export function DescriptionHelpScreen({
             />
 
             <small>
-              Optional. This remains your own suggested identification until another attributed response or verified
-              determination is added later.
+              Optional. When present, this becomes the title shown in your private workspace. It remains your current
+              identification until an attributed response or verified determination is added later.
             </small>
           </label>
 
@@ -211,10 +211,10 @@ export function DescriptionHelpScreen({
 
         {showWorkflowGuidance && (
           <div className="record-selection-note">
-            <strong>Important distinction</strong>
+            <strong>Identification is not a verified determination</strong>
 
             <span>
-              A suggested identification is your own statement. It does not change the specimen’s determination status
+              A current identification is your own working label. It does not change the specimen’s determination status
               or create a verified identification.
             </span>
           </div>

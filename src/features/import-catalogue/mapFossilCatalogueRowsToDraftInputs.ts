@@ -82,7 +82,7 @@ export function mapFossilCatalogueRowsToDraftInputs(
   return rows.map((row) => ({
     source: "catalogue-import",
     images: [],
-    recordKind: "fossil",
+    recordKind: null,
     initialValues: {
       /*
        * Imported records need at least image attachment before they can

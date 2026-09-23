@@ -1,4 +1,4 @@
-import { recordKinds } from "../record-find/recordKinds";
+import { getSpecimenDisplayTitle } from "../record-find/getSpecimenDisplayTitle";
 import type { SpecimenDraft, SpecimenDraftStep } from "../record-find/types";
 
 type WelcomeScreenProps = {
@@ -22,10 +22,6 @@ const resumeStepLabels: Record<SpecimenDraftStep, string> = {
   "identification-observations": "Adding identification and observations",
   privacy: "Choosing privacy and sharing",
 };
-
-function getSpecimenTitle(draft: SpecimenDraft) {
-  return recordKinds.find((recordKind) => recordKind.id === draft.recordKind)?.title ?? "Type not yet recorded";
-}
 
 function getStatusLabel(draft: SpecimenDraft) {
   if (draft.status === "private-specimen") {
@@ -52,17 +48,20 @@ function getProgressLabel(draft: SpecimenDraft) {
 }
 
 function getContextLabel(draft: SpecimenDraft) {
-  const suggestedIdentification = draft.description.suggestedIdentification.trim();
+  const currentIdentification = draft.description.suggestedIdentification.trim();
 
-  if (suggestedIdentification) {
-    return suggestedIdentification;
-  }
+  const catalogueNumber = draft.catalogueImport?.catalogueNumber.trim() ?? "";
 
   const place = [draft.locationContext.municipality.trim(), draft.locationContext.province.trim()]
     .filter(Boolean)
     .join(", ");
 
-  return place || null;
+  const contextParts = [
+    currentIdentification && catalogueNumber ? `Catalogue no. ${catalogueNumber}` : null,
+    place || null,
+  ].filter((part): part is string => Boolean(part));
+
+  return contextParts.join(" · ") || null;
 }
 
 function SpecimenGroup({ title, drafts, onOpenSpecimen }: SpecimenGroupProps) {
@@ -83,7 +82,7 @@ function SpecimenGroup({ title, drafts, onOpenSpecimen }: SpecimenGroupProps) {
       <div className="member-draft-list">
         {drafts.map((draft) => {
           const firstImage = draft.images[0];
-          const title = getSpecimenTitle(draft);
+          const title = getSpecimenDisplayTitle(draft);
           const context = getContextLabel(draft);
           const isPrivateSpecimen = draft.status === "private-specimen";
           const isReadyForReview = draft.status === "ready-for-review";

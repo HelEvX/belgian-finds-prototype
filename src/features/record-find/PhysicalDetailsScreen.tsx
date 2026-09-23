@@ -1,7 +1,7 @@
 import type { MeasurementStatus, PhysicalDetails, RecordKind, SpecimenCondition } from "./types";
 
 type PhysicalDetailsScreenProps = {
-  recordKind: RecordKind;
+  recordKind: RecordKind | null;
   value: PhysicalDetails;
   onChange: (value: PhysicalDetails) => void;
   onBack: () => void;
@@ -133,7 +133,7 @@ export function PhysicalDetailsScreen({
   onContinue,
   onSaveForLater,
 }: PhysicalDetailsScreenProps) {
-  const copy = physicalDetailsCopy[recordKind];
+  const copy = physicalDetailsCopy[recordKind ?? "unknown"];
 
   const updateMeasurementStatus = (measurementStatus: MeasurementStatus) => {
     onChange({

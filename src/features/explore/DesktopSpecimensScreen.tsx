@@ -1,4 +1,4 @@
-import { recordKinds } from "../record-find/recordKinds";
+import { getSpecimenDisplayTitle } from "../record-find/getSpecimenDisplayTitle";
 import type { SpecimenDraft } from "../record-find/types";
 
 type DesktopSpecimensScreenProps = {
@@ -7,22 +7,21 @@ type DesktopSpecimensScreenProps = {
   onOpenSpecimen: (draftId: string) => void;
 };
 
-function getSpecimenTitle(draft: SpecimenDraft) {
-  return recordKinds.find((recordKind) => recordKind.id === draft.recordKind)?.title ?? "Type not yet recorded";
-}
-
 function getSpecimenContext(draft: SpecimenDraft) {
-  const suggestedIdentification = draft.description.suggestedIdentification.trim();
+  const currentIdentification = draft.description.suggestedIdentification.trim();
 
-  if (suggestedIdentification) {
-    return suggestedIdentification;
-  }
+  const catalogueNumber = draft.catalogueImport?.catalogueNumber.trim() ?? "";
 
   const place = [draft.locationContext.municipality.trim(), draft.locationContext.province.trim()]
     .filter(Boolean)
     .join(", ");
 
-  return place || "No identification or location recorded";
+  const contextParts = [
+    currentIdentification && catalogueNumber ? `Catalogue no. ${catalogueNumber}` : null,
+    place || null,
+  ].filter((part): part is string => Boolean(part));
+
+  return contextParts.join(" · ") || "No location recorded";
 }
 
 function getStatusLabel(draft: SpecimenDraft) {
@@ -160,7 +159,7 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
                           )}
 
                           <span>
-                            <strong>{getSpecimenTitle(draft)}</strong>
+                            <strong>{getSpecimenDisplayTitle(draft)}</strong>
 
                             <small>{getSpecimenContext(draft)}</small>
                           </span>

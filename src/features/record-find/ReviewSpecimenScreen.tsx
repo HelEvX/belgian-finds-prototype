@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getSpecimenDisplayTitle } from "./getSpecimenDisplayTitle";
 import { provenanceOptions } from "./provenanceOptions";
 import { recordKinds } from "./recordKinds";
 import type {
@@ -117,6 +118,10 @@ function getCollectionDate(qualifier: CollectionDateQualifier | null, value: str
 export function ReviewSpecimenScreen({ draft, onBack, onEdit, onSavePrivate }: ReviewSpecimenScreenProps) {
   const hasImages = draft.images.length > 0;
 
+  const displayTitle = getSpecimenDisplayTitle(draft);
+
+  const catalogueNumber = draft.catalogueImport?.catalogueNumber.trim() ?? "";
+
   const specimenType =
     recordKinds.find((recordKind) => recordKind.id === draft.recordKind)?.title ?? "Type not yet recorded";
 
@@ -165,9 +170,10 @@ export function ReviewSpecimenScreen({ draft, onBack, onEdit, onSavePrivate }: R
         <p className="record-progress">Review specimen</p>
 
         <div className="record-heading">
-          <h2>Check your specimen</h2>
+          <h2>{displayTitle}</h2>
 
           <p>
+            {catalogueNumber ? `Catalogue no. ${catalogueNumber}. ` : ""}
             Review the information below before saving it as a private specimen. Nothing will be published or shared.
           </p>
         </div>
@@ -212,9 +218,11 @@ export function ReviewSpecimenScreen({ draft, onBack, onEdit, onSavePrivate }: R
           )}
         </ReviewSection>
 
-        <ReviewSection title="Specimen type" editLabel="Edit specimen type" onEdit={() => onEdit("type")}>
-          <p className="review-section-summary">{specimenType}</p>
-        </ReviewSection>
+        {draft.source !== "catalogue-import" && (
+          <ReviewSection title="Specimen type" editLabel="Edit specimen type" onEdit={() => onEdit("type")}>
+            <p className="review-section-summary">{specimenType}</p>
+          </ReviewSection>
+        )}
 
         <ReviewSection title="Provenance" editLabel="Edit provenance" onEdit={() => onEdit("provenance")}>
           <p className="review-section-summary">{provenance}</p>
@@ -288,10 +296,7 @@ export function ReviewSpecimenScreen({ draft, onBack, onEdit, onSavePrivate }: R
           editLabel="Edit identification and observations"
           onEdit={() => onEdit("identification-observations")}>
           <dl className="review-detail-list">
-            <ReviewDetail
-              label="Suggested identification"
-              value={suggestedIdentification || "No suggestion recorded"}
-            />
+            <ReviewDetail label="Current identification" value={suggestedIdentification || "No suggestion recorded"} />
 
             {suggestedIdentification && draft.description.identificationConfidence && (
               <ReviewDetail label="Confidence" value={confidenceLabels[draft.description.identificationConfidence]} />

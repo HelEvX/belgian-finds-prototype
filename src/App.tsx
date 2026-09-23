@@ -412,12 +412,14 @@ function App() {
       return;
     }
 
+    const nextResumeStep = currentActiveDraft.source === "catalogue-import" ? "provenance" : "type";
+
     updateActiveSpecimenDraft({
       status: "annotation-in-progress",
-      resumeStep: "type",
+      resumeStep: nextResumeStep,
     });
 
-    setStep(5);
+    setStep(nextResumeStep === "provenance" ? 8 : 5);
   };
 
   const startSingleFindJourney = () => {
@@ -464,6 +466,11 @@ function App() {
         return;
 
       case 8:
+        if (activeSpecimenDraft?.source === "catalogue-import") {
+          moveActiveDraftToStep("images", 7);
+          return;
+        }
+
         moveActiveDraftToStep("type", 5);
         return;
 
@@ -994,6 +1001,11 @@ function App() {
                     return;
                   }
 
+                  if (activeSpecimenDraft.source === "catalogue-import") {
+                    moveActiveDraftToStep("images", 7);
+                    return;
+                  }
+
                   moveActiveDraftToStep("type", 5);
                 }}
                 onContinue={() => {
@@ -1037,7 +1049,7 @@ function App() {
               />
             )}
 
-            {step === 10 && activeSpecimenDraft && activeSpecimenDraft.recordKind && (
+            {step === 10 && activeSpecimenDraft && (
               <PhysicalDetailsScreen
                 recordKind={activeSpecimenDraft.recordKind}
                 value={activeSpecimenDraft.physicalDetails}
