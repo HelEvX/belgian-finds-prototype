@@ -1,4 +1,9 @@
 import { getSpecimenDisplayTitle } from "../record-find/getSpecimenDisplayTitle";
+import {
+  getSpecimenWorkspaceContext,
+  getSpecimenWorkspaceStatusLabel,
+  isCatalogueImportAwaitingImages,
+} from "../record-find/getSpecimenWorkspaceMetadata";
 import type { SpecimenDraft } from "../record-find/types";
 
 type DesktopSpecimensScreenProps = {
@@ -6,35 +11,6 @@ type DesktopSpecimensScreenProps = {
   onImportCatalogue: () => void;
   onOpenSpecimen: (draftId: string) => void;
 };
-
-function getSpecimenContext(draft: SpecimenDraft) {
-  const currentIdentification = draft.description.suggestedIdentification.trim();
-
-  const catalogueNumber = draft.catalogueImport?.catalogueNumber.trim() ?? "";
-
-  const place = [draft.locationContext.municipality.trim(), draft.locationContext.province.trim()]
-    .filter(Boolean)
-    .join(", ");
-
-  const contextParts = [
-    currentIdentification && catalogueNumber ? `Catalogue no. ${catalogueNumber}` : null,
-    place || null,
-  ].filter((part): part is string => Boolean(part));
-
-  return contextParts.join(" · ") || "No location recorded";
-}
-
-function getStatusLabel(draft: SpecimenDraft) {
-  if (draft.status === "private-specimen") {
-    return "Private specimen";
-  }
-
-  if (draft.status === "ready-for-review") {
-    return "Ready for review";
-  }
-
-  return "Needs information";
-}
 
 function getStatusClassName(draft: SpecimenDraft) {
   if (draft.status === "private-specimen") {
@@ -61,7 +37,15 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
 
   const reviewCount = drafts.filter((draft) => draft.status === "ready-for-review").length;
 
-  const incompleteCount = drafts.length - privateCount - reviewCount;
+  const awaitingImagesCount = drafts.filter(isCatalogueImportAwaitingImages).length;
+
+  const needsInformationCount = drafts.filter(
+    (draft) =>
+      (draft.status === "ready-to-annotate" || draft.status === "annotation-in-progress") &&
+      !isCatalogueImportAwaitingImages(draft),
+  ).length;
+
+  const needsAttentionCount = awaitingImagesCount + needsInformationCount;
 
   const sortedDrafts = [...drafts].sort((firstDraft, secondDraft) =>
     secondDraft.updatedAt.localeCompare(firstDraft.updatedAt),
@@ -90,8 +74,8 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
         </article>
 
         <article className="desktop-stat-card">
-          <span>Needs information</span>
-          <strong>{incompleteCount}</strong>
+          <span>Need attention</span>
+          <strong>{needsAttentionCount}</strong>
         </article>
 
         <article className="desktop-stat-card">
@@ -110,7 +94,13 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
           <div>
             <h2>Specimens</h2>
 
-            <p>The desktop and mobile previews share the same in-memory specimen state.</p>
+            <p>
+              {awaitingImagesCount > 0
+                ? `${awaitingImagesCount} imported ${
+                    awaitingImagesCount === 1 ? "record still needs" : "records still need"
+                  } at least one image. Open a record to attach images in the mobile preview.`
+                : "The desktop and mobile previews share the same in-memory specimen state."}
+            </p>
           </div>
         </div>
 
@@ -148,6 +138,10 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
                 {sortedDrafts.map((draft) => {
                   const firstImage = draft.images[0];
 
+                  const isAwaitingImages = isCatalogueImportAwaitingImages(draft);
+
+                  const context = getSpecimenWorkspaceContext(draft) ?? "No location recorded";
+
                   return (
                     <tr key={draft.id}>
                       <td>
@@ -161,14 +155,14 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
                           <span>
                             <strong>{getSpecimenDisplayTitle(draft)}</strong>
 
-                            <small>{getSpecimenContext(draft)}</small>
+                            <small>{context}</small>
                           </span>
                         </div>
                       </td>
 
                       <td>
                         <span className={`desktop-table-status ${getStatusClassName(draft)}`}>
-                          {getStatusLabel(draft)}
+                          {getSpecimenWorkspaceStatusLabel(draft)}
                         </span>
                       </td>
 
@@ -178,7 +172,7 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
 
                       <td className="desktop-table-action-cell">
                         <button className="text-button" type="button" onClick={() => onOpenSpecimen(draft.id)}>
-                          Open on mobile
+                          {isAwaitingImages ? "Attach images" : "Open on mobile"}
                         </button>
                       </td>
                     </tr>

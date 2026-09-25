@@ -204,15 +204,20 @@ export function ReviewSpecimenScreen({ draft, onBack, onEdit, onSavePrivate }: R
             </>
           ) : (
             <div className="review-save-warning" role="alert">
-              <strong>An image is required before private save</strong>
+              <strong>
+                {draft.source === "catalogue-import"
+                  ? "This imported record needs an image before private save"
+                  : "An image is required before private save"}
+              </strong>
 
               <p>
-                Your information is still preserved. Add at least one specimen image before saving this as a private
-                specimen.
+                {draft.source === "catalogue-import"
+                  ? "The imported catalogue information is preserved. Attach at least one image to this record before saving it as a private specimen."
+                  : "Your information is still preserved. Add at least one specimen image before saving this as a private specimen."}
               </p>
 
               <button className="text-button" type="button" onClick={() => onEdit("images")}>
-                Edit images
+                {draft.source === "catalogue-import" ? "Attach images" : "Edit images"}
               </button>
             </div>
           )}
