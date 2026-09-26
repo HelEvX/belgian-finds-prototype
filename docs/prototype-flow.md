@@ -7,42 +7,58 @@ flowchart TD
     %% Guest journey
     ACCESS -- "Browse as guest" --> GUEST["Guest browsing"]
     GUEST --> BROWSE["Browse public specimens"]
-    BROWSE --> DETAIL["View specimen detail<br/>Images, visible context and determination history"]
-    DETAIL -. "Guest attempts to follow<br/>or contribute" .-> GUEST_SIGNIN["Sign in / create account<br/>Mock access prompt"]
+    BROWSE --> DETAIL["View specimen detail
+Images, visible context and determination history"]
+    DETAIL -. "Guest attempts to follow
+or contribute" .-> GUEST_SIGNIN["Sign in / create account
+Mock access prompt"]
     GUEST_SIGNIN -- "Continue as Helen" --> MEMBER_HOME
 
     %% Signed-in member mobile workspace
-    ACCESS -- "Continue as Helen" --> MEMBER_HOME["My specimens<br/>Signed-in member home"]
+    ACCESS -- "Continue as Helen" --> MEMBER_HOME["My specimens
+Signed-in member home"]
 
     MEMBER_HOME --> ADD["Add one specimen"]
-    MEMBER_HOME --> RESUME["Resume incomplete private draft<br/>at its saved documentation stage"]
-    MEMBER_HOME --> OPEN_PRIVATE["Open saved private specimen<br/>or reviewable draft"]
-    OPEN_PRIVATE --> REVIEW["Review specimen<br/>Check and edit every section"]
+    MEMBER_HOME --> RESUME["Resume incomplete manual draft
+at its saved documentation stage"]
+    MEMBER_HOME --> OPEN_PRIVATE["Open saved private specimen
+or reviewable draft"]
+
+    OPEN_PRIVATE --> REVIEW["Review specimen
+Check and edit every section"]
 
     MEMBER_HOME --> BROWSE
     MEMBER_HOME --> ACCOUNT["Account menu"]
-    ACCOUNT --> PREFERENCES["Preferences<br/>Guidance and display choices"]
-    MEMBER_HOME --> UPDATES_PLACEHOLDER["Updates<br/>Current empty-state placeholder"]
+    ACCOUNT --> PREFERENCES["Preferences
+Guidance and display choices"]
+    MEMBER_HOME --> UPDATES_PLACEHOLDER["Updates
+Current empty-state placeholder"]
 
     %% Direct mobile one-specimen route
     ADD --> FIRST_TIME{"First contribution?"}
 
-    FIRST_TIME -- "Yes" --> SCOPE["Contribution scope<br/>Belgian finds and documented collections"]
+    FIRST_TIME -- "Yes" --> SCOPE["Contribution scope
+Belgian finds and documented collections"]
     FIRST_TIME -- "No" --> PHOTOS["Add specimen photos"]
 
     SCOPE --> PHOTOS
-    PHOTOS --> FIRST_IMAGE["First valid image creates<br/>one private specimen draft"]
+    PHOTOS --> FIRST_IMAGE["First valid image creates
+one private specimen draft"]
     FIRST_IMAGE --> TYPE["What does this appear to be?"]
-    TYPE --> PROVENANCE["Provenance<br/>Who originally found or collected it?"]
-    PROVENANCE --> CONTEXT["Find location and<br/>collecting context"]
-    CONTEXT --> MEASURE["Physical details<br/>Measurements and condition"]
-    MEASURE --> DESCRIPTION["Identification and observations<br/>Optional help preference"]
+    TYPE --> PROVENANCE["Provenance
+Who originally found or collected it?"]
+    PROVENANCE --> CONTEXT["Find location and
+collecting context"]
+    CONTEXT --> MEASURE["Physical details
+Measurements and condition"]
+    MEASURE --> DESCRIPTION["Identification and observations
+Optional help preference"]
     DESCRIPTION --> PRIVACY["Privacy and future sharing preference"]
     PRIVACY --> REVIEW
     REVIEW --> SAVE["Save private specimen"]
     SAVE --> MEMBER_HOME
 
-    %% Save and resume from the mobile route
+    %% Save and resume from mobile route
     FIRST_IMAGE -. "Save and finish later" .-> MEMBER_HOME
     TYPE -. "Save and finish later" .-> MEMBER_HOME
     PROVENANCE -. "Save and finish later" .-> MEMBER_HOME
@@ -51,41 +67,76 @@ flowchart TD
     DESCRIPTION -. "Save and finish later" .-> MEMBER_HOME
     PRIVACY -. "Save and finish later" .-> MEMBER_HOME
 
-    %% Desktop member workspace and catalogue import
+    %% Desktop workspace and catalogue import
     MEMBER_HOME --> DESKTOP_SWITCH["Switch to desktop workspace"]
-    DESKTOP_SWITCH --> DESKTOP_SPECIMENS["Desktop specimen workspace<br/>View specimens and import a catalogue"]
+    DESKTOP_SWITCH --> DESKTOP_SPECIMENS["Desktop specimen workspace
+Private specimens and catalogue imports"]
     DESKTOP_SPECIMENS --> OPEN_PRIVATE
-    DESKTOP_SPECIMENS --> CSV_LANDING["Import an existing catalogue<br/>Desktop only"]
+    DESKTOP_SPECIMENS --> CSV_LANDING["Import an existing catalogue
+Desktop only"]
 
-    CSV_LANDING --> CSV_TEMPLATE["Choose collection template<br/>Fossil template currently available"]
-    CSV_TEMPLATE --> CSV_CONTEXT["Choose collecting-context mode<br/>Shared defaults or per-record values"]
+    %% CSV template route
+    CSV_LANDING --> CSV_TEMPLATE["Choose collection template
+Fossil template currently available"]
+    CSV_TEMPLATE --> CSV_CONTEXT["Choose collecting-context mode
+Shared defaults or per-record values"]
     CSV_CONTEXT --> CSV_DOWNLOAD["Download generated CSV template"]
-    CSV_DOWNLOAD --> CSV_SPREADSHEET["Complete spreadsheet offline<br/>Excel, Google Sheets or equivalent"]
+    CSV_DOWNLOAD --> CSV_SPREADSHEET["Complete spreadsheet outside the app
+Excel, Google Sheets or equivalent"]
     CSV_SPREADSHEET --> CSV_UPLOAD["Upload completed CSV"]
 
+    %% Direct upload route
     CSV_LANDING --> CSV_UPLOAD
-    CSV_UPLOAD --> CSV_VALIDATE["Validate template metadata,<br/>columns, row values and duplicate catalogue numbers"]
-    CSV_VALIDATE --> CSV_REVIEW["Review rows, warnings and errors<br/>Paginated desktop review"]
+    CSV_UPLOAD --> CSV_VALIDATE["Validate template metadata,
+columns, values and duplicate catalogue numbers"]
+    CSV_VALIDATE --> CSV_REVIEW["Review rows, warnings and errors
+Paginated desktop review"]
 
-    CSV_REVIEW -. "Correct errors offline" .-> CSV_FIX["Amend spreadsheet<br/>and export CSV again"]
+    CSV_REVIEW -. "Correct errors offline" .-> CSV_FIX["Amend spreadsheet
+and export CSV again"]
     CSV_FIX -. "Upload revised file" .-> CSV_UPLOAD
 
-    CSV_REVIEW --> CSV_STOP["Valid CSV review complete<br/>Draft creation not connected yet"]
+    %% Implemented session boundary
+    CSV_REVIEW --> CREATE_SESSION["Create private desktop
+catalogue-import session"]
+    CREATE_SESSION --> IMPORT_SESSION["Catalogue import session
+Records remain outside My specimens"]
+    IMPORT_SESSION --> IMAGE_POOL["Build collection image pool
+Choose image files or a folder"]
+    IMAGE_POOL --> POOL_READY["Private image pool ready
+Previews, duplicate protection and unassigned count"]
 
-    %% Planned catalogue-record connection
-    CSV_STOP -. "Next integration step" .-> CSV_DRAFTS["Create imported specimen drafts<br/>One valid row = one draft"]
-    CSV_DRAFTS -. "Later" .-> IMAGE_MATCH["Attach images<br/>record by record"]
-    IMAGE_MATCH -. "Later" .-> REVISION_QUEUE["Resolve missing information<br/>and validation gaps"]
-    REVISION_QUEUE -. "Later" .-> REVIEW
+    %% Planned desktop import completion
+    POOL_READY -. "Next step" .-> MATCH_START["Start image matching"]
+    MATCH_START -. "One record at a time" .-> MATCH_RECORD["Serve catalogue record
+Select its corresponding images"]
+    MATCH_RECORD -. "Exclusive assignment" .-> LOCK_IMAGES["Assigned images become unavailable
+for all other records"]
+    LOCK_IMAGES -. "Next / previous / skip" .-> MATCH_RECORD
+    MATCH_RECORD -. "Continue or pause" .-> MATCH_OVERVIEW["Matching progress and
+unassigned-image overview"]
+
+    MATCH_OVERVIEW -. "When matching is complete
+or work is paused" .-> GAP_QUEUE["Desktop completion queue
+Resolve only remaining information gaps"]
+    GAP_QUEUE -. "Ready records only" .-> IMPORT_REVIEW["Import-session review
+Ready, unresolved and skipped records"]
+    IMPORT_REVIEW -. "Finalise selected records" .-> FINALISE["Create private specimens
+from completed import records"]
+    FINALISE -. "Completed records appear in" .-> MEMBER_HOME
 
     %% Planned owner-controlled sharing
     OPEN_PRIVATE -. "Later" .-> SHARE["Prepare to share"]
-    SHARE --> SHARE_CHOICES["Choose public visibility,<br/>locality precision and interaction policy"]
-    SHARE_CHOICES --> SHARED_RECORD["Shared specimen<br/>Visible to members"]
+    SHARE --> SHARE_CHOICES["Choose public visibility,
+locality precision and interaction policy"]
+    SHARE_CHOICES --> SHARED_RECORD["Shared specimen
+Visible to members"]
     SHARED_RECORD -. "Later: appears in" .-> BROWSE
 
-    SHARE_CHOICES -. "Later: owner may choose" .-> REQUEST["Invite member observations<br/>or request verified-specialist help"]
-    REQUEST --> RESPONSE["Attributed observation<br/>or determination"]
+    SHARE_CHOICES -. "Later: owner may choose" .-> REQUEST["Invite member observations
+or request verified-specialist help"]
+    REQUEST --> RESPONSE["Attributed observation
+or determination"]
     RESPONSE --> DETAIL
 
     %% Planned following and meaningful updates
@@ -97,12 +148,12 @@ flowchart TD
     %% Visual styles
     classDef implemented fill:#d8e9f0,stroke:#10546f,color:#172229,stroke-width:2px;
     classDef decision fill:#fbe5d3,stroke:#d96f2d,color:#172229,stroke-width:2px;
-    classDef planned fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.66;
-    classDef future fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.78;
     classDef external fill:#faf9f6,stroke:#aca397,color:#5c675d,stroke-width:1px,stroke-dasharray:2 3,opacity:0.9;
+    classDef importNext fill:#fff8e9,stroke:#c4ad89,color:#465148,stroke-width:1px,stroke-dasharray:4 3,opacity:0.82;
+    classDef future fill:#f3efe7,stroke:#a99c8c,color:#5a6870,stroke-width:1px,stroke-dasharray:5 4,opacity:0.66;
 
     %% Implemented interactive prototype routes
-    class OPEN,GUEST,GUEST_SIGNIN,MEMBER_HOME,RESUME,OPEN_PRIVATE,BROWSE,DETAIL,ACCOUNT,PREFERENCES,UPDATES_PLACEHOLDER,ADD,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE,DESKTOP_SWITCH,DESKTOP_SPECIMENS,CSV_LANDING,CSV_TEMPLATE,CSV_CONTEXT,CSV_DOWNLOAD,CSV_UPLOAD,CSV_VALIDATE,CSV_REVIEW,CSV_STOP implemented;
+    class OPEN,GUEST,GUEST_SIGNIN,MEMBER_HOME,RESUME,OPEN_PRIVATE,BROWSE,DETAIL,ACCOUNT,PREFERENCES,UPDATES_PLACEHOLDER,ADD,SCOPE,PHOTOS,FIRST_IMAGE,TYPE,PROVENANCE,CONTEXT,MEASURE,DESCRIPTION,PRIVACY,REVIEW,SAVE,DESKTOP_SWITCH,DESKTOP_SPECIMENS,CSV_LANDING,CSV_TEMPLATE,CSV_CONTEXT,CSV_DOWNLOAD,CSV_UPLOAD,CSV_VALIDATE,CSV_REVIEW,CREATE_SESSION,IMPORT_SESSION,IMAGE_POOL,POOL_READY implemented;
 
     %% Implemented decisions
     class ACCESS,FIRST_TIME decision;
@@ -110,90 +161,154 @@ flowchart TD
     %% External/off-app actions
     class CSV_SPREADSHEET,CSV_FIX external;
 
-    %% Agreed next community-sharing work
-    class SHARE,SHARE_CHOICES,SHARED_RECORD,REQUEST,RESPONSE,FOLLOW,UPDATE_EVENTS planned;
+    %% Next desktop catalogue-import work
+    class MATCH_START,MATCH_RECORD,LOCK_IMAGES,MATCH_OVERVIEW,GAP_QUEUE,IMPORT_REVIEW,FINALISE importNext;
 
-    %% Future desktop catalogue-completion work
-    class CSV_DRAFTS,IMAGE_MATCH,REVISION_QUEUE future;
+    %% Future community-sharing work
+    class SHARE,SHARE_CHOICES,SHARED_RECORD,REQUEST,RESPONSE,FOLLOW,UPDATE_EVENTS future;
+
 ```
 
 ## Legend
 
 - **Blue, solid:** Implemented and currently interactive in the prototype.
-- **Orange, solid:** Implemented choice or entry decision.
-- **Grey, dotted:** An action outside the app, such as completing or correcting a spreadsheet.
-- **Faded, dashed:** Agreed next MVP work, not yet implemented.
-- **Warm yellow, dashed:** Future catalogue-import completion work after CSV review.
+- **Orange, solid:** Implemented user choice or entry decision.
+- **Grey, dotted:** Work completed outside the app, such as editing the CSV.
+- **Warm yellow, dashed:** Agreed next catalogue-import work.
+- **Faded grey, dashed:** Later public/community features.
 
 # Current product model
 
 ```text
-SIGNED-IN HOME
+SIGNED-IN PRODUCT
+
+├── MOBILE: PERSONAL SPECIMEN WORKSPACE
+│   │
+│   ├── My specimens
+│   │   │
+│   │   ├── Manual drafts
+│   │   │   └── Resume at their saved documentation stage
+│   │   │
+│   │   ├── Ready for review
+│   │   │   └── Open the complete specimen review
+│   │   │
+│   │   ├── Saved private specimens
+│   │   │   └── Open and edit the private specimen again
+│   │   │
+│   │   └── Later: finalised catalogue-import specimens
+│   │       └── Appear only after desktop import completion
+│   │
+│   ├── Add one specimen
+│   │   │
+│   │   ├── First contribution only
+│   │   │   └── Contribution scope and eligibility guidance
+│   │   │
+│   │   └── Mobile specimen capture
+│   │       ├── Take a new photograph
+│   │       ├── Choose existing device photographs
+│   │       ├── First valid image creates one private specimen draft
+│   │       ├── Further images belong directly to that draft
+│   │       ├── Continue through documentation
+│   │       └── Save and finish later returns to My specimens
+│   │
+│   ├── Explore specimens
+│   │   ├── Browse publicly shared specimens
+│   │   └── View public specimen details
+│   │
+│   ├── Updates
+│   │   └── Current empty-state placeholder
+│   │
+│   └── Account menu
+│       ├── Workflow-guidance preference
+│       ├── Image-guidance preference
+│       └── Review contribution scope
 │
-├── My specimens
-│   ├── Needs information
-│   │   └── Resume directly at the saved stage
-│   ├── Ready for review
-│   │   └── Open Review specimen
-│   ├── Private specimens
-│   │   └── Open Review specimen
-│   └── Later: shared specimens
+├── SHARED MOBILE SPECIMEN DOCUMENTATION
+│   │
+│   ├── What does this appear to be?
+│   │   └── Fossil / rock or mineral / collection item / not sure yet
+│   │
+│   ├── Provenance
+│   │   └── Original finder, collector, or collection history
+│   │
+│   ├── Find location and collecting context
+│   │
+│   ├── Physical details
+│   │   └── Measurements and condition
+│   │
+│   ├── Identification and observations
+│   │   └── Suggested identification, certainty and optional help preference
+│   │
+│   ├── Privacy and sharing preferences
+│   │   ├── Private by default
+│   │   └── Exact site details remain private
+│   │
+│   ├── Review specimen
+│   │   ├── Read-only summary of meaningful sections
+│   │   ├── Direct Edit action for each section
+│   │   └── At least one image required for private save
+│   │
+│   └── Save private specimen
 │
-├── Explore specimens
-│   ├── Browse publicly shared specimens
-│   └── View specimen details
-│
-├── Account menu
-│   ├── Workflow-guidance preference
-│   ├── Image-guidance preference
-│   └── Review contribution scope
-│
-└── Add a specimen
+└── DESKTOP: CATALOGUE-IMPORT WORKSPACE
     │
-    ├── First contribution only
-    │   └── Contribution scope and eligibility guidance
+    ├── Import an existing collection
+    │   │
+    │   ├── Choose or download a fossil CSV template
+    │   ├── Choose shared or per-record collecting context
+    │   ├── Complete the spreadsheet outside the app
+    │   ├── Upload completed CSV
+    │   ├── Validate metadata, columns, duplicate catalogue numbers,
+    │   │   row errors and warnings
+    │   └── Review CSV rows in a paginated desktop table
     │
-    └── Add specimen photos
-        ├── Take a new photograph
-        ├── Choose existing photographs
-        ├── First valid image creates the private draft
-        ├── Further images are added directly to that draft
-        ├── Continue directly to specimen type
-        └── Save and finish later returns to My specimens
-                    │
-                    ▼
-SPECIMEN DOCUMENTATION
-│
-├── What does this appear to be?
-│   └── Fossil / rock or mineral / collection item / not sure yet
-│
-├── Provenance
-│   └── Original finder, collector, or collection history
-│
-├── Find location and collecting context
-│
-├── Physical details
-│   └── Measurements and condition
-│
-├── Identification and observations
-│   └── Optional suggested identification and help preference
-│
-├── Privacy and sharing preferences
-│   ├── Private by default
-│   └── Exact site details remain private
-│
-├── Review specimen
-│   ├── Read-only summary of every meaningful section
-│   ├── Direct Edit action for each existing screen
-│   └── At least one image required for private save
-│
-└── Save private specimen
-                    │
-                    ▼
-MY SPECIMENS
-│
-└── Private specimens
-    └── Open Review specimen again
+    ├── Catalogue import session
+    │   │
+    │   ├── Private work area for one uploaded collection
+    │   ├── Owns CSV-derived catalogue records
+    │   ├── Owns the collection image pool
+    │   ├── Does NOT add unfinished records to My specimens
+    │   └── Does NOT make anything public
+    │
+    ├── Collection image pool
+    │   │
+    │   ├── Choose all likely collection images at once
+    │   ├── Optional desktop folder selection where browser-supported
+    │   ├── File and thumbnail previews
+    │   ├── Duplicate-file protection
+    │   ├── Unassigned-image count
+    │   └── No image-to-record assignment yet
+    │
+    └── NEXT: DESKTOP IMPORT COMPLETION
+        │
+        ├── Image matching workspace
+        │   ├── Serve one catalogue record at a time
+        │   ├── Select one or more corresponding images
+        │   ├── Assign an image to no more than one record
+        │   ├── Disable and grey images already assigned elsewhere
+        │   ├── Previous / next / skip / return to session
+        │   └── Review all unassigned images
+        │
+        ├── Missing-information queue
+        │   ├── Resolve flagged CSV warnings or decisions
+        │   ├── Complete only information genuinely still needed
+        │   ├── Keep historical unknowns valid and non-blocking
+        │   └── Do not force a species identification
+        │
+        ├── Import-session review
+        │   ├── Ready records
+        │   ├── Records needing images
+        │   ├── Records needing information
+        │   └── Records deliberately skipped for now
+        │
+        └── Finalise selected records privately
+            │
+            ├── Creates normal private specimens
+            ├── Preserves collection name and catalogue number
+            ├── Preserves original CSV metadata and assigned images
+            ├── Makes finalised records available in My specimens
+            └── Keeps the import session as private provenance/history
+
 ```
 
 ## Draft creation and image ownership
