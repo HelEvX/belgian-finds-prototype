@@ -1,5 +1,4 @@
 import type {
-  CatalogueImportDetails,
   LocationContext,
   PhysicalDetails,
   PrivacySettings,
@@ -51,11 +50,6 @@ export type SpecimenDraftUpdate = Partial<
   >
 >;
 
-export type ImportedCatalogueRecordResult = {
-  created: SpecimenDraft[];
-  skippedDuplicateCount: number;
-};
-
 type SpecimenDraftListener = (drafts: SpecimenDraft[]) => void;
 
 export type SpecimenService = {
@@ -63,7 +57,6 @@ export type SpecimenService = {
   getById: (draftId: string) => SpecimenDraft | undefined;
   create: (input: CreateSpecimenDraftInput) => SpecimenDraft;
   createMany: (inputs: CreateSpecimenDraftInput[]) => SpecimenDraft[];
-  importCatalogueRecords: (inputs: CreateSpecimenDraftInput[]) => ImportedCatalogueRecordResult;
   update: (draftId: string, updates: SpecimenDraftUpdate) => SpecimenDraft | undefined;
   subscribe: (listener: SpecimenDraftListener) => () => void;
 };
@@ -99,14 +92,6 @@ const createEmptyPrivacySettings = (): PrivacySettings => ({
   sharingPreference: "private",
   locationVisibility: "country",
 });
-
-function getCatalogueRecordKey(details: CatalogueImportDetails | null | undefined) {
-  if (!details?.collectionName.trim() || !details.catalogueNumber.trim()) {
-    return null;
-  }
-
-  return `${details.collectionName.trim().toLocaleLowerCase()}::${details.catalogueNumber.trim().toLocaleLowerCase()}`;
-}
 
 function createLocalSpecimenService(): SpecimenService {
   let drafts: SpecimenDraft[] = [];
@@ -177,46 +162,6 @@ function createLocalSpecimenService(): SpecimenService {
       notifyListeners();
 
       return created;
-    },
-
-    importCatalogueRecords: (inputs) => {
-      const knownCatalogueKeys = new Set(
-        drafts
-          .map((draft) => getCatalogueRecordKey(draft.catalogueImport))
-          .filter((key): key is string => key !== null),
-      );
-
-      const acceptedInputs: CreateSpecimenDraftInput[] = [];
-
-      let skippedDuplicateCount = 0;
-
-      inputs.forEach((input) => {
-        const catalogueKey = getCatalogueRecordKey(input.initialValues?.catalogueImport);
-
-        if (catalogueKey && knownCatalogueKeys.has(catalogueKey)) {
-          skippedDuplicateCount += 1;
-          return;
-        }
-
-        if (catalogueKey) {
-          knownCatalogueKeys.add(catalogueKey);
-        }
-
-        acceptedInputs.push(input);
-      });
-
-      const created = acceptedInputs.map(buildDraft);
-
-      if (created.length > 0) {
-        drafts = [...drafts, ...created];
-
-        notifyListeners();
-      }
-
-      return {
-        created,
-        skippedDuplicateCount,
-      };
     },
 
     update: (draftId, updates) => {

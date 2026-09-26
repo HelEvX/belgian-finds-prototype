@@ -1,23 +1,26 @@
 import { useState } from "react";
 
 import { CatalogueImportLandingScreen } from "./CatalogueImportLandingScreen";
+import { CatalogueImportWorkspaceScreen } from "./CatalogueImportWorkspaceScreen";
 import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
-import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
-
 import {
   createEmptySharedCollectingContext,
   type CatalogueContextMode,
+  type CatalogueImportSession,
   type CatalogueTemplateKind,
   type SharedCollectingContext,
 } from "./catalogueImportTypes";
+
 import { buildFossilCatalogueTemplate, createFossilTemplateFilename } from "./fossilCatalogueTemplate";
 
 type CatalogueImportIntroScreenProps = {
   onBack: () => void;
-  onImportPrivateRecords: (
+  activeSession: CatalogueImportSession | null;
+  onCreateImportSession: (
     inspection: FossilTemplateInspection,
     rows: FossilTemplateInspectionRow[],
-  ) => CatalogueImportCommitResult;
+    filename: string,
+  ) => CatalogueImportSession;
 };
 
 type SetupStep = "template" | "context";
@@ -78,7 +81,11 @@ const contextOptions: Array<{
   },
 ];
 
-export function CatalogueImportIntroScreen({ onBack, onImportPrivateRecords }: CatalogueImportIntroScreenProps) {
+export function CatalogueImportIntroScreen({
+  onBack,
+  activeSession,
+  onCreateImportSession,
+}: CatalogueImportIntroScreenProps) {
   const [isBuildingTemplate, setIsBuildingTemplate] = useState(false);
 
   const [setupStep, setSetupStep] = useState<SetupStep>("template");
@@ -130,6 +137,10 @@ export function CatalogueImportIntroScreen({ onBack, onImportPrivateRecords }: C
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   };
 
+  if (activeSession) {
+    return <CatalogueImportWorkspaceScreen session={activeSession} onBack={onBack} />;
+  }
+
   if (!isBuildingTemplate) {
     return (
       <CatalogueImportLandingScreen
@@ -138,7 +149,7 @@ export function CatalogueImportIntroScreen({ onBack, onImportPrivateRecords }: C
           setSetupStep("template");
           setIsBuildingTemplate(true);
         }}
-        onImportPrivateRecords={onImportPrivateRecords}
+        onCreateImportSession={onCreateImportSession}
       />
     );
   }

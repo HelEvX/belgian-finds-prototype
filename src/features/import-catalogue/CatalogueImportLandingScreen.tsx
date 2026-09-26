@@ -6,21 +6,22 @@ import {
   type FossilTemplateInspection,
   type FossilTemplateInspectionRow,
 } from "./fossilCatalogueImport";
-import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
+import type { CatalogueImportSession } from "./catalogueImportTypes";
 
 type CatalogueImportLandingScreenProps = {
   onBack: () => void;
   onGetTemplate: () => void;
-  onImportPrivateRecords: (
+  onCreateImportSession: (
     inspection: FossilTemplateInspection,
     rows: FossilTemplateInspectionRow[],
-  ) => CatalogueImportCommitResult;
+    filename: string,
+  ) => CatalogueImportSession;
 };
 
 export function CatalogueImportLandingScreen({
   onBack,
   onGetTemplate,
-  onImportPrivateRecords,
+  onCreateImportSession,
 }: CatalogueImportLandingScreenProps) {
   const [uploadedFilename, setUploadedFilename] = useState<string | null>(null);
 
@@ -78,7 +79,7 @@ export function CatalogueImportLandingScreen({
         inspection={inspection}
         filename={uploadedFilename ?? ""}
         onBack={() => setShowReview(false)}
-        onImportPrivateRecords={onImportPrivateRecords}
+        onCreateImportSession={onCreateImportSession}
       />
     );
   }

@@ -1,17 +1,16 @@
 import { useState } from "react";
-
+import type { CatalogueImportSession } from "./catalogueImportTypes";
 import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
-
-import type { CatalogueImportCommitResult } from "./catalogueImportTypes";
 
 type FossilCatalogueReviewScreenProps = {
   inspection: FossilTemplateInspection;
   filename: string;
   onBack: () => void;
-  onImportPrivateRecords: (
+  onCreateImportSession: (
     inspection: FossilTemplateInspection,
     rows: FossilTemplateInspectionRow[],
-  ) => CatalogueImportCommitResult;
+    filename: string,
+  ) => CatalogueImportSession;
 };
 
 const REVIEW_PAGE_SIZE = 20;
@@ -20,11 +19,9 @@ export function FossilCatalogueReviewScreen({
   inspection,
   filename,
   onBack,
-  onImportPrivateRecords,
+  onCreateImportSession,
 }: FossilCatalogueReviewScreenProps) {
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [importResult, setImportResult] = useState<CatalogueImportCommitResult | null>(null);
 
   const rowsWithErrors = inspection.rows.filter((row) => row.errors.length > 0).length;
 
@@ -40,12 +37,12 @@ export function FossilCatalogueReviewScreen({
 
   const visibleRows = inspection.rows.slice(firstRowIndex, firstRowIndex + REVIEW_PAGE_SIZE);
 
-  const importPrivateRecords = () => {
-    if (importResult || rowsWithErrors > 0 || validRows.length === 0) {
+  const createImportSession = () => {
+    if (rowsWithErrors > 0 || validRows.length === 0) {
       return;
     }
 
-    setImportResult(onImportPrivateRecords(inspection, validRows));
+    onCreateImportSession(inspection, validRows, filename);
   };
 
   return (
@@ -56,7 +53,7 @@ export function FossilCatalogueReviewScreen({
 
           <h1>{inspection.collectionName}</h1>
 
-          <p>Check the imported specimen information before private records are created.</p>
+          <p>Check the imported specimen information before creating a private desktop import session.</p>
         </div>
 
         <button className="outline-button" type="button" onClick={onBack}>
@@ -67,21 +64,25 @@ export function FossilCatalogueReviewScreen({
       <section className="catalogue-review-summary">
         <div>
           <span>File</span>
+
           <strong>{filename}</strong>
         </div>
 
         <div>
           <span>Specimen rows</span>
+
           <strong>{inspection.specimenRowCount}</strong>
         </div>
 
         <div>
           <span>Rows with errors</span>
+
           <strong>{rowsWithErrors}</strong>
         </div>
 
         <div>
           <span>Rows with warnings</span>
+
           <strong>{rowsWithWarnings}</strong>
         </div>
       </section>
@@ -94,7 +95,7 @@ export function FossilCatalogueReviewScreen({
             <h2>Review each imported record</h2>
           </div>
 
-          <span className="catalogue-private-badge">Private until published</span>
+          <span className="catalogue-private-badge">Private import session</span>
         </div>
 
         <div className="catalogue-review-table-wrap">
@@ -195,27 +196,17 @@ export function FossilCatalogueReviewScreen({
 
         <div className="catalogue-review-actions">
           <p>
-            {importResult
-              ? importResult.createdCount > 0
-                ? `${importResult.createdCount} private draft${importResult.createdCount === 1 ? "" : "s"} created.${
-                    importResult.skippedDuplicateCount > 0
-                      ? ` ${importResult.skippedDuplicateCount} existing catalogue record${
-                          importResult.skippedDuplicateCount === 1 ? " was" : "s were"
-                        } skipped.`
-                      : ""
-                  }`
-                : "No new private drafts were created because every catalogue number already exists in this collection."
-              : rowsWithErrors > 0
-                ? "Correct the rows marked Error and upload the CSV again."
-                : `${validRows.length} record${validRows.length === 1 ? "" : "s"} ready to import privately.`}
+            {rowsWithErrors > 0
+              ? "Correct the rows marked Error and upload the CSV again."
+              : `${validRows.length} record${validRows.length === 1 ? "" : "s"} will be added to a private desktop import session. They will not appear in My specimens yet.`}
           </p>
 
           <button
             className="primary-button"
             type="button"
-            disabled={Boolean(importResult) || rowsWithErrors > 0 || validRows.length === 0}
-            onClick={importPrivateRecords}>
-            {importResult ? "Records imported" : "Import private records"}
+            disabled={rowsWithErrors > 0 || validRows.length === 0}
+            onClick={createImportSession}>
+            Create import session
           </button>
         </div>
       </section>

@@ -16,12 +16,12 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 
 // features/import-catalogue
 import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
-import { mapFossilCatalogueRowsToDraftInputs } from "./features/import-catalogue/mapFossilCatalogueRowsToDraftInputs";
 import type {
   FossilTemplateInspection,
   FossilTemplateInspectionRow,
 } from "./features/import-catalogue/fossilCatalogueImport";
-import type { CatalogueImportCommitResult } from "./features/import-catalogue/catalogueImportTypes";
+import type { CatalogueImportSession } from "./features/import-catalogue/catalogueImportTypes";
+import { catalogueImportSessionService } from "./services/catalogueImportSessionService";
 
 // features/account
 import { SettingsScreen } from "./features/account/SettingsScreen";
@@ -105,6 +105,12 @@ function App() {
 
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>(() => specimenService.list());
 
+  const [catalogueImportSessions, setCatalogueImportSessions] = useState<CatalogueImportSession[]>(() =>
+    catalogueImportSessionService.list(),
+  );
+
+  const [activeCatalogueImportSessionId, setActiveCatalogueImportSessionId] = useState<string | null>(null);
+
   const [activeSpecimenDraftId, setActiveSpecimenDraftId] = useState<string | null>(null);
 
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -150,6 +156,9 @@ function App() {
 
   const activeSpecimenDraft = specimenDrafts.find((draft) => draft.id === activeSpecimenDraftId);
 
+  const activeCatalogueImportSession =
+    catalogueImportSessions.find((session) => session.id === activeCatalogueImportSessionId) ?? null;
+
   /*
    * PhotoScreen expects LocalFindPhoto[].
    *
@@ -167,6 +176,12 @@ function App() {
   useEffect(() => {
     return specimenService.subscribe((drafts) => {
       setSpecimenDrafts(drafts);
+    });
+  }, []);
+
+  useEffect(() => {
+    return catalogueImportSessionService.subscribe((sessions) => {
+      setCatalogueImportSessions(sessions);
     });
   }, []);
 
@@ -771,18 +786,21 @@ function App() {
     setPrototypeViewport("mobile");
   };
 
-  const importPrivateRecords = (
+  const createCatalogueImportSession = (
     inspection: FossilTemplateInspection,
     rows: FossilTemplateInspectionRow[],
-  ): CatalogueImportCommitResult => {
-    const result = specimenService.importCatalogueRecords(mapFossilCatalogueRowsToDraftInputs(inspection, rows));
+    filename: string,
+  ): CatalogueImportSession => {
+    const session = catalogueImportSessionService.createFromInspection({
+      inspection,
+      rows,
+      sourceFilename: filename,
+    });
 
-    setDesktopSection("specimens");
+    setActiveCatalogueImportSessionId(session.id);
+    setDesktopSection("catalogue-import");
 
-    return {
-      createdCount: result.created.length,
-      skippedDuplicateCount: result.skippedDuplicateCount,
-    };
+    return session;
   };
 
   const openSpecimenFromDesktop = (draftId: string) => {
@@ -1173,7 +1191,8 @@ function App() {
           ) : (
             <CatalogueImportIntroScreen
               onBack={() => setDesktopSection("specimens")}
-              onImportPrivateRecords={importPrivateRecords}
+              activeSession={activeCatalogueImportSession}
+              onCreateImportSession={createCatalogueImportSession}
             />
           )}
         </DesktopFrame>
