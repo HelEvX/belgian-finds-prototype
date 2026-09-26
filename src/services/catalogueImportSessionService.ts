@@ -1,6 +1,6 @@
 import type {
   CatalogueImportCompletionGap,
-  CatalogueImportCompletionGapKind,
+  CatalogueImportImage,
   CatalogueImportRecord,
   CatalogueImportSession,
   CatalogueImportSpecimenData,
@@ -19,12 +19,30 @@ type CreateCatalogueImportSessionInput = {
 
 type CatalogueImportSessionListener = (sessions: CatalogueImportSession[]) => void;
 
+export type CatalogueImportImagePoolAddResult = {
+  addedCount: number;
+  skippedDuplicateCount: number;
+  skippedNonImageCount: number;
+};
+
 export type CatalogueImportSessionService = {
   list: () => CatalogueImportSession[];
   getById: (sessionId: string) => CatalogueImportSession | undefined;
   createFromInspection: (input: CreateCatalogueImportSessionInput) => CatalogueImportSession;
+  addImages: (sessionId: string, files: File[]) => CatalogueImportImagePoolAddResult;
+  revokeAllImagePreviewUrls: () => void;
   subscribe: (listener: CatalogueImportSessionListener) => () => void;
 };
+
+const supportedImageFilename = /\.(avif|bmp|gif|heic|heif|jpe?g|png|tiff?|webp)$/i;
+
+function getFileSignature(file: File) {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function isSupportedImageFile(file: File) {
+  return file.type.startsWith("image/") || supportedImageFilename.test(file.name);
+}
 
 function getWarningGapDetails(message: string): Pick<CatalogueImportCompletionGap, "kind" | "field"> {
   const normalizedMessage = message.toLowerCase();
@@ -62,7 +80,7 @@ function createInitialCompletionGaps(row: FossilTemplateInspectionRow): Catalogu
     const details = getWarningGapDetails(message);
 
     gaps.push({
-      kind: details.kind as CatalogueImportCompletionGapKind,
+      kind: details.kind,
       field: details.field,
       message,
     });
@@ -198,6 +216,74 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
       notifyListeners();
 
       return session;
+    },
+
+    addImages: (sessionId, files) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      const knownFileSignatures = new Set(currentSession.images.map((image) => getFileSignature(image.file)));
+
+      const newImages: CatalogueImportImage[] = [];
+      let skippedDuplicateCount = 0;
+      let skippedNonImageCount = 0;
+
+      files.forEach((file) => {
+        if (!isSupportedImageFile(file)) {
+          skippedNonImageCount += 1;
+          return;
+        }
+
+        const fileSignature = getFileSignature(file);
+
+        if (knownFileSignatures.has(fileSignature)) {
+          skippedDuplicateCount += 1;
+          return;
+        }
+
+        knownFileSignatures.add(fileSignature);
+
+        newImages.push({
+          id: crypto.randomUUID(),
+          file,
+          previewUrl: URL.createObjectURL(file),
+
+          filename: file.name,
+          size: file.size,
+          lastModified: file.lastModified,
+
+          assignedRecordId: null,
+        });
+      });
+
+      if (newImages.length > 0) {
+        const updatedSession: CatalogueImportSession = {
+          ...currentSession,
+          images: [...currentSession.images, ...newImages],
+          updatedAt: new Date().toISOString(),
+        };
+
+        sessions = sessions.map((session) => (session.id === sessionId ? updatedSession : session));
+
+        notifyListeners();
+      }
+
+      return {
+        addedCount: newImages.length,
+        skippedDuplicateCount,
+        skippedNonImageCount,
+      };
+    },
+
+    revokeAllImagePreviewUrls: () => {
+      const previewUrls = new Set(sessions.flatMap((session) => session.images.map((image) => image.previewUrl)));
+
+      previewUrls.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
+      });
     },
 
     subscribe: (listener) => {

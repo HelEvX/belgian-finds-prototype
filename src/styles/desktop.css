@@ -1348,3 +1348,185 @@
   color: var(--color-text-muted);
   font-size: var(--text-2xs);
 }
+
+/* Catalogue import image-pool intake */
+
+.catalogue-image-pool-panel {
+  margin-top: var(--space-6);
+  overflow: hidden;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.catalogue-image-pool-heading {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.catalogue-image-pool-heading h2 {
+  margin: var(--space-2) 0 var(--space-2);
+  font-size: var(--text-2xl);
+  letter-spacing: -0.03em;
+}
+
+.catalogue-image-pool-heading p:last-child {
+  max-width: 720px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.catalogue-image-pool-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-subtle);
+}
+
+.catalogue-image-pool-stats > div {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.catalogue-image-pool-stats span {
+  color: var(--color-text-subtle);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.catalogue-image-pool-stats strong {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.04em;
+}
+
+.catalogue-image-pool-actions {
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+}
+
+.catalogue-image-pool-actions > div:first-child {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 620px;
+}
+
+.catalogue-image-pool-actions strong {
+  font-size: var(--text-md);
+}
+
+.catalogue-image-pool-actions > div:first-child > span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.catalogue-image-pool-buttons {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.catalogue-image-pool-feedback {
+  margin: 0 var(--space-6) var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.catalogue-image-preview-section {
+  padding: var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-app-surface);
+}
+
+.catalogue-image-preview-heading {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.catalogue-image-preview-heading h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.catalogue-image-preview-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.catalogue-image-preview-heading > span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--primary-blue-100);
+  color: var(--primary-blue-800);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.catalogue-image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.catalogue-image-preview {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.catalogue-image-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--color-placeholder-surface);
+}
+
+.catalogue-image-preview figcaption {
+  overflow: hidden;
+  padding: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalogue-image-pool-next-step {
+  margin: var(--space-5) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}

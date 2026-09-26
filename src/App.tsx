@@ -21,7 +21,10 @@ import type {
   FossilTemplateInspectionRow,
 } from "./features/import-catalogue/fossilCatalogueImport";
 import type { CatalogueImportSession } from "./features/import-catalogue/catalogueImportTypes";
-import { catalogueImportSessionService } from "./services/catalogueImportSessionService";
+import {
+  catalogueImportSessionService,
+  type CatalogueImportImagePoolAddResult,
+} from "./services/catalogueImportSessionService";
 
 // features/account
 import { SettingsScreen } from "./features/account/SettingsScreen";
@@ -194,6 +197,8 @@ function App() {
       previewUrls.forEach((previewUrl) => {
         URL.revokeObjectURL(previewUrl);
       });
+
+      catalogueImportSessionService.revokeAllImagePreviewUrls();
     };
   }, []);
 
@@ -803,6 +808,18 @@ function App() {
     return session;
   };
 
+  const addImagesToActiveCatalogueImportSession = (files: File[]): CatalogueImportImagePoolAddResult => {
+    if (!activeCatalogueImportSessionId) {
+      return {
+        addedCount: 0,
+        skippedDuplicateCount: 0,
+        skippedNonImageCount: files.length,
+      };
+    }
+
+    return catalogueImportSessionService.addImages(activeCatalogueImportSessionId, files);
+  };
+
   const openSpecimenFromDesktop = (draftId: string) => {
     setPrototypeMode("member");
     resumeSpecimenDraft(draftId);
@@ -1193,6 +1210,7 @@ function App() {
               onBack={() => setDesktopSection("specimens")}
               activeSession={activeCatalogueImportSession}
               onCreateImportSession={createCatalogueImportSession}
+              onAddImages={addImagesToActiveCatalogueImportSession}
             />
           )}
         </DesktopFrame>

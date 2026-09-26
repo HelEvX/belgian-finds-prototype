@@ -191,6 +191,25 @@
     left: var(--space-4);
     width: auto;
   }
+
+  .catalogue-image-pool-heading,
+  .catalogue-image-pool-actions,
+  .catalogue-image-preview-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .catalogue-image-pool-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalogue-image-pool-buttons {
+    justify-content: flex-start;
+  }
+
+  .catalogue-image-preview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {

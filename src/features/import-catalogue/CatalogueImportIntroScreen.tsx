@@ -3,6 +3,7 @@ import { useState } from "react";
 import { CatalogueImportLandingScreen } from "./CatalogueImportLandingScreen";
 import { CatalogueImportWorkspaceScreen } from "./CatalogueImportWorkspaceScreen";
 import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
+
 import {
   createEmptySharedCollectingContext,
   type CatalogueContextMode,
@@ -13,6 +14,8 @@ import {
 
 import { buildFossilCatalogueTemplate, createFossilTemplateFilename } from "./fossilCatalogueTemplate";
 
+import type { CatalogueImportImagePoolAddResult } from "../../services/catalogueImportSessionService";
+
 type CatalogueImportIntroScreenProps = {
   onBack: () => void;
   activeSession: CatalogueImportSession | null;
@@ -21,6 +24,7 @@ type CatalogueImportIntroScreenProps = {
     rows: FossilTemplateInspectionRow[],
     filename: string,
   ) => CatalogueImportSession;
+  onAddImages: (files: File[]) => CatalogueImportImagePoolAddResult;
 };
 
 type SetupStep = "template" | "context";
@@ -85,6 +89,7 @@ export function CatalogueImportIntroScreen({
   onBack,
   activeSession,
   onCreateImportSession,
+  onAddImages,
 }: CatalogueImportIntroScreenProps) {
   const [isBuildingTemplate, setIsBuildingTemplate] = useState(false);
 
@@ -138,7 +143,7 @@ export function CatalogueImportIntroScreen({
   };
 
   if (activeSession) {
-    return <CatalogueImportWorkspaceScreen session={activeSession} onBack={onBack} />;
+    return <CatalogueImportWorkspaceScreen session={activeSession} onBack={onBack} onAddImages={onAddImages} />;
   }
 
   if (!isBuildingTemplate) {
