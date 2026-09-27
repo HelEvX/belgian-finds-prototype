@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { CatalogueImportLandingScreen } from "./CatalogueImportLandingScreen";
 import { CatalogueImportWorkspaceScreen } from "./CatalogueImportWorkspaceScreen";
+import { CatalogueImageMatchingScreen } from "./CatalogueImageMatchingScreen";
+
 import type { FossilTemplateInspection, FossilTemplateInspectionRow } from "./fossilCatalogueImport";
 
 import {
@@ -25,6 +27,8 @@ type CatalogueImportIntroScreenProps = {
     filename: string,
   ) => CatalogueImportSession;
   onAddImages: (files: File[]) => CatalogueImportImagePoolAddResult;
+  onSetRecordImageAssignments: (recordId: string, imageIds: string[]) => void;
+  onMarkRecordSkipped: (recordId: string) => void;
 };
 
 type SetupStep = "template" | "context";
@@ -90,8 +94,12 @@ export function CatalogueImportIntroScreen({
   activeSession,
   onCreateImportSession,
   onAddImages,
+  onSetRecordImageAssignments,
+  onMarkRecordSkipped,
 }: CatalogueImportIntroScreenProps) {
   const [isBuildingTemplate, setIsBuildingTemplate] = useState(false);
+
+  const [isMatchingImages, setIsMatchingImages] = useState(false);
 
   const [setupStep, setSetupStep] = useState<SetupStep>("template");
 
@@ -142,8 +150,26 @@ export function CatalogueImportIntroScreen({
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   };
 
+  if (activeSession && isMatchingImages) {
+    return (
+      <CatalogueImageMatchingScreen
+        session={activeSession}
+        onBack={() => setIsMatchingImages(false)}
+        onSetRecordImageAssignments={onSetRecordImageAssignments}
+        onMarkRecordSkipped={onMarkRecordSkipped}
+      />
+    );
+  }
+
   if (activeSession) {
-    return <CatalogueImportWorkspaceScreen session={activeSession} onBack={onBack} onAddImages={onAddImages} />;
+    return (
+      <CatalogueImportWorkspaceScreen
+        session={activeSession}
+        onBack={onBack}
+        onAddImages={onAddImages}
+        onStartMatching={() => setIsMatchingImages(true)}
+      />
+    );
   }
 
   if (!isBuildingTemplate) {

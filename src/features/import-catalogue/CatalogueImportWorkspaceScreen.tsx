@@ -13,6 +13,7 @@ type CatalogueImportWorkspaceScreenProps = {
   session: CatalogueImportSession;
   onBack: () => void;
   onAddImages: (files: File[]) => CatalogueImportImagePoolAddResult;
+  onStartMatching: () => void;
 };
 
 function getImagePoolFeedback(result: CatalogueImportImagePoolAddResult) {
@@ -41,7 +42,12 @@ function getImagePoolFeedback(result: CatalogueImportImagePoolAddResult) {
     : "No supported image files were added. Choose image files or a folder containing images.";
 }
 
-export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }: CatalogueImportWorkspaceScreenProps) {
+export function CatalogueImportWorkspaceScreen({
+  session,
+  onBack,
+  onAddImages,
+  onStartMatching,
+}: CatalogueImportWorkspaceScreenProps) {
   const [imageFeedback, setImageFeedback] = useState<string | null>(null);
 
   const awaitingImagesCount = session.records.filter((record) => record.status === "awaiting-images").length;
@@ -77,6 +83,8 @@ export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }:
     directory: "",
     webkitdirectory: "",
   };
+
+  const hasImages = session.images.length > 0;
 
   return (
     <>
@@ -126,11 +134,9 @@ export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }:
       <section className="catalogue-image-pool-panel">
         <div className="catalogue-image-pool-heading">
           <div>
-            <p className="card-kicker">{session.images.length > 0 ? "Image pool ready" : "Step 1 of 2"}</p>
+            <p className="card-kicker">{hasImages ? "Image pool ready" : "Step 1 of 2"}</p>
 
-            <h2>
-              {session.images.length > 0 ? "Collection images ready to match" : "Build the collection image pool"}
-            </h2>
+            <h2>{hasImages ? "Collection images ready to match" : "Build the collection image pool"}</h2>
 
             <p>
               Select every image that may belong to this collection. Images stay private in this import session until
@@ -181,8 +187,10 @@ export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }:
               onChange={handleImageSelection}
             />
 
-            <label className="primary-button catalogue-file-button" htmlFor="catalogue-image-files">
-              Choose image files
+            <label
+              className={`${hasImages ? "secondary-button" : "primary-button"} catalogue-file-button`}
+              htmlFor="catalogue-image-files">
+              {hasImages ? "Add image files" : "Choose image files"}
             </label>
 
             <input {...folderInputAttributes} onChange={handleImageSelection} />
@@ -199,7 +207,7 @@ export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }:
           </div>
         )}
 
-        {session.images.length > 0 && (
+        {hasImages && (
           <div className="catalogue-image-preview-section">
             <div className="catalogue-image-preview-heading">
               <div>
@@ -224,10 +232,20 @@ export function CatalogueImportWorkspaceScreen({ session, onBack, onAddImages }:
               ))}
             </div>
 
-            <p className="catalogue-image-pool-next-step">
-              Next, the matching workspace will present one catalogue record at a time and prevent an image from being
-              selected for more than one record.
-            </p>
+            <div className="catalogue-image-matching-callout">
+              <div>
+                <strong>Ready to match images?</strong>
+
+                <span>
+                  Work through catalogue records one at a time. Images assigned to one record become unavailable for
+                  every other record.
+                </span>
+              </div>
+
+              <button className="primary-button" type="button" onClick={onStartMatching}>
+                Start matching images
+              </button>
+            </div>
           </div>
         )}
       </section>

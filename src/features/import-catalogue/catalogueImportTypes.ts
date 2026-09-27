@@ -11,6 +11,7 @@ export type CatalogueImportSessionStatus =
 
 export type CatalogueImportRecordStatus =
   | "awaiting-images"
+  | "skipped"
   | "images-matched"
   | "needs-information"
   | "ready-to-finalise"

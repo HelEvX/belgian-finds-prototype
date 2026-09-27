@@ -70,6 +70,25 @@
   cursor: pointer;
 }
 
+.primary-button:disabled,
+.secondary-button:disabled,
+.outline-button:disabled,
+.dark-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* only add a feature-specific disabled rule when it genuinely needs different behaviour */
+/* .notes-actions button:disabled,
+.catalogue-upload-summary .primary-button:disabled,
+.catalogue-setup-actions button:disabled,
+.catalogue-pagination button:disabled,
+.catalogue-confirmation-bar button:disabled,
+.catalogue-review-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+} */
+
 .primary-button {
   border: 1px solid var(--color-action-primary-border);
   background: var(--color-action-primary);
@@ -118,11 +137,6 @@
   margin-top: 26px;
 }
 
-.notes-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-
 .find-card-button,
 .browse-card {
   -webkit-tap-highlight-color: transparent;
@@ -139,4 +153,107 @@
 .outline-button:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* =================== */
+/* = DESKTOP COMPONENTS = */
+/* =================== */
+
+.prototype-view-button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.prototype-view-button-active {
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-foreground);
+}
+
+.prototype-view-button:focus-visible,
+.desktop-nav-item:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.catalogue-upload-summary button {
+  flex: 0 0 auto;
+}
+
+.catalogue-file-button {
+  cursor: pointer;
+}
+
+.catalogue-pagination .secondary-button {
+  min-height: 36px;
+}
+
+/* catalogue template cards */
+
+.catalogue-template-card,
+.catalogue-context-card {
+  position: relative;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.catalogue-template-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4);
+  min-height: 220px;
+  padding: var(--space-5);
+}
+
+.catalogue-template-card:hover:not(:disabled),
+.catalogue-context-card:hover {
+  border-color: var(--color-action-hover-border);
+  background: var(--color-action-primary-surface);
+}
+
+.catalogue-template-card:focus-visible,
+.catalogue-context-card:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.catalogue-template-card-selected,
+.catalogue-context-card-selected {
+  border-color: var(--color-action-primary-border);
+  box-shadow: inset 0 0 0 1px var(--color-action-primary-border);
+  background: var(--color-action-primary-surface);
+}
+
+.catalogue-template-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.catalogue-template-symbol {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-emphasis);
+  color: var(--color-action-primary);
+  font-size: var(--text-xl);
+  font-weight: 900;
+}
+
+.catalogue-template-card-copy,
+.catalogue-template-card-copy > span:not(.catalogue-template-title-row) {
+  display: grid;
+  gap: var(--space-2);
 }

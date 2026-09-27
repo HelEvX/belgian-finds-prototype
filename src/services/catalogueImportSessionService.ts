@@ -30,6 +30,12 @@ export type CatalogueImportSessionService = {
   getById: (sessionId: string) => CatalogueImportSession | undefined;
   createFromInspection: (input: CreateCatalogueImportSessionInput) => CatalogueImportSession;
   addImages: (sessionId: string, files: File[]) => CatalogueImportImagePoolAddResult;
+  setRecordImageAssignments: (
+    sessionId: string,
+    recordId: string,
+    imageIds: string[],
+  ) => CatalogueImportSession | undefined;
+  markRecordSkipped: (sessionId: string, recordId: string) => CatalogueImportSession | undefined;
   revokeAllImagePreviewUrls: () => void;
   subscribe: (listener: CatalogueImportSessionListener) => () => void;
 };
@@ -67,14 +73,25 @@ function getWarningGapDetails(message: string): Pick<CatalogueImportCompletionGa
   };
 }
 
+function createNeedsImageGap(): CatalogueImportCompletionGap {
+  return {
+    kind: "needs-image",
+    field: "images",
+    message: "Attach at least one image before this record can be finalised privately.",
+  };
+}
+
+function updateImageCompletionGap(
+  completionGaps: CatalogueImportCompletionGap[],
+  hasAssignedImages: boolean,
+): CatalogueImportCompletionGap[] {
+  const gapsWithoutImageRequirement = completionGaps.filter((gap) => gap.kind !== "needs-image");
+
+  return hasAssignedImages ? gapsWithoutImageRequirement : [createNeedsImageGap(), ...gapsWithoutImageRequirement];
+}
+
 function createInitialCompletionGaps(row: FossilTemplateInspectionRow): CatalogueImportCompletionGap[] {
-  const gaps: CatalogueImportCompletionGap[] = [
-    {
-      kind: "needs-image",
-      field: "images",
-      message: "Attach at least one image before this record can be finalised privately.",
-    },
-  ];
+  const gaps: CatalogueImportCompletionGap[] = [createNeedsImageGap()];
 
   row.warnings.forEach((message) => {
     const details = getWarningGapDetails(message);
@@ -150,6 +167,12 @@ function createImportRecord(
   };
 }
 
+function getSessionStatus(records: CatalogueImportRecord[]): CatalogueImportSession["status"] {
+  const everyRecordHasImages = records.every((record) => record.assignedImageIds.length > 0);
+
+  return everyRecordHasImages ? "completing-information" : "awaiting-images";
+}
+
 function createLocalCatalogueImportSessionService(): CatalogueImportSessionService {
   let sessions: CatalogueImportSession[] = [];
 
@@ -163,6 +186,14 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
     listeners.forEach((listener) => {
       listener(currentSessions);
     });
+  };
+
+  const replaceSession = (updatedSession: CatalogueImportSession) => {
+    sessions = sessions.map((session) => (session.id === updatedSession.id ? updatedSession : session));
+
+    notifyListeners();
+
+    return updatedSession;
   };
 
   return {
@@ -260,15 +291,11 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
       });
 
       if (newImages.length > 0) {
-        const updatedSession: CatalogueImportSession = {
+        replaceSession({
           ...currentSession,
           images: [...currentSession.images, ...newImages],
           updatedAt: new Date().toISOString(),
-        };
-
-        sessions = sessions.map((session) => (session.id === sessionId ? updatedSession : session));
-
-        notifyListeners();
+        });
       }
 
       return {
@@ -276,6 +303,127 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
         skippedDuplicateCount,
         skippedNonImageCount,
       };
+    },
+
+    setRecordImageAssignments: (sessionId, recordId, imageIds) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      const currentRecord = currentSession.records.find((record) => record.id === recordId);
+
+      if (!currentRecord) {
+        throw new Error("The selected catalogue record could not be found.");
+      }
+
+      const uniqueImageIds = [...new Set(imageIds)];
+
+      if (uniqueImageIds.length !== imageIds.length) {
+        throw new Error("An image cannot be assigned more than once to the same catalogue record.");
+      }
+
+      const knownImageIds = new Set(currentSession.images.map((image) => image.id));
+
+      if (uniqueImageIds.some((imageId) => !knownImageIds.has(imageId))) {
+        throw new Error("One or more selected images are not available in this import session.");
+      }
+
+      const conflictingImage = currentSession.images.find(
+        (image) =>
+          uniqueImageIds.includes(image.id) && image.assignedRecordId !== null && image.assignedRecordId !== recordId,
+      );
+
+      if (conflictingImage) {
+        throw new Error(`“${conflictingImage.filename}” is already assigned to another catalogue record.`);
+      }
+
+      const timestamp = new Date().toISOString();
+
+      const hasAssignedImages = uniqueImageIds.length > 0;
+
+      const updatedRecords = currentSession.records.map((record): CatalogueImportRecord => {
+        if (record.id !== recordId) {
+          return record;
+        }
+
+        return {
+          ...record,
+          assignedImageIds: uniqueImageIds,
+          status: hasAssignedImages ? "images-matched" : "awaiting-images",
+          completionGaps: updateImageCompletionGap(record.completionGaps, hasAssignedImages),
+          updatedAt: timestamp,
+        };
+      });
+
+      const selectedImageIdSet = new Set(uniqueImageIds);
+
+      const updatedImages = currentSession.images.map((image) => {
+        if (selectedImageIdSet.has(image.id)) {
+          return {
+            ...image,
+            assignedRecordId: recordId,
+          };
+        }
+
+        if (image.assignedRecordId === recordId) {
+          return {
+            ...image,
+            assignedRecordId: null,
+          };
+        }
+
+        return image;
+      });
+
+      return replaceSession({
+        ...currentSession,
+        status: getSessionStatus(updatedRecords),
+        records: updatedRecords,
+        images: updatedImages,
+        updatedAt: timestamp,
+      });
+    },
+
+    markRecordSkipped: (sessionId, recordId) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      const currentRecord = currentSession.records.find((record) => record.id === recordId);
+
+      if (!currentRecord) {
+        throw new Error("The selected catalogue record could not be found.");
+      }
+
+      if (currentRecord.assignedImageIds.length > 0) {
+        throw new Error("Remove this record’s image assignments before marking it as skipped.");
+      }
+
+      const timestamp = new Date().toISOString();
+
+      const updatedRecords = currentSession.records.map((record): CatalogueImportRecord => {
+        if (record.id !== recordId) {
+          return record;
+        }
+
+        return {
+          ...record,
+          status: "skipped",
+          completionGaps: updateImageCompletionGap(record.completionGaps, false),
+          updatedAt: timestamp,
+        };
+      });
+
+      return replaceSession({
+        ...currentSession,
+        status: getSessionStatus(updatedRecords),
+        records: updatedRecords,
+        updatedAt: timestamp,
+      });
     },
 
     revokeAllImagePreviewUrls: () => {

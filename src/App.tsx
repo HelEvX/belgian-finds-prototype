@@ -820,6 +820,22 @@ function App() {
     return catalogueImportSessionService.addImages(activeCatalogueImportSessionId, files);
   };
 
+  const setActiveCatalogueRecordImageAssignments = (recordId: string, imageIds: string[]) => {
+    if (!activeCatalogueImportSessionId) {
+      return;
+    }
+
+    catalogueImportSessionService.setRecordImageAssignments(activeCatalogueImportSessionId, recordId, imageIds);
+  };
+
+  const markActiveCatalogueRecordSkipped = (recordId: string) => {
+    if (!activeCatalogueImportSessionId) {
+      return;
+    }
+
+    catalogueImportSessionService.markRecordSkipped(activeCatalogueImportSessionId, recordId);
+  };
+
   const openSpecimenFromDesktop = (draftId: string) => {
     setPrototypeMode("member");
     resumeSpecimenDraft(draftId);
@@ -1211,6 +1227,8 @@ function App() {
               activeSession={activeCatalogueImportSession}
               onCreateImportSession={createCatalogueImportSession}
               onAddImages={addImagesToActiveCatalogueImportSession}
+              onSetRecordImageAssignments={setActiveCatalogueRecordImageAssignments}
+              onMarkRecordSkipped={markActiveCatalogueRecordSkipped}
             />
           )}
         </DesktopFrame>
