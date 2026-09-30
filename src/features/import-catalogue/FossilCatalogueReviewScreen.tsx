@@ -104,6 +104,7 @@ export function FossilCatalogueReviewScreen({
               <tr>
                 <th scope="col">Record</th>
                 <th scope="col">Catalogue number</th>
+                <th scope="col">Expected images</th>
                 <th scope="col">Identification</th>
                 <th scope="col">Anatomical element</th>
                 <th scope="col">Formation</th>
@@ -129,6 +130,8 @@ export function FossilCatalogueReviewScreen({
                     <td>
                       <strong>{row.catalogueNumber || "Missing"}</strong>
                     </td>
+
+                    <td>{row.expectedImageCount ?? "Not specified"}</td>
 
                     <td>{row.identification || "Not provided"}</td>
 

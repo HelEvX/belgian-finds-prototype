@@ -216,6 +216,16 @@
   --text-display: clamp(1.8rem, 3vw, 2.7rem);
   --text-display-lg: clamp(2rem, 4vw, 3.2rem);
 
+  /* Layout measures */
+  --layout-copy-max-inline-size: 42.5rem;
+  --layout-copy-wide-max-inline-size: 45rem;
+  --layout-import-panel-max-inline-size: 42.5rem;
+  --layout-dialog-max-inline-size: 35rem;
+  --layout-dialog-max-block-size: 42.5rem;
+  --layout-matching-sidebar-min-inline-size: 16.25rem;
+  --layout-matching-grid-max-block-size: min(38.75rem, 54vh);
+  --layer-dialog: 30;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

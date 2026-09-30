@@ -1,4 +1,5 @@
 import type {
+  CatalogueImportAutoMatchPlan,
   CatalogueImportCompletionGap,
   CatalogueImportImage,
   CatalogueImportRecord,
@@ -25,11 +26,18 @@ export type CatalogueImportImagePoolAddResult = {
   skippedNonImageCount: number;
 };
 
+export type CatalogueImportAutoMatchResult = {
+  plan: CatalogueImportAutoMatchPlan;
+  session: CatalogueImportSession | null;
+};
+
 export type CatalogueImportSessionService = {
   list: () => CatalogueImportSession[];
   getById: (sessionId: string) => CatalogueImportSession | undefined;
   createFromInspection: (input: CreateCatalogueImportSessionInput) => CatalogueImportSession;
   addImages: (sessionId: string, files: File[]) => CatalogueImportImagePoolAddResult;
+  getAutoMatchPlan: (sessionId: string) => CatalogueImportAutoMatchPlan;
+  autoMatchByExpectedImageCounts: (sessionId: string) => CatalogueImportAutoMatchResult;
   setRecordImageAssignments: (
     sessionId: string,
     recordId: string,
@@ -44,6 +52,162 @@ const supportedImageFilename = /\.(avif|bmp|gif|heic|heif|jpe?g|png|tiff?|webp)$
 
 function getFileSignature(file: File) {
   return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+const imageFilenameCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+function formatCount(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function formatExamples(values: string[], maximum = 5) {
+  const visibleValues = values.slice(0, maximum).map((value) => `“${value}”`);
+
+  if (values.length <= maximum) {
+    return visibleValues.join(", ");
+  }
+
+  return `${visibleValues.join(", ")} and ${values.length - maximum} more`;
+}
+
+function getDuplicateImageFilenames(images: CatalogueImportImage[]) {
+  const filenameCounts = new Map<string, number>();
+  const displayFilenames = new Map<string, string>();
+
+  images.forEach((image) => {
+    const displayFilename = image.filename.trim() || "Unnamed image";
+    const normalizedFilename = displayFilename.toLocaleLowerCase();
+
+    filenameCounts.set(normalizedFilename, (filenameCounts.get(normalizedFilename) ?? 0) + 1);
+
+    if (!displayFilenames.has(normalizedFilename)) {
+      displayFilenames.set(normalizedFilename, displayFilename);
+    }
+  });
+
+  return [...filenameCounts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([normalizedFilename]) => displayFilenames.get(normalizedFilename) ?? normalizedFilename)
+    .sort(imageFilenameCollator.compare);
+}
+
+function createAutoMatchPlan(session: CatalogueImportSession): CatalogueImportAutoMatchPlan {
+  const issues: CatalogueImportAutoMatchPlan["issues"] = [];
+
+  const unassignedImages = session.images.filter((image) => image.assignedRecordId === null);
+
+  const recordsWithAssignedImages = session.records.filter((record) => record.assignedImageIds.length > 0);
+
+  const skippedRecords = session.records.filter((record) => record.status === "skipped");
+
+  const recordsMissingImageCounts = session.records.filter((record) => record.expectedImageCount === null);
+
+  const expectedImageCount = session.records.reduce((total, record) => total + (record.expectedImageCount ?? 0), 0);
+
+  const recordsWithZeroExpectedImageCount = session.records.filter((record) => record.expectedImageCount === 0).length;
+
+  if (session.images.length === 0) {
+    issues.push({
+      kind: "empty-image-pool",
+      title: "No collection images have been added",
+      detail:
+        expectedImageCount > 0
+          ? `The CSV expects ${formatCount(expectedImageCount, "image")}. Choose the image files or folder before auto-matching.`
+          : "Choose the collection image files or a folder before auto-matching.",
+    });
+  }
+
+  if (recordsWithAssignedImages.length > 0) {
+    const assignedImageCount = recordsWithAssignedImages.reduce(
+      (total, record) => total + record.assignedImageIds.length,
+      0,
+    );
+
+    issues.push({
+      kind: "existing-image-assignments",
+      title: "Manual image assignments already exist",
+      detail: `${formatCount(assignedImageCount, "image")} ${assignedImageCount === 1 ? "is" : "are"} already assigned across ${formatCount(recordsWithAssignedImages.length, "record")}. Auto-match is only available before manual matching begins. Remove those assignments in manual matching, or continue matching this session manually.`,
+    });
+  }
+
+  if (skippedRecords.length > 0) {
+    issues.push({
+      kind: "skipped-records",
+      title: "Some records are marked Skip for now",
+      detail: `${formatCount(skippedRecords.length, "record")} ${skippedRecords.length === 1 ? "is" : "are"} marked Skip for now. Auto-match is intended for a new, untouched session. Continue manually, or create a new import session to auto-match the collection from the beginning.`,
+    });
+  }
+
+  if (recordsMissingImageCounts.length > 0) {
+    issues.push({
+      kind: "missing-image-counts",
+      title: "Some CSV rows do not contain img_count",
+      detail: `${formatCount(recordsMissingImageCounts.length, "record")} ${recordsMissingImageCounts.length === 1 ? "has" : "have"} no img_count value: ${formatExamples(
+        recordsMissingImageCounts.map((record) => record.catalogueNumber),
+      )}. Add a whole-number image count for every record in the CSV, then create a new import session.`,
+    });
+  }
+
+  const duplicateImageFilenames = getDuplicateImageFilenames(unassignedImages);
+
+  if (duplicateImageFilenames.length > 0) {
+    issues.push({
+      kind: "duplicate-image-filenames",
+      title: "Some image filenames are repeated",
+      detail: `${formatCount(duplicateImageFilenames.length, "filename")} ${duplicateImageFilenames.length === 1 ? "occurs" : "occur"} more than once: ${formatExamples(
+        duplicateImageFilenames,
+      )}. Rename the repeated files so their order is unambiguous, then use a new import session or match those records manually.`,
+    });
+  }
+
+  const canCompareCounts =
+    session.images.length > 0 &&
+    recordsWithAssignedImages.length === 0 &&
+    skippedRecords.length === 0 &&
+    recordsMissingImageCounts.length === 0;
+
+  if (canCompareCounts && expectedImageCount !== unassignedImages.length) {
+    const difference = Math.abs(expectedImageCount - unassignedImages.length);
+
+    issues.push({
+      kind: "image-count-mismatch",
+      title: "The CSV image total does not match the image pool",
+      detail:
+        expectedImageCount > unassignedImages.length
+          ? `The CSV expects ${formatCount(expectedImageCount, "image")}, but the image pool contains ${formatCount(
+              unassignedImages.length,
+              "unassigned image",
+            )}. Add ${formatCount(difference, "image")} or reduce the img_count values in the CSV.`
+          : `The CSV expects ${formatCount(expectedImageCount, "image")}, but the image pool contains ${formatCount(
+              unassignedImages.length,
+              "unassigned image",
+            )}. Remove ${formatCount(difference, "extra image")} or increase the img_count values in the CSV.`,
+    });
+  }
+
+  return {
+    isReady: issues.length === 0,
+    matchedRecordCount: session.records.filter((record) => (record.expectedImageCount ?? 0) > 0).length,
+    expectedImageCount,
+    availableImageCount: unassignedImages.length,
+    recordsWithZeroExpectedImageCount,
+    issues,
+  };
+}
+
+function getNaturallySortedImages(images: CatalogueImportImage[]) {
+  return [...images].sort((firstImage, secondImage) => {
+    const filenameComparison = imageFilenameCollator.compare(firstImage.filename, secondImage.filename);
+
+    if (filenameComparison !== 0) {
+      return filenameComparison;
+    }
+
+    return firstImage.lastModified - secondImage.lastModified || firstImage.id.localeCompare(secondImage.id);
+  });
 }
 
 function isSupportedImageFile(file: File) {
@@ -154,7 +318,7 @@ function createImportRecord(
 
     status: "awaiting-images",
 
-    expectedImageCount: null,
+    expectedImageCount: row.expectedImageCount,
     assignedImageIds: [],
 
     validationWarnings: [...row.warnings],
@@ -302,6 +466,91 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
         addedCount: newImages.length,
         skippedDuplicateCount,
         skippedNonImageCount,
+      };
+    },
+
+    getAutoMatchPlan: (sessionId) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      return createAutoMatchPlan(currentSession);
+    },
+
+    autoMatchByExpectedImageCounts: (sessionId) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      const plan = createAutoMatchPlan(currentSession);
+
+      if (!plan.isReady) {
+        return {
+          plan,
+          session: null,
+        };
+      }
+
+      const orderedImages = getNaturallySortedImages(
+        currentSession.images.filter((image) => image.assignedRecordId === null),
+      );
+
+      const timestamp = new Date().toISOString();
+
+      let nextImageIndex = 0;
+
+      const assignedImageIdsByRecordId = new Map<string, string[]>();
+
+      const updatedRecords = currentSession.records.map((record): CatalogueImportRecord => {
+        const expectedImageCount = record.expectedImageCount ?? 0;
+
+        const assignedImageIds = orderedImages
+          .slice(nextImageIndex, nextImageIndex + expectedImageCount)
+          .map((image) => image.id);
+
+        nextImageIndex += expectedImageCount;
+
+        assignedImageIdsByRecordId.set(record.id, assignedImageIds);
+
+        const hasAssignedImages = assignedImageIds.length > 0;
+
+        return {
+          ...record,
+          assignedImageIds,
+          status: hasAssignedImages ? "images-matched" : "awaiting-images",
+          completionGaps: updateImageCompletionGap(record.completionGaps, hasAssignedImages),
+          updatedAt: timestamp,
+        };
+      });
+
+      const recordIdByImageId = new Map<string, string>();
+
+      assignedImageIdsByRecordId.forEach((imageIds, recordId) => {
+        imageIds.forEach((imageId) => {
+          recordIdByImageId.set(imageId, recordId);
+        });
+      });
+
+      const updatedImages = currentSession.images.map((image) => ({
+        ...image,
+        assignedRecordId: recordIdByImageId.get(image.id) ?? null,
+      }));
+
+      const updatedSession = replaceSession({
+        ...currentSession,
+        status: getSessionStatus(updatedRecords),
+        records: updatedRecords,
+        images: updatedImages,
+        updatedAt: timestamp,
+      });
+
+      return {
+        plan,
+        session: updatedSession,
       };
     },
 

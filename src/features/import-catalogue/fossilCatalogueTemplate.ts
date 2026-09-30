@@ -6,6 +6,7 @@ export const FOSSIL_CATALOGUE_DELIMITER = ";";
 
 export const fossilSpecimenColumns = [
   "catalogue_number",
+  "img_count",
   "identification",
   "anatomical_element",
   "formation",
@@ -21,6 +22,12 @@ export const fossilSpecimenColumns = [
   "preparation",
   "specimen_notes",
 ] as const;
+
+/*
+ * Optional columns are included in newly generated templates but are not
+ * required when importing older compatible version-2 templates.
+ */
+export const optionalFossilSpecimenColumns = ["img_count"] as const;
 
 export const perRecordContextColumns = [
   "provenance",

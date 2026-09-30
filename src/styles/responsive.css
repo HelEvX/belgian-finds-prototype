@@ -131,10 +131,6 @@
     grid-template-columns: 1fr;
   }
 
-  .catalogue-matching-sidebar {
-    position: static;
-  }
-
   .catalogue-matching-image-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -204,36 +200,21 @@
     width: auto;
   }
 
-  .catalogue-image-pool-heading,
-  .catalogue-image-pool-actions,
-  .catalogue-image-preview-heading,
-  .catalogue-image-matching-callout,
-  .catalogue-matching-selection-heading,
-  .catalogue-matching-actions {
+  .catalogue-image-pool-choice-actions,
+  .catalogue-dialog-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .catalogue-image-pool-stats,
-  .catalogue-matching-progress {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .catalogue-image-pool-choice-actions > .primary-button,
+  .catalogue-image-pool-choice-actions > .secondary-button,
+  .catalogue-dialog-actions > .primary-button,
+  .catalogue-dialog-actions > .secondary-button {
+    width: 100%;
   }
 
-  .catalogue-image-pool-buttons {
-    justify-content: flex-start;
-  }
-
-  .catalogue-image-preview-grid,
-  .catalogue-matching-image-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .catalogue-matching-navigation {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .catalogue-matching-navigation .text-button {
-    justify-self: start;
+  .catalogue-dialog {
+    width: min(100%, 560px);
   }
 }
 

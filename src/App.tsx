@@ -16,6 +16,7 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 
 // features/import-catalogue
 import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
+import { ImportedCollectionScreen } from "./features/import-catalogue/ImportedCollectionScreen";
 import type {
   FossilTemplateInspection,
   FossilTemplateInspectionRow,
@@ -23,6 +24,7 @@ import type {
 import type { CatalogueImportSession } from "./features/import-catalogue/catalogueImportTypes";
 import {
   catalogueImportSessionService,
+  type CatalogueImportAutoMatchResult,
   type CatalogueImportImagePoolAddResult,
 } from "./services/catalogueImportSessionService";
 
@@ -836,6 +838,31 @@ function App() {
     catalogueImportSessionService.markRecordSkipped(activeCatalogueImportSessionId, recordId);
   };
 
+  const autoMatchActiveCatalogueImportSession = (): CatalogueImportAutoMatchResult => {
+    if (!activeCatalogueImportSessionId) {
+      throw new Error("No active catalogue import session is available for auto-matching.");
+    }
+
+    return catalogueImportSessionService.autoMatchByExpectedImageCounts(activeCatalogueImportSessionId);
+  };
+
+  const openImportedCollection = () => {
+    if (!activeCatalogueImportSessionId) {
+      return;
+    }
+
+    setDesktopSection("imported-collection");
+  };
+
+  const selectDesktopSection = (section: DesktopSection) => {
+    if (section === "catalogue-import" && activeCatalogueImportSession?.status === "completing-information") {
+      setDesktopSection("imported-collection");
+      return;
+    }
+
+    setDesktopSection(section);
+  };
+
   const openSpecimenFromDesktop = (draftId: string) => {
     setPrototypeMode("member");
     resumeSpecimenDraft(draftId);
@@ -1213,7 +1240,7 @@ function App() {
       ) : (
         <DesktopFrame
           activeSection={desktopSection}
-          onSelectSection={setDesktopSection}
+          onSelectSection={selectDesktopSection}
           onSwitchToMobile={showMobilePrototype}>
           {desktopSection === "specimens" ? (
             <DesktopSpecimensScreen
@@ -1221,12 +1248,17 @@ function App() {
               onImportCatalogue={() => setDesktopSection("catalogue-import")}
               onOpenSpecimen={openSpecimenFromDesktop}
             />
+          ) : desktopSection === "imported-collection" && activeCatalogueImportSession ? (
+            <ImportedCollectionScreen session={activeCatalogueImportSession} />
           ) : (
             <CatalogueImportIntroScreen
               onBack={() => setDesktopSection("specimens")}
               activeSession={activeCatalogueImportSession}
+              showWorkflowGuidance={showWorkflowGuidance}
               onCreateImportSession={createCatalogueImportSession}
               onAddImages={addImagesToActiveCatalogueImportSession}
+              onAutoMatch={autoMatchActiveCatalogueImportSession}
+              onOpenImportedCollection={openImportedCollection}
               onSetRecordImageAssignments={setActiveCatalogueRecordImageAssignments}
               onMarkRecordSkipped={markActiveCatalogueRecordSkipped}
             />

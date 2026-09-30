@@ -1,8 +1,11 @@
 import { useState, type ChangeEvent, type InputHTMLAttributes } from "react";
 
-import type { CatalogueImportSession } from "./catalogueImportTypes";
+import type { CatalogueImportAutoMatchPlan, CatalogueImportSession } from "./catalogueImportTypes";
 
-import type { CatalogueImportImagePoolAddResult } from "../../services/catalogueImportSessionService";
+import type {
+  CatalogueImportAutoMatchResult,
+  CatalogueImportImagePoolAddResult,
+} from "../../services/catalogueImportSessionService";
 
 type DirectoryInputAttributes = InputHTMLAttributes<HTMLInputElement> & {
   directory?: string;
@@ -14,16 +17,12 @@ type CatalogueImportWorkspaceScreenProps = {
   onBack: () => void;
   onAddImages: (files: File[]) => CatalogueImportImagePoolAddResult;
   onStartMatching: () => void;
+  onOpenImportedCollection: () => void;
+  onAutoMatch: () => CatalogueImportAutoMatchResult;
 };
 
-function getImagePoolFeedback(result: CatalogueImportImagePoolAddResult) {
+function getImagePoolAttentionMessage(result: CatalogueImportImagePoolAddResult) {
   const messages: string[] = [];
-
-  if (result.addedCount > 0) {
-    messages.push(
-      `Added ${result.addedCount} image${result.addedCount === 1 ? "" : "s"} to the collection image pool.`,
-    );
-  }
 
   if (result.skippedDuplicateCount > 0) {
     messages.push(
@@ -37,9 +36,56 @@ function getImagePoolFeedback(result: CatalogueImportImagePoolAddResult) {
     );
   }
 
-  return messages.length > 0
-    ? messages.join(" ")
-    : "No supported image files were added. Choose image files or a folder containing images.";
+  return messages.length > 0 ? messages.join(" ") : null;
+}
+
+type AutoMatchIssuesDialogProps = {
+  plan: CatalogueImportAutoMatchPlan;
+  onClose: () => void;
+  onStartManualMatching: () => void;
+};
+
+function AutoMatchIssuesDialog({ plan, onClose, onStartManualMatching }: AutoMatchIssuesDialogProps) {
+  return (
+    <div
+      className="catalogue-dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}>
+      <section
+        className="catalogue-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="catalogue-auto-match-dialog-title">
+        <p className="card-kicker">Auto-match unavailable</p>
+
+        <h2 id="catalogue-auto-match-dialog-title">This image pool is not ready for auto-match</h2>
+
+        <ul className="catalogue-dialog-issues">
+          {plan.issues.map((issue) => (
+            <li key={issue.kind}>
+              <strong>{issue.title}</strong>
+
+              <span>{issue.detail}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="catalogue-dialog-actions">
+          <button className="secondary-button" type="button" onClick={onClose}>
+            Back to image pool
+          </button>
+
+          <button className="primary-button" type="button" onClick={onStartManualMatching}>
+            Match manually
+          </button>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export function CatalogueImportWorkspaceScreen({
@@ -47,18 +93,24 @@ export function CatalogueImportWorkspaceScreen({
   onBack,
   onAddImages,
   onStartMatching,
+  onOpenImportedCollection,
+  onAutoMatch,
 }: CatalogueImportWorkspaceScreenProps) {
-  const [imageFeedback, setImageFeedback] = useState<string | null>(null);
+  const [imagePoolAttention, setImagePoolAttention] = useState<string | null>(null);
 
-  const awaitingImagesCount = session.records.filter((record) => record.status === "awaiting-images").length;
+  const [autoMatchPlan, setAutoMatchPlan] = useState<CatalogueImportAutoMatchPlan | null>(null);
 
-  const recordsWithCsvNotesCount = session.records.filter((record) => record.validationWarnings.length > 0).length;
+  const hasImages = session.images.length > 0;
 
-  const readyToFinaliseCount = session.records.filter((record) => record.status === "ready-to-finalise").length;
+  const assignedImageCount = session.images.filter((image) => image.assignedRecordId !== null).length;
 
-  const unassignedImageCount = session.images.filter((image) => image.assignedRecordId === null).length;
+  const hasImageAssignments = assignedImageCount > 0;
 
-  const assignedImageCount = session.images.length - unassignedImageCount;
+  const unassignedImageCount = session.images.length - assignedImageCount;
+
+  const recordsWithoutImagesCount = session.records.filter((record) => record.assignedImageIds.length === 0).length;
+
+  const isImageMatchingComplete = hasImageAssignments && unassignedImageCount === 0 && recordsWithoutImagesCount === 0;
 
   const handleImageSelection = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.currentTarget.files ?? []);
@@ -71,12 +123,23 @@ export function CatalogueImportWorkspaceScreen({
 
     const result = onAddImages(files);
 
-    setImageFeedback(getImagePoolFeedback(result));
+    setImagePoolAttention(getImagePoolAttentionMessage(result));
+    setAutoMatchPlan(null);
+  };
+
+  const handleAutoMatch = () => {
+    const result = onAutoMatch();
+
+    if (result.session) {
+      onOpenImportedCollection();
+      return;
+    }
+
+    setAutoMatchPlan(result.plan);
   };
 
   const folderInputAttributes: DirectoryInputAttributes = {
     className: "visually-hidden",
-    id: "catalogue-image-folder",
     type: "file",
     accept: "image/*",
     multiple: true,
@@ -84,171 +147,124 @@ export function CatalogueImportWorkspaceScreen({
     webkitdirectory: "",
   };
 
-  const hasImages = session.images.length > 0;
+  const renderImageInputs = (
+    prefix: string,
+    firstButtonClassName: "primary-button" | "secondary-button" = "secondary-button",
+  ) => (
+    <>
+      <input
+        className="visually-hidden"
+        id={`${prefix}-catalogue-image-files`}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleImageSelection}
+      />
+
+      <label className={`${firstButtonClassName} catalogue-file-button`} htmlFor={`${prefix}-catalogue-image-files`}>
+        Choose image files
+      </label>
+
+      <input {...folderInputAttributes} id={`${prefix}-catalogue-image-folder`} onChange={handleImageSelection} />
+
+      <label className="secondary-button catalogue-file-button" htmlFor={`${prefix}-catalogue-image-folder`}>
+        Choose a folder
+      </label>
+    </>
+  );
 
   return (
     <>
       <header className="desktop-page-header desktop-page-header-actions">
         <div>
-          <p className="eyebrow">Private desktop import session</p>
+          <p className="eyebrow">Private import session</p>
 
           <h1>{session.collectionName}</h1>
 
-          <p>
-            Imported catalogue records remain in this workspace while images are matched and any remaining information
-            is checked.
+          <p className="catalogue-import-session-meta">
+            {session.records.length} records · {session.images.length} images in the pool
           </p>
         </div>
 
         <button className="outline-button" type="button" onClick={onBack}>
-          Back to My specimens
+          My specimens
         </button>
       </header>
 
-      <section className="catalogue-review-summary">
-        <div>
-          <span>Catalogue records</span>
-
-          <strong>{session.records.length}</strong>
-        </div>
-
-        <div>
-          <span>Awaiting image matching</span>
-
-          <strong>{awaitingImagesCount}</strong>
-        </div>
-
-        <div>
-          <span>Records with CSV notes</span>
-
-          <strong>{recordsWithCsvNotesCount}</strong>
-        </div>
-
-        <div>
-          <span>Ready to finalise</span>
-
-          <strong>{readyToFinaliseCount}</strong>
-        </div>
-      </section>
-
-      <section className="catalogue-image-pool-panel">
-        <div className="catalogue-image-pool-heading">
-          <div>
-            <p className="card-kicker">{hasImages ? "Image pool ready" : "Step 1 of 2"}</p>
-
-            <h2>{hasImages ? "Collection images ready to match" : "Build the collection image pool"}</h2>
+      <section className="catalogue-image-pool-panel" aria-label="Collection image pool">
+        {!hasImages && (
+          <div className="catalogue-image-pool-copy">
+            <h2>Add collection images</h2>
 
             <p>
-              Select every image that may belong to this collection. Images stay private in this import session until
-              you match them to catalogue records.
+              Choose every image you want to match to this catalogue. The files remain private in this import session.
             </p>
-          </div>
 
-          <span className="catalogue-private-badge">Private image pool</span>
-        </div>
-
-        <div className="catalogue-image-pool-stats">
-          <div>
-            <span>Images in pool</span>
-
-            <strong>{session.images.length}</strong>
-          </div>
-
-          <div>
-            <span>Available to assign</span>
-
-            <strong>{unassignedImageCount}</strong>
-          </div>
-
-          <div>
-            <span>Already assigned</span>
-
-            <strong>{assignedImageCount}</strong>
-          </div>
-        </div>
-
-        <div className="catalogue-image-pool-actions">
-          <div>
-            <strong>Select all collection images at once</strong>
-
-            <span>
-              Choose multiple files now, or choose a folder in a browser that supports folder selection. You can add
-              more images later; duplicate files are skipped.
-            </span>
-          </div>
-
-          <div className="catalogue-image-pool-buttons">
-            <input
-              className="visually-hidden"
-              id="catalogue-image-files"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageSelection}
-            />
-
-            <label
-              className={`${hasImages ? "secondary-button" : "primary-button"} catalogue-file-button`}
-              htmlFor="catalogue-image-files">
-              {hasImages ? "Add image files" : "Choose image files"}
-            </label>
-
-            <input {...folderInputAttributes} onChange={handleImageSelection} />
-
-            <label className="secondary-button catalogue-file-button" htmlFor="catalogue-image-folder">
-              Choose a folder
-            </label>
-          </div>
-        </div>
-
-        {imageFeedback && (
-          <div className="catalogue-image-pool-feedback" role="status">
-            {imageFeedback}
+            <div className="catalogue-image-pool-choice-actions">{renderImageInputs("initial", "primary-button")}</div>
           </div>
         )}
 
-        {hasImages && (
-          <div className="catalogue-image-preview-section">
-            <div className="catalogue-image-preview-heading">
-              <div>
-                <h3>Image pool preview</h3>
+        {hasImages && !hasImageAssignments && (
+          <div className="catalogue-image-pool-copy">
+            <h2>Choose a matching method</h2>
 
-                <p>
-                  Showing the first {Math.min(session.images.length, 8)} of {session.images.length} available image
-                  {session.images.length === 1 ? "" : "s"}.
-                </p>
-              </div>
+            <p>
+              Auto-match follows natural filename order and each CSV row’s image count. Use manual matching when the
+              image order is not prepared.
+            </p>
 
-              <span>{unassignedImageCount} unassigned</span>
-            </div>
+            <div className="catalogue-image-pool-choice-actions">
+              <button className="primary-button" type="button" onClick={handleAutoMatch}>
+                Auto-match in CSV order
+              </button>
 
-            <div className="catalogue-image-preview-grid">
-              {session.images.slice(0, 8).map((image) => (
-                <figure className="catalogue-image-preview" key={image.id}>
-                  <img src={image.previewUrl} alt={`Preview of ${image.filename}`} />
-
-                  <figcaption title={image.filename}>{image.filename}</figcaption>
-                </figure>
-              ))}
-            </div>
-
-            <div className="catalogue-image-matching-callout">
-              <div>
-                <strong>Ready to match images?</strong>
-
-                <span>
-                  Work through catalogue records one at a time. Images assigned to one record become unavailable for
-                  every other record.
-                </span>
-              </div>
-
-              <button className="primary-button" type="button" onClick={onStartMatching}>
-                Start matching images
+              <button className="secondary-button" type="button" onClick={onStartMatching}>
+                Match manually
               </button>
             </div>
           </div>
         )}
+
+        {hasImages && hasImageAssignments && (
+          <div className="catalogue-image-pool-copy">
+            <h2>{isImageMatchingComplete ? "Image matching complete" : "Continue image matching"}</h2>
+
+            <p>
+              {isImageMatchingComplete
+                ? `${assignedImageCount} images are matched to ${session.records.length} catalogue records.`
+                : `${assignedImageCount} images are matched. ${recordsWithoutImagesCount} catalogue record${
+                    recordsWithoutImagesCount === 1 ? "" : "s"
+                  } still need an image assignment.`}
+            </p>
+
+            <div className="catalogue-image-pool-choice-actions">
+              <button
+                className="primary-button"
+                type="button"
+                onClick={isImageMatchingComplete ? onOpenImportedCollection : onStartMatching}>
+                {isImageMatchingComplete ? "Open imported collection" : "Continue matching"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {imagePoolAttention && (
+          <div className="catalogue-image-pool-feedback" role="status">
+            {imagePoolAttention}
+          </div>
+        )}
       </section>
+
+      {autoMatchPlan && (
+        <AutoMatchIssuesDialog
+          plan={autoMatchPlan}
+          onClose={() => setAutoMatchPlan(null)}
+          onStartManualMatching={() => {
+            setAutoMatchPlan(null);
+            onStartMatching();
+          }}
+        />
+      )}
     </>
   );
 }

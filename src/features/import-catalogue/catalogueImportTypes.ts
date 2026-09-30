@@ -71,11 +71,14 @@ export type CatalogueImportRecord = {
   status: CatalogueImportRecordStatus;
 
   /*
-   * The present CSV template does not yet contain img_count.
-   * The image-matching implementation can add it later without changing
-   * the session model.
+   * Optional guidance supplied through the CSV img_count column.
+   *
+   * A blank value means no expected count was supplied. The count helps
+   * catalogue matching but never blocks a contributor from assigning fewer
+   * or more images when the record needs it.
    */
   expectedImageCount: number | null;
+
   assignedImageIds: string[];
 
   validationWarnings: string[];
@@ -101,6 +104,29 @@ export type CatalogueImportImage = {
    * an image can be unassigned or assigned to one import record.
    */
   assignedRecordId: string | null;
+};
+
+export type CatalogueImportAutoMatchIssueKind =
+  | "empty-image-pool"
+  | "existing-image-assignments"
+  | "skipped-records"
+  | "missing-image-counts"
+  | "duplicate-image-filenames"
+  | "image-count-mismatch";
+
+export type CatalogueImportAutoMatchIssue = {
+  kind: CatalogueImportAutoMatchIssueKind;
+  title: string;
+  detail: string;
+};
+
+export type CatalogueImportAutoMatchPlan = {
+  isReady: boolean;
+  matchedRecordCount: number;
+  expectedImageCount: number;
+  availableImageCount: number;
+  recordsWithZeroExpectedImageCount: number;
+  issues: CatalogueImportAutoMatchIssue[];
 };
 
 export type CatalogueImportSession = {

@@ -2,9 +2,13 @@ import { useMemo, useState } from "react";
 
 import type { CatalogueImportImage, CatalogueImportRecord, CatalogueImportSession } from "./catalogueImportTypes";
 
+const MATCHING_GUIDE_STORAGE_KEY = "belgian-finds.has-seen-catalogue-image-matching-guide";
+
 type CatalogueImageMatchingScreenProps = {
   session: CatalogueImportSession;
+  showWorkflowGuidance: boolean;
   onBack: () => void;
+  onFinishMatching: () => void;
   onSetRecordImageAssignments: (recordId: string, imageIds: string[]) => void;
   onMarkRecordSkipped: (recordId: string) => void;
 };
@@ -17,10 +21,22 @@ type RecordImageMatcherProps = {
   isLastRecord: boolean;
   onPrevious: () => void;
   onNext: () => void;
-  onReturnToSession: () => void;
+  onFinishMatching: () => void;
   onSetRecordImageAssignments: (recordId: string, imageIds: string[]) => void;
   onSkipAndContinue: (recordId: string) => void;
 };
+
+function hasSeenMatchingGuide() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(MATCHING_GUIDE_STORAGE_KEY) === "true";
+}
+
+function formatImageCount(count: number) {
+  return `${count} image${count === 1 ? "" : "s"}`;
+}
 
 function getRecordDisplayTitle(record: CatalogueImportRecord) {
   return record.specimenData.identification.trim() || "Identification not provided";
@@ -46,7 +62,7 @@ function sameImageIds(first: string[], second: string[]) {
   return first.every((imageId) => secondIdSet.has(imageId));
 }
 
-function getImageActionLabel(
+function getImageStateLabel(
   isSelected: boolean,
   isMarkedForRemoval: boolean,
   owner: CatalogueImportRecord | undefined,
@@ -56,7 +72,7 @@ function getImageActionLabel(
   }
 
   if (isMarkedForRemoval) {
-    return "Will be released when saved";
+    return "Will be removed when saved";
   }
 
   if (isSelected) {
@@ -74,7 +90,7 @@ function RecordImageMatcher({
   isLastRecord,
   onPrevious,
   onNext,
-  onReturnToSession,
+  onFinishMatching,
   onSetRecordImageAssignments,
   onSkipAndContinue,
 }: RecordImageMatcherProps) {
@@ -85,6 +101,8 @@ function RecordImageMatcher({
   const hasUnsavedChanges = !sameImageIds(selectedImageIds, record.assignedImageIds);
 
   const hasExistingAssignments = record.assignedImageIds.length > 0;
+
+  const isReviewingSavedAssignment = hasExistingAssignments && !hasUnsavedChanges;
 
   const canSkip =
     !hasExistingAssignments && selectedImageIds.length === 0 && !hasUnsavedChanges && record.status !== "skipped";
@@ -103,7 +121,17 @@ function RecordImageMatcher({
     );
   };
 
-  const assignImagesAndContinue = () => {
+  const continueToNextRecord = () => {
+    if (isReviewingSavedAssignment) {
+      if (isLastRecord) {
+        onFinishMatching();
+        return;
+      }
+
+      onNext();
+      return;
+    }
+
     if (selectedImageIds.length === 0) {
       return;
     }
@@ -111,7 +139,7 @@ function RecordImageMatcher({
     onSetRecordImageAssignments(record.id, selectedImageIds);
 
     if (isLastRecord) {
-      onReturnToSession();
+      onFinishMatching();
       return;
     }
 
@@ -123,82 +151,49 @@ function RecordImageMatcher({
     setSelectedImageIds([]);
   };
 
-  const skipForNow = () => {
-    onSkipAndContinue(record.id);
-  };
-
-  const continueLabel =
-    selectedImageIds.length === 1
+  const continueLabel = isReviewingSavedAssignment
+    ? isLastRecord
+      ? "Finish matching"
+      : "Next record"
+    : selectedImageIds.length === 1
       ? isLastRecord
-        ? "Assign 1 image and return to session"
+        ? "Assign 1 image and finish"
         : "Assign 1 image and next record"
       : isLastRecord
-        ? `Assign ${selectedImageIds.length} images and return to session`
+        ? `Assign ${selectedImageIds.length} images and finish`
         : `Assign ${selectedImageIds.length} images and next record`;
 
   return (
     <div className="catalogue-matching-layout">
       <div className="catalogue-matching-sidebar">
         <aside className="catalogue-matching-record-panel">
-          <p className="card-kicker">Current catalogue record</p>
-
           <p className="catalogue-matching-record-number">{record.catalogueNumber}</p>
 
-          <h2>{getRecordDisplayTitle(record)}</h2>
+          <h1>{getRecordDisplayTitle(record)}</h1>
 
           {getRecordContext(record) && <p className="catalogue-matching-record-context">{getRecordContext(record)}</p>}
 
-          <dl className="catalogue-matching-record-facts">
-            <div>
-              <dt>Images currently assigned</dt>
-
-              <dd>{record.assignedImageIds.length}</dd>
-            </div>
-
-            <div>
-              <dt>Expected image count</dt>
-
-              <dd>{record.expectedImageCount ?? "Not specified"}</dd>
-            </div>
-
-            <div>
-              <dt>CSV source row</dt>
-
-              <dd>{record.sourceRowNumber}</dd>
-            </div>
-
-            <div>
-              <dt>Matching status</dt>
-
-              <dd>
-                {record.status === "images-matched"
-                  ? "Images matched"
-                  : record.status === "skipped"
-                    ? "Skipped for now"
-                    : "Needs images"}
-              </dd>
-            </div>
-          </dl>
-
           {record.expectedImageCount !== null && (
-            <p className="catalogue-matching-guidance">
-              The expected count is guidance only. You may assign fewer or more images when the collection requires it.
+            <p className="catalogue-matching-record-expected">
+              Expected: {formatImageCount(record.expectedImageCount)}
             </p>
           )}
         </aside>
 
         <aside className="catalogue-matching-action-panel" aria-label="Catalogue record actions">
-          <p className="card-kicker">Record actions</p>
-
           <button
             className="primary-button"
             type="button"
-            disabled={selectedImageIds.length === 0}
-            onClick={assignImagesAndContinue}>
+            disabled={!isReviewingSavedAssignment && selectedImageIds.length === 0}
+            onClick={continueToNextRecord}>
             {continueLabel}
           </button>
 
-          <button className="secondary-button" type="button" disabled={!canSkip} onClick={skipForNow}>
+          <button
+            className="secondary-button"
+            type="button"
+            disabled={!canSkip}
+            onClick={() => onSkipAndContinue(record.id)}>
             Skip for now
           </button>
 
@@ -220,39 +215,10 @@ function RecordImageMatcher({
             onClick={onPrevious}>
             Previous record
           </button>
-
-          <button
-            className="text-button catalogue-matching-return-button"
-            type="button"
-            disabled={hasUnsavedChanges}
-            onClick={onReturnToSession}>
-            Return to import session
-          </button>
-
-          {hasUnsavedChanges && (
-            <p className="catalogue-matching-unsaved-note">
-              Assign the selected images before moving to another record.
-            </p>
-          )}
         </aside>
       </div>
 
-      <section className="catalogue-matching-selection-panel">
-        <div className="catalogue-matching-selection-heading">
-          <div>
-            <p className="card-kicker">Choose matching images</p>
-
-            <h2>Select every image that depicts this record</h2>
-
-            <p>
-              Images allocated to another catalogue record are unavailable. Select all relevant images, then use the
-              action panel to assign them and continue.
-            </p>
-          </div>
-
-          <span className="catalogue-private-badge">{selectedImageIds.length} selected</span>
-        </div>
-
+      <section className="catalogue-matching-selection-panel" aria-label="Collection images">
         <div className="catalogue-matching-image-grid">
           {images.map((image) => {
             const assignedToAnotherRecord = image.assignedRecordId !== null && image.assignedRecordId !== record.id;
@@ -267,7 +233,7 @@ function RecordImageMatcher({
               ? (recordById.get(image.assignedRecordId ?? "") ?? undefined)
               : undefined;
 
-            const actionLabel = getImageActionLabel(isSelected, isMarkedForRemoval, owner);
+            const stateLabel = getImageStateLabel(isSelected, isMarkedForRemoval, owner);
 
             return (
               <button
@@ -280,18 +246,45 @@ function RecordImageMatcher({
                 key={image.id}
                 disabled={assignedToAnotherRecord}
                 aria-pressed={isSelected}
-                aria-label={`${image.filename}: ${actionLabel}`}
+                aria-label={`${image.filename}: ${stateLabel}`}
+                title={image.filename}
                 onClick={() => toggleImage(image)}>
                 <img src={image.previewUrl} alt="" />
 
                 <span className="catalogue-matching-image-copy">
-                  <strong title={image.filename}>{image.filename}</strong>
-
-                  <small>{actionLabel}</small>
+                  <strong>{image.filename}</strong>
                 </span>
               </button>
             );
           })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function MatchingGuide({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="catalogue-dialog-backdrop" role="presentation">
+      <section
+        className="catalogue-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="catalogue-matching-guide-title">
+        <p className="card-kicker">Image matching</p>
+
+        <h2 id="catalogue-matching-guide-title">Match images to records</h2>
+
+        <ul className="catalogue-dialog-issues">
+          <li>Select every image belonging to the current catalogue record.</li>
+          <li>Images assigned to another record cannot be selected again.</li>
+          <li>Use Previous record to revisit an earlier decision.</li>
+        </ul>
+
+        <div className="catalogue-dialog-actions">
+          <button className="primary-button" type="button" onClick={onClose}>
+            Start matching
+          </button>
         </div>
       </section>
     </div>
@@ -306,40 +299,36 @@ function getFirstUnmatchedRecordIndex(records: CatalogueImportRecord[]) {
 
 export function CatalogueImageMatchingScreen({
   session,
+  showWorkflowGuidance,
   onBack,
+  onFinishMatching,
   onSetRecordImageAssignments,
   onMarkRecordSkipped,
 }: CatalogueImageMatchingScreenProps) {
   const [currentRecordIndex, setCurrentRecordIndex] = useState(() => getFirstUnmatchedRecordIndex(session.records));
 
+  const [isGuideOpen, setIsGuideOpen] = useState(() => showWorkflowGuidance && !hasSeenMatchingGuide());
+
   const currentRecord = session.records[currentRecordIndex];
 
   const recordById = useMemo(() => new Map(session.records.map((record) => [record.id, record])), [session.records]);
 
-  const matchedRecordCount = session.records.filter((record) => record.assignedImageIds.length > 0).length;
+  const closeGuide = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(MATCHING_GUIDE_STORAGE_KEY, "true");
+    }
 
-  const skippedRecordCount = session.records.filter((record) => record.status === "skipped").length;
-
-  const unassignedImageCount = session.images.filter((image) => image.assignedRecordId === null).length;
+    setIsGuideOpen(false);
+  };
 
   if (!currentRecord) {
     return (
-      <section className="catalogue-review-panel">
-        <div className="catalogue-review-heading">
-          <div>
-            <p className="card-kicker">Image matching</p>
+      <section className="catalogue-matching-empty-state">
+        <p>No catalogue records are available in this import session.</p>
 
-            <h2>No catalogue records are available</h2>
-          </div>
-        </div>
-
-        <div className="catalogue-matching-empty-state">
-          <p>This import session does not contain any catalogue records to match.</p>
-
-          <button className="primary-button" type="button" onClick={onBack}>
-            Return to import session
-          </button>
-        </div>
+        <button className="outline-button" type="button" onClick={onBack}>
+          Import session
+        </button>
       </section>
     );
   }
@@ -356,7 +345,7 @@ export function CatalogueImageMatchingScreen({
     onMarkRecordSkipped(recordId);
 
     if (currentRecordIndex === session.records.length - 1) {
-      onBack();
+      onFinishMatching();
       return;
     }
 
@@ -365,44 +354,15 @@ export function CatalogueImageMatchingScreen({
 
   return (
     <>
-      <header className="desktop-page-header">
-        <p className="eyebrow">Private desktop import session</p>
+      <header className="catalogue-matching-toolbar">
+        <button className="outline-button" type="button" onClick={onBack}>
+          Import session
+        </button>
 
-        <h1>Match collection images</h1>
-
-        <p>
-          Match each catalogue record with its photographs. An image can be assigned to one record only, but you can
-          revisit and correct every decision before finalising the import.
-        </p>
+        <span>
+          {currentRecordIndex + 1} / {session.records.length}
+        </span>
       </header>
-
-      <section className="catalogue-matching-progress" aria-label="Image-matching progress">
-        <div>
-          <span>Current record</span>
-
-          <strong>
-            {currentRecordIndex + 1} of {session.records.length}
-          </strong>
-        </div>
-
-        <div>
-          <span>Records matched</span>
-
-          <strong>{matchedRecordCount}</strong>
-        </div>
-
-        <div>
-          <span>Skipped for now</span>
-
-          <strong>{skippedRecordCount}</strong>
-        </div>
-
-        <div>
-          <span>Images still unassigned</span>
-
-          <strong>{unassignedImageCount}</strong>
-        </div>
-      </section>
 
       <RecordImageMatcher
         key={currentRecord.id}
@@ -413,10 +373,12 @@ export function CatalogueImageMatchingScreen({
         isLastRecord={currentRecordIndex === session.records.length - 1}
         onPrevious={goToPreviousRecord}
         onNext={goToNextRecord}
-        onReturnToSession={onBack}
+        onFinishMatching={onFinishMatching}
         onSetRecordImageAssignments={onSetRecordImageAssignments}
         onSkipAndContinue={skipAndContinue}
       />
+
+      {isGuideOpen && <MatchingGuide onClose={closeGuide} />}
     </>
   );
 }

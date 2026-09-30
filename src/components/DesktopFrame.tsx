@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type DesktopSection = "specimens" | "catalogue-import";
+export type DesktopSection = "specimens" | "catalogue-import" | "imported-collection";
 
 type DesktopFrameProps = {
   activeSection: DesktopSection;
@@ -10,6 +10,8 @@ type DesktopFrameProps = {
 };
 
 export function DesktopFrame({ activeSection, children, onSelectSection, onSwitchToMobile }: DesktopFrameProps) {
+  const isCatalogueArea = activeSection === "catalogue-import" || activeSection === "imported-collection";
+
   return (
     <section className="desktop-preview" aria-label="Desktop member workspace preview">
       <div className="desktop-size-guard">
@@ -50,9 +52,9 @@ export function DesktopFrame({ activeSection, children, onSelectSection, onSwitc
             </button>
 
             <button
-              className={`desktop-nav-item ${activeSection === "catalogue-import" ? "desktop-nav-item-active" : ""}`}
+              className={`desktop-nav-item ${isCatalogueArea ? "desktop-nav-item-active" : ""}`}
               type="button"
-              aria-current={activeSection === "catalogue-import" ? "page" : undefined}
+              aria-current={isCatalogueArea ? "page" : undefined}
               onClick={() => onSelectSection("catalogue-import")}>
               <span aria-hidden="true">⇧</span>
               Import catalogue

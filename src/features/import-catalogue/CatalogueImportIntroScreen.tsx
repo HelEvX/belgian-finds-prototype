@@ -16,22 +16,29 @@ import {
 
 import { buildFossilCatalogueTemplate, createFossilTemplateFilename } from "./fossilCatalogueTemplate";
 
-import type { CatalogueImportImagePoolAddResult } from "../../services/catalogueImportSessionService";
+import type {
+  CatalogueImportAutoMatchResult,
+  CatalogueImportImagePoolAddResult,
+} from "../../services/catalogueImportSessionService";
 
 type CatalogueImportIntroScreenProps = {
   onBack: () => void;
   activeSession: CatalogueImportSession | null;
+  showWorkflowGuidance: boolean;
   onCreateImportSession: (
     inspection: FossilTemplateInspection,
     rows: FossilTemplateInspectionRow[],
     filename: string,
   ) => CatalogueImportSession;
   onAddImages: (files: File[]) => CatalogueImportImagePoolAddResult;
+  onAutoMatch: () => CatalogueImportAutoMatchResult;
+  onOpenImportedCollection: () => void;
   onSetRecordImageAssignments: (recordId: string, imageIds: string[]) => void;
   onMarkRecordSkipped: (recordId: string) => void;
 };
 
 type SetupStep = "template" | "context";
+type ImportSessionView = "workspace" | "matching";
 
 type TemplateOption = {
   id: CatalogueTemplateKind;
@@ -92,14 +99,17 @@ const contextOptions: Array<{
 export function CatalogueImportIntroScreen({
   onBack,
   activeSession,
+  showWorkflowGuidance,
   onCreateImportSession,
   onAddImages,
+  onAutoMatch,
+  onOpenImportedCollection,
   onSetRecordImageAssignments,
   onMarkRecordSkipped,
 }: CatalogueImportIntroScreenProps) {
   const [isBuildingTemplate, setIsBuildingTemplate] = useState(false);
 
-  const [isMatchingImages, setIsMatchingImages] = useState(false);
+  const [sessionView, setSessionView] = useState<ImportSessionView>("workspace");
 
   const [setupStep, setSetupStep] = useState<SetupStep>("template");
 
@@ -150,11 +160,13 @@ export function CatalogueImportIntroScreen({
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   };
 
-  if (activeSession && isMatchingImages) {
+  if (activeSession && sessionView === "matching") {
     return (
       <CatalogueImageMatchingScreen
         session={activeSession}
-        onBack={() => setIsMatchingImages(false)}
+        showWorkflowGuidance={showWorkflowGuidance}
+        onBack={() => setSessionView("workspace")}
+        onFinishMatching={onOpenImportedCollection}
         onSetRecordImageAssignments={onSetRecordImageAssignments}
         onMarkRecordSkipped={onMarkRecordSkipped}
       />
@@ -167,7 +179,9 @@ export function CatalogueImportIntroScreen({
         session={activeSession}
         onBack={onBack}
         onAddImages={onAddImages}
-        onStartMatching={() => setIsMatchingImages(true)}
+        onStartMatching={() => setSessionView("matching")}
+        onOpenImportedCollection={onOpenImportedCollection}
+        onAutoMatch={onAutoMatch}
       />
     );
   }

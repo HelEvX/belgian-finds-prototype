@@ -4,6 +4,7 @@ import {
   fossilSpecimenColumns,
   perRecordContextColumns,
 } from "./fossilCatalogueTemplate";
+
 import type { CatalogueContextMode } from "./catalogueImportTypes";
 
 export const MAX_CATALOGUE_CSV_BYTES = 5 * 1024 * 1024;
@@ -11,6 +12,7 @@ export const MAX_CATALOGUE_CSV_BYTES = 5 * 1024 * 1024;
 export type FossilTemplateInspectionRow = {
   rowNumber: number;
   catalogueNumber: string;
+  expectedImageCount: number | null;
   identification: string;
   anatomicalElement: string;
   provenance: string;
@@ -107,6 +109,8 @@ function createReviewRow(
 ): FossilTemplateInspectionRow {
   const catalogueNumber = valueAt(cells, indexes, "catalogue_number");
 
+  const expectedImageCountValue = valueAt(cells, indexes, "img_count");
+
   const identification = valueAt(cells, indexes, "identification");
 
   const anatomicalElement = valueAt(cells, indexes, "anatomical_element");
@@ -157,20 +161,24 @@ function createReviewRow(
 
   const warnings: string[] = [];
 
+  let expectedImageCount: number | null = null;
+
+  if (expectedImageCountValue) {
+    const parsedImageCount = Number(expectedImageCountValue);
+
+    if (!/^\d+$/.test(expectedImageCountValue) || !Number.isSafeInteger(parsedImageCount)) {
+      errors.push("Image count must be a whole number of zero or greater.");
+    } else {
+      expectedImageCount = parsedImageCount;
+    }
+  }
+
   if (!catalogueNumber) {
     errors.push("Catalogue number is required.");
   }
 
   if (catalogueNumber.length > 80) {
     errors.push("Catalogue number must be 80 characters or fewer.");
-  }
-
-  if (!identification) {
-    warnings.push("Identification is blank.");
-  }
-
-  if (!anatomicalElement) {
-    warnings.push("Anatomical element is blank.");
   }
 
   if (provenance && !recognisedProvenanceValues.has(normalizeChoice(provenance))) {
@@ -211,6 +219,7 @@ function createReviewRow(
   return {
     rowNumber,
     catalogueNumber,
+    expectedImageCount,
     identification,
     anatomicalElement,
     provenance,
@@ -323,8 +332,16 @@ export function inspectFossilCatalogueTemplate(text: string): FossilTemplateInsp
     }
   });
 
+  /*
+   * img_count is present in newly generated templates but remains optional
+   * so existing version-2 collection CSVs can still be imported unchanged.
+   */
+  const requiredFossilSpecimenColumns = fossilSpecimenColumns.filter((column) => column !== "img_count");
+
   const requiredColumns =
-    contextMode === "per-record" ? [...perRecordContextColumns, ...fossilSpecimenColumns] : fossilSpecimenColumns;
+    contextMode === "per-record"
+      ? [...perRecordContextColumns, ...requiredFossilSpecimenColumns]
+      : requiredFossilSpecimenColumns;
 
   const missingColumns = requiredColumns.filter((column) => !indexes.has(column));
 
