@@ -2,14 +2,17 @@ import { getSpecimenDisplayTitle } from "../record-find/getSpecimenDisplayTitle"
 import {
   getSpecimenWorkspaceContext,
   getSpecimenWorkspaceStatusLabel,
-  isCatalogueImportAwaitingImages,
 } from "../record-find/getSpecimenWorkspaceMetadata";
+
+import type { PrivateCollection } from "../collections/types";
 import type { SpecimenDraft } from "../record-find/types";
 
 type DesktopSpecimensScreenProps = {
   drafts: SpecimenDraft[];
+  collections: PrivateCollection[];
   onImportCatalogue: () => void;
   onOpenSpecimen: (draftId: string) => void;
+  onOpenCollection: (collectionId: string) => void;
 };
 
 function getStatusClassName(draft: SpecimenDraft) {
@@ -32,34 +35,34 @@ function formatUpdatedAt(updatedAt: string) {
   }).format(new Date(updatedAt));
 }
 
-export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecimen }: DesktopSpecimensScreenProps) {
-  const privateCount = drafts.filter((draft) => draft.status === "private-specimen").length;
+export function DesktopSpecimensScreen({
+  drafts,
+  collections,
+  onImportCatalogue,
+  onOpenSpecimen,
+  onOpenCollection,
+}: DesktopSpecimensScreenProps) {
+  const privateDraftCount = drafts.filter((draft) => draft.status === "private-specimen").length;
 
-  const reviewCount = drafts.filter((draft) => draft.status === "ready-for-review").length;
-
-  const awaitingImagesCount = drafts.filter(isCatalogueImportAwaitingImages).length;
-
-  const needsInformationCount = drafts.filter(
-    (draft) =>
-      (draft.status === "ready-to-annotate" || draft.status === "annotation-in-progress") &&
-      !isCatalogueImportAwaitingImages(draft),
-  ).length;
-
-  const needsAttentionCount = awaitingImagesCount + needsInformationCount;
+  const totalCollectionRecordCount = collections.reduce((total, collection) => total + collection.specimens.length, 0);
 
   const sortedDrafts = [...drafts].sort((firstDraft, secondDraft) =>
     secondDraft.updatedAt.localeCompare(firstDraft.updatedAt),
+  );
+
+  const sortedCollections = [...collections].sort((firstCollection, secondCollection) =>
+    secondCollection.updatedAt.localeCompare(firstCollection.updatedAt),
   );
 
   return (
     <>
       <header className="desktop-page-header desktop-page-header-actions">
         <div>
-          <p className="eyebrow">Private collection</p>
+          <p className="eyebrow">Private workspace</p>
 
           <h1>My specimens</h1>
 
-          <p>Manage individual specimens and catalogue imports from one private workspace.</p>
+          <p>Keep imported collections and individual specimens separate until you choose to share a record.</p>
         </div>
 
         <button className="primary-button" type="button" onClick={onImportCatalogue}>
@@ -67,56 +70,99 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
         </button>
       </header>
 
-      <section className="desktop-stat-grid" aria-label="Specimen summary">
+      <section className="desktop-stat-grid" aria-label="Private workspace summary">
         <article className="desktop-stat-card">
-          <span>All specimens</span>
+          <span>Collections</span>
+          <strong>{collections.length}</strong>
+        </article>
+
+        <article className="desktop-stat-card">
+          <span>Catalogue records</span>
+          <strong>{totalCollectionRecordCount}</strong>
+        </article>
+
+        <article className="desktop-stat-card">
+          <span>Individual specimens</span>
           <strong>{drafts.length}</strong>
         </article>
 
         <article className="desktop-stat-card">
-          <span>Need attention</span>
-          <strong>{needsAttentionCount}</strong>
-        </article>
-
-        <article className="desktop-stat-card">
-          <span>Ready for review</span>
-          <strong>{reviewCount}</strong>
-        </article>
-
-        <article className="desktop-stat-card">
           <span>Saved privately</span>
-          <strong>{privateCount}</strong>
+          <strong>{privateDraftCount}</strong>
         </article>
       </section>
 
       <section className="desktop-panel">
         <div className="desktop-panel-heading">
-          <div>
-            <h2>Specimens</h2>
+          <h2>Collections</h2>
+        </div>
 
-            <p>
-              {awaitingImagesCount > 0
-                ? `${awaitingImagesCount} imported ${
-                    awaitingImagesCount === 1 ? "record still needs" : "records still need"
-                  } at least one image. Open a record to attach images in the mobile preview.`
-                : "The desktop and mobile previews share the same in-memory specimen state."}
-            </p>
+        {sortedCollections.length === 0 ? (
+          <div className="desktop-empty-state">
+            <h3>No imported collections yet</h3>
+
+            <p>Import a completed catalogue when you are ready to create a private collection.</p>
           </div>
+        ) : (
+          <div className="desktop-table-wrap">
+            <table className="desktop-specimen-table">
+              <thead>
+                <tr>
+                  <th scope="col">Collection</th>
+                  <th scope="col">Records</th>
+                  <th scope="col">Images</th>
+                  <th scope="col">Visibility</th>
+                  <th scope="col">
+                    <span className="visually-hidden">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {sortedCollections.map((collection) => {
+                  const imageCount = collection.specimens.reduce(
+                    (total, specimen) => total + specimen.images.length,
+                    0,
+                  );
+
+                  return (
+                    <tr key={collection.id}>
+                      <td>
+                        <strong>{collection.name}</strong>
+                      </td>
+
+                      <td>{collection.specimens.length}</td>
+
+                      <td>{imageCount}</td>
+
+                      <td>
+                        <span className="desktop-table-status desktop-table-status-private">Private</span>
+                      </td>
+
+                      <td className="desktop-table-action-cell">
+                        <button className="text-button" type="button" onClick={() => onOpenCollection(collection.id)}>
+                          Open
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="desktop-panel">
+        <div className="desktop-panel-heading">
+          <h2>Individual specimens</h2>
         </div>
 
         {sortedDrafts.length === 0 ? (
           <div className="desktop-empty-state">
-            <span className="desktop-empty-symbol" aria-hidden="true">
-              ◈
-            </span>
+            <h3>No individual specimens yet</h3>
 
-            <h3>No specimens yet</h3>
-
-            <p>Add one specimen in the mobile view, or prepare to import an existing catalogue here.</p>
-
-            <button className="secondary-button" type="button" onClick={onImportCatalogue}>
-              View catalogue import
-            </button>
+            <p>Add one specimen in the mobile view when you have a separate find to document.</p>
           </div>
         ) : (
           <div className="desktop-table-wrap">
@@ -127,7 +173,6 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
                   <th scope="col">Status</th>
                   <th scope="col">Images</th>
                   <th scope="col">Last updated</th>
-
                   <th scope="col">
                     <span className="visually-hidden">Actions</span>
                   </th>
@@ -137,8 +182,6 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
               <tbody>
                 {sortedDrafts.map((draft) => {
                   const firstImage = draft.images[0];
-
-                  const isAwaitingImages = isCatalogueImportAwaitingImages(draft);
 
                   const context = getSpecimenWorkspaceContext(draft) ?? "No location recorded";
 
@@ -172,7 +215,7 @@ export function DesktopSpecimensScreen({ drafts, onImportCatalogue, onOpenSpecim
 
                       <td className="desktop-table-action-cell">
                         <button className="text-button" type="button" onClick={() => onOpenSpecimen(draft.id)}>
-                          {isAwaitingImages ? "Attach images" : "Open on mobile"}
+                          Open on mobile
                         </button>
                       </td>
                     </tr>

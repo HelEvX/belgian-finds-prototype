@@ -38,6 +38,7 @@ export type CatalogueImportSessionService = {
   addImages: (sessionId: string, files: File[]) => CatalogueImportImagePoolAddResult;
   getAutoMatchPlan: (sessionId: string) => CatalogueImportAutoMatchPlan;
   autoMatchByExpectedImageCounts: (sessionId: string) => CatalogueImportAutoMatchResult;
+  finishImport: (sessionId: string) => CatalogueImportSession;
   setRecordImageAssignments: (
     sessionId: string,
     recordId: string,
@@ -552,6 +553,36 @@ function createLocalCatalogueImportSessionService(): CatalogueImportSessionServi
         plan,
         session: updatedSession,
       };
+    },
+
+    finishImport: (sessionId) => {
+      const currentSession = sessions.find((session) => session.id === sessionId);
+
+      if (!currentSession) {
+        throw new Error("The selected catalogue import session could not be found.");
+      }
+
+      if (currentSession.status === "completed") {
+        return currentSession;
+      }
+
+      const recordsWithoutImages = currentSession.records.filter((record) => record.assignedImageIds.length === 0);
+
+      if (recordsWithoutImages.length > 0) {
+        throw new Error("Every catalogue record needs an image assignment before the import can be finished.");
+      }
+
+      const unassignedImages = currentSession.images.filter((image) => image.assignedRecordId === null);
+
+      if (unassignedImages.length > 0) {
+        throw new Error("Every image in the import pool must be assigned before the import can be finished.");
+      }
+
+      return replaceSession({
+        ...currentSession,
+        status: "completed",
+        updatedAt: new Date().toISOString(),
+      });
     },
 
     setRecordImageAssignments: (sessionId, recordId, imageIds) => {

@@ -2,6 +2,7 @@ import type { CatalogueImportRecord, CatalogueImportSession } from "./catalogueI
 
 type ImportedCollectionScreenProps = {
   session: CatalogueImportSession;
+  onFinishImport: () => void;
 };
 
 const catalogueNumberCollator = new Intl.Collator(undefined, {
@@ -31,32 +32,39 @@ function getImageCountLabel(record: CatalogueImportRecord) {
   return `${assignedImageCount} / ${record.expectedImageCount}`;
 }
 
-export function ImportedCollectionScreen({ session }: ImportedCollectionScreenProps) {
+export function ImportedCollectionScreen({ session, onFinishImport }: ImportedCollectionScreenProps) {
   const assignedImageCount = session.images.filter((image) => image.assignedRecordId !== null).length;
 
   const unassignedImageCount = session.images.length - assignedImageCount;
 
   const recordsWithoutImagesCount = session.records.filter((record) => record.assignedImageIds.length === 0).length;
 
+  const canFinishImport = unassignedImageCount === 0 && recordsWithoutImagesCount === 0;
+
   const sortedRecords = [...session.records].sort((firstRecord, secondRecord) =>
     catalogueNumberCollator.compare(firstRecord.catalogueNumber, secondRecord.catalogueNumber),
   );
 
-  const imageSummary =
-    unassignedImageCount === 0 && recordsWithoutImagesCount === 0
-      ? `${assignedImageCount} of ${session.images.length} images matched to ${session.records.length} catalogue records.`
-      : `${assignedImageCount} of ${session.images.length} images matched. ${recordsWithoutImagesCount} catalogue record${
-          recordsWithoutImagesCount === 1 ? "" : "s"
-        } still have no image assignment.`;
+  const imageSummary = canFinishImport
+    ? `${assignedImageCount} of ${session.images.length} images matched to ${session.records.length} catalogue records.`
+    : `${assignedImageCount} of ${session.images.length} images matched. ${recordsWithoutImagesCount} catalogue record${
+        recordsWithoutImagesCount === 1 ? "" : "s"
+      } still have no image assignment.`;
 
   return (
     <>
-      <header className="desktop-page-header">
-        <p className="eyebrow">Private imported collection</p>
+      <header className="desktop-page-header desktop-page-header-actions">
+        <div>
+          <p className="eyebrow">Private imported collection</p>
 
-        <h1>{session.collectionName}</h1>
+          <h1>{session.collectionName}</h1>
 
-        <p>{imageSummary}</p>
+          <p>{imageSummary}</p>
+        </div>
+
+        <button className="primary-button" type="button" disabled={!canFinishImport} onClick={onFinishImport}>
+          Finish import
+        </button>
       </header>
 
       <section className="desktop-panel">

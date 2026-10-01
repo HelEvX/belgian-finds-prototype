@@ -17,6 +17,9 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 // features/import-catalogue
 import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
 import { ImportedCollectionScreen } from "./features/import-catalogue/ImportedCollectionScreen";
+import { PrivateCollectionScreen } from "./features/collections/PrivateCollectionScreen";
+import type { PrivateCollection } from "./features/collections/types";
+
 import type {
   FossilTemplateInspection,
   FossilTemplateInspectionRow,
@@ -60,6 +63,7 @@ import {
 } from "./features/record-find/types";
 
 import { specimenService, type SpecimenDraftUpdate } from "./services/specimenService";
+import { privateCollectionService } from "./services/privateCollectionService";
 
 import type { PrototypeStep } from "./prototype/types";
 
@@ -109,6 +113,12 @@ function App() {
   const [desktopSection, setDesktopSection] = useState<DesktopSection>("specimens");
 
   const [specimenDrafts, setSpecimenDrafts] = useState<SpecimenDraft[]>(() => specimenService.list());
+
+  const [privateCollections, setPrivateCollections] = useState<PrivateCollection[]>(() =>
+    privateCollectionService.list(),
+  );
+
+  const [activePrivateCollectionId, setActivePrivateCollectionId] = useState<string | null>(null);
 
   const [catalogueImportSessions, setCatalogueImportSessions] = useState<CatalogueImportSession[]>(() =>
     catalogueImportSessionService.list(),
@@ -164,6 +174,9 @@ function App() {
   const activeCatalogueImportSession =
     catalogueImportSessions.find((session) => session.id === activeCatalogueImportSessionId) ?? null;
 
+  const activePrivateCollection =
+    privateCollections.find((collection) => collection.id === activePrivateCollectionId) ?? null;
+
   /*
    * PhotoScreen expects LocalFindPhoto[].
    *
@@ -187,6 +200,12 @@ function App() {
   useEffect(() => {
     return catalogueImportSessionService.subscribe((sessions) => {
       setCatalogueImportSessions(sessions);
+    });
+  }, []);
+
+  useEffect(() => {
+    return privateCollectionService.subscribe((collections) => {
+      setPrivateCollections(collections);
     });
   }, []);
 
@@ -804,6 +823,7 @@ function App() {
       sourceFilename: filename,
     });
 
+    setActivePrivateCollectionId(null);
     setActiveCatalogueImportSessionId(session.id);
     setDesktopSection("catalogue-import");
 
@@ -855,12 +875,46 @@ function App() {
   };
 
   const selectDesktopSection = (section: DesktopSection) => {
-    if (section === "catalogue-import" && activeCatalogueImportSession?.status === "completing-information") {
-      setDesktopSection("imported-collection");
-      return;
+    if (section !== "imported-collection") {
+      setActivePrivateCollectionId(null);
     }
 
     setDesktopSection(section);
+  };
+
+  const finishActiveCatalogueImport = () => {
+    if (!activeCatalogueImportSession) {
+      return;
+    }
+
+    const completedSession = catalogueImportSessionService.finishImport(activeCatalogueImportSession.id);
+
+    const existingCollection = privateCollectionService.getBySourceImportSessionId(completedSession.id);
+
+    const collection = existingCollection ?? privateCollectionService.createFromCompletedImport(completedSession);
+
+    setActivePrivateCollectionId(collection.id);
+
+    /*
+     * The temporary session remains available to the local service for this
+     * prototype, but it is no longer the active desktop destination.
+     * Future imports begin from a clean import entry point.
+     */
+    setActiveCatalogueImportSessionId(null);
+
+    setDesktopSection("specimens");
+  };
+
+  const openPrivateCollection = (collectionId: string) => {
+    const collection = privateCollectionService.getById(collectionId);
+
+    if (!collection) {
+      return;
+    }
+
+    setActiveCatalogueImportSessionId(null);
+    setActivePrivateCollectionId(collection.id);
+    setDesktopSection("imported-collection");
   };
 
   const openSpecimenFromDesktop = (draftId: string) => {
@@ -1245,11 +1299,27 @@ function App() {
           {desktopSection === "specimens" ? (
             <DesktopSpecimensScreen
               drafts={specimenDrafts}
-              onImportCatalogue={() => setDesktopSection("catalogue-import")}
+              collections={privateCollections}
+              onImportCatalogue={() => {
+                setActivePrivateCollectionId(null);
+                setDesktopSection("catalogue-import");
+              }}
               onOpenSpecimen={openSpecimenFromDesktop}
+              onOpenCollection={openPrivateCollection}
+            />
+          ) : desktopSection === "imported-collection" && activePrivateCollection ? (
+            <PrivateCollectionScreen
+              collection={activePrivateCollection}
+              onBack={() => {
+                setActivePrivateCollectionId(null);
+                setDesktopSection("specimens");
+              }}
             />
           ) : desktopSection === "imported-collection" && activeCatalogueImportSession ? (
-            <ImportedCollectionScreen session={activeCatalogueImportSession} />
+            <ImportedCollectionScreen
+              session={activeCatalogueImportSession}
+              onFinishImport={finishActiveCatalogueImport}
+            />
           ) : (
             <CatalogueImportIntroScreen
               onBack={() => setDesktopSection("specimens")}
