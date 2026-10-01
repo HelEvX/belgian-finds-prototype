@@ -4,6 +4,7 @@
   border: 1px solid var(--color-action-primary-border);
   border-radius: var(--radius-card);
   background: var(--color-choice-active-surface);
+  cursor: default;
 }
 
 .member-summary-card h3 {
@@ -252,15 +253,50 @@
 
 .member-collection-record-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 64px minmax(0, 1fr);
   gap: var(--space-3);
   align-items: start;
   padding: var(--space-3) 0;
   border-top: 1px solid var(--color-border-subtle);
+  cursor: default;
 }
 
 .member-collection-record-card:first-child {
   border-top: 0;
+}
+
+.member-collection-record-media {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  align-self: start;
+}
+
+.member-collection-record-thumbnail {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-control);
+  background: var(--color-placeholder-surface);
+  object-fit: cover;
+}
+
+.member-collection-record-thumbnail-empty {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--color-card-border);
+  color: var(--color-placeholder-text);
+  font-size: var(--text-3xs);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.member-collection-record-media small {
+  color: var(--color-text-muted);
+  font-size: var(--text-3xs);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .member-collection-record-card > div {
@@ -283,15 +319,10 @@
   white-space: nowrap;
 }
 
-.member-collection-record-card > div > small,
-.member-collection-record-card > small {
+.member-collection-record-card > div > small {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   line-height: 1.4;
-}
-
-.member-collection-record-card > small {
-  white-space: nowrap;
 }
 
 /* Member Updates */

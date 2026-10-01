@@ -226,6 +226,7 @@ function App() {
       });
 
       catalogueImportSessionService.revokeAllImagePreviewUrls();
+      privateCollectionService.revokeAllImagePreviewUrls();
     };
   }, []);
 

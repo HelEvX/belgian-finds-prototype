@@ -13,6 +13,7 @@ export type PrivateCollectionService = {
   getById: (collectionId: string) => PrivateCollection | undefined;
   getBySourceImportSessionId: (sessionId: string) => PrivateCollection | undefined;
   createFromCompletedImport: (session: CatalogueImportSession) => PrivateCollection;
+  revokeAllImagePreviewUrls: () => void;
   subscribe: (listener: PrivateCollectionListener) => () => void;
 };
 
@@ -22,7 +23,13 @@ function createPrivateCollectionImage(image: CatalogueImportSession["images"][nu
     sourceImportImageId: image.id,
 
     file: image.file,
-    previewUrl: image.previewUrl,
+
+    /*
+     * A completed collection owns its own object URL. The temporary import
+     * session may later revoke its previews without breaking collection
+     * thumbnails or record detail views.
+     */
+    previewUrl: URL.createObjectURL(image.file),
 
     filename: image.filename,
     size: image.size,
@@ -156,6 +163,18 @@ function createLocalPrivateCollectionService(): PrivateCollectionService {
       notifyListeners();
 
       return collection;
+    },
+
+    revokeAllImagePreviewUrls: () => {
+      const previewUrls = new Set(
+        collections.flatMap((collection) =>
+          collection.specimens.flatMap((specimen) => specimen.images.map((image) => image.previewUrl)),
+        ),
+      );
+
+      previewUrls.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
+      });
     },
 
     subscribe: (listener) => {

@@ -109,8 +109,26 @@ export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePriv
             {visibleSpecimens.map((specimen) => {
               const context = getSpecimenContext(specimen);
 
+              const firstImage = specimen.images[0];
+
               return (
                 <article className="member-collection-record-card" key={specimen.id}>
+                  <span className="member-collection-record-media">
+                    {firstImage ? (
+                      <img className="member-collection-record-thumbnail" src={firstImage.previewUrl} alt="" />
+                    ) : (
+                      <span
+                        className="member-collection-record-thumbnail member-collection-record-thumbnail-empty"
+                        aria-hidden="true">
+                        No image
+                      </span>
+                    )}
+
+                    <small>
+                      {specimen.images.length} {specimen.images.length === 1 ? "image" : "images"}
+                    </small>
+                  </span>
+
                   <div>
                     <strong>{specimen.catalogueNumber}</strong>
 
@@ -118,10 +136,6 @@ export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePriv
 
                     {context && <small>{context}</small>}
                   </div>
-
-                  <small>
-                    {specimen.images.length} {specimen.images.length === 1 ? "image" : "images"}
-                  </small>
                 </article>
               );
             })}
