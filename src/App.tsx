@@ -18,6 +18,7 @@ import { WelcomeScreen } from "./features/explore/WelcomeScreen";
 import { CatalogueImportIntroScreen } from "./features/import-catalogue/CatalogueImportIntroScreen";
 import { ImportedCollectionScreen } from "./features/import-catalogue/ImportedCollectionScreen";
 import { PrivateCollectionScreen } from "./features/collections/PrivateCollectionScreen";
+import { MobilePrivateCollectionScreen } from "./features/collections/MobilePrivateCollectionScreen";
 import type { PrivateCollection } from "./features/collections/types";
 
 import type {
@@ -120,6 +121,8 @@ function App() {
 
   const [activePrivateCollectionId, setActivePrivateCollectionId] = useState<string | null>(null);
 
+  const [activeMobilePrivateCollectionId, setActiveMobilePrivateCollectionId] = useState<string | null>(null);
+
   const [catalogueImportSessions, setCatalogueImportSessions] = useState<CatalogueImportSession[]>(() =>
     catalogueImportSessionService.list(),
   );
@@ -176,6 +179,9 @@ function App() {
 
   const activePrivateCollection =
     privateCollections.find((collection) => collection.id === activePrivateCollectionId) ?? null;
+
+  const activeMobilePrivateCollection =
+    privateCollections.find((collection) => collection.id === activeMobilePrivateCollectionId) ?? null;
 
   /*
    * PhotoScreen expects LocalFindPhoto[].
@@ -729,24 +735,28 @@ function App() {
      */
     setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(null);
+    setActiveMobilePrivateCollectionId(null);
     setStep(0);
   };
 
   const showExplore = () => {
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
+    setActiveMobilePrivateCollectionId(null);
     setStep(1);
   };
 
   const showUpdates = () => {
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
+    setActiveMobilePrivateCollectionId(null);
     setStep(17);
   };
 
   const openAddJourney = () => {
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
+    setActiveMobilePrivateCollectionId(null);
 
     if (hasSeenContributionOnboarding) {
       startSingleFindJourney();
@@ -917,6 +927,23 @@ function App() {
     setDesktopSection("imported-collection");
   };
 
+  const openPrivateCollectionOnMobile = (collectionId: string) => {
+    const collection = privateCollectionService.getById(collectionId);
+
+    if (!collection) {
+      return;
+    }
+
+    setIsAccountMenuOpen(false);
+    setActiveMobilePrivateCollectionId(collection.id);
+    setStep(0);
+  };
+
+  const closePrivateCollectionOnMobile = () => {
+    setActiveMobilePrivateCollectionId(null);
+    setStep(0);
+  };
+
   const openSpecimenFromDesktop = (draftId: string) => {
     setPrototypeMode("member");
     resumeSpecimenDraft(draftId);
@@ -961,7 +988,7 @@ function App() {
       {prototypeViewport === "mobile" ? (
         <section className="prototype-workspace">
           <PhoneFrame
-            screenKey={step}
+            screenKey={step === 0 && activeMobilePrivateCollection ? -1 : step}
             accountControl={
               prototypeMode === "member" ? (
                 <button
@@ -1024,10 +1051,19 @@ function App() {
               <PrototypeModeScreen onContinueAsGuest={startGuestPrototype} onContinueAsMember={startMemberPrototype} />
             )}
 
-            {step === 0 && (
+            {step === 0 && activeMobilePrivateCollection && (
+              <MobilePrivateCollectionScreen
+                collection={activeMobilePrivateCollection}
+                onBack={closePrivateCollectionOnMobile}
+              />
+            )}
+
+            {step === 0 && !activeMobilePrivateCollection && (
               <WelcomeScreen
                 drafts={specimenDrafts}
+                collections={privateCollections}
                 onResumeSpecimen={resumeSpecimenDraft}
+                onOpenCollection={openPrivateCollectionOnMobile}
                 onAddSpecimen={openAddFromMySpecimens}
               />
             )}
