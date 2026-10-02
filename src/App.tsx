@@ -19,6 +19,7 @@ import { CatalogueImportIntroScreen } from "./features/import-catalogue/Catalogu
 import { ImportedCollectionScreen } from "./features/import-catalogue/ImportedCollectionScreen";
 import { PrivateCollectionScreen } from "./features/collections/PrivateCollectionScreen";
 import { MobilePrivateCollectionScreen } from "./features/collections/MobilePrivateCollectionScreen";
+import { MobilePrivateCollectionRecordScreen } from "./features/collections/MobilePrivateCollectionRecordScreen";
 import type { PrivateCollection } from "./features/collections/types";
 
 import type {
@@ -123,6 +124,12 @@ function App() {
 
   const [activeMobilePrivateCollectionId, setActiveMobilePrivateCollectionId] = useState<string | null>(null);
 
+  const [activeMobilePrivateCollectionRecordId, setActiveMobilePrivateCollectionRecordId] = useState<string | null>(
+    null,
+  );
+
+  const [mobileCollectionSearchQuery, setMobileCollectionSearchQuery] = useState("");
+
   const [catalogueImportSessions, setCatalogueImportSessions] = useState<CatalogueImportSession[]>(() =>
     catalogueImportSessionService.list(),
   );
@@ -182,6 +189,11 @@ function App() {
 
   const activeMobilePrivateCollection =
     privateCollections.find((collection) => collection.id === activeMobilePrivateCollectionId) ?? null;
+
+  const activeMobilePrivateCollectionRecord =
+    activeMobilePrivateCollection?.specimens.find(
+      (specimen) => specimen.id === activeMobilePrivateCollectionRecordId,
+    ) ?? null;
 
   /*
    * PhotoScreen expects LocalFindPhoto[].
@@ -737,6 +749,8 @@ function App() {
     setReturnToReviewAfterEdit(false);
     setActiveSpecimenDraftId(null);
     setActiveMobilePrivateCollectionId(null);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
     setStep(0);
   };
 
@@ -744,6 +758,8 @@ function App() {
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
     setActiveMobilePrivateCollectionId(null);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
     setStep(1);
   };
 
@@ -751,6 +767,8 @@ function App() {
     setIsAccountMenuOpen(false);
     setSignInPrompt(null);
     setActiveMobilePrivateCollectionId(null);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
     setStep(17);
   };
 
@@ -758,6 +776,8 @@ function App() {
     setIsAccountMenuOpen(false);
     setReturnToReviewAfterEdit(false);
     setActiveMobilePrivateCollectionId(null);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
 
     if (hasSeenContributionOnboarding) {
       startSingleFindJourney();
@@ -937,11 +957,31 @@ function App() {
 
     setIsAccountMenuOpen(false);
     setActiveMobilePrivateCollectionId(collection.id);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
+    setStep(0);
+  };
+
+  const openPrivateCollectionRecordOnMobile = (recordId: string) => {
+    const recordExists = activeMobilePrivateCollection?.specimens.some((specimen) => specimen.id === recordId);
+
+    if (!recordExists) {
+      return;
+    }
+
+    setActiveMobilePrivateCollectionRecordId(recordId);
+    setStep(0);
+  };
+
+  const closePrivateCollectionRecordOnMobile = () => {
+    setActiveMobilePrivateCollectionRecordId(null);
     setStep(0);
   };
 
   const closePrivateCollectionOnMobile = () => {
     setActiveMobilePrivateCollectionId(null);
+    setActiveMobilePrivateCollectionRecordId(null);
+    setMobileCollectionSearchQuery("");
     setStep(0);
   };
 
@@ -989,7 +1029,13 @@ function App() {
       {prototypeViewport === "mobile" ? (
         <section className="prototype-workspace">
           <PhoneFrame
-            screenKey={step === 0 && activeMobilePrivateCollection ? -1 : step}
+            screenKey={
+              step === 0 && activeMobilePrivateCollectionRecord
+                ? -2
+                : step === 0 && activeMobilePrivateCollection
+                  ? -1
+                  : step
+            }
             accountControl={
               prototypeMode === "member" ? (
                 <button
@@ -1052,9 +1098,21 @@ function App() {
               <PrototypeModeScreen onContinueAsGuest={startGuestPrototype} onContinueAsMember={startMemberPrototype} />
             )}
 
-            {step === 0 && activeMobilePrivateCollection && (
+            {step === 0 && activeMobilePrivateCollection && activeMobilePrivateCollectionRecord && (
+              <MobilePrivateCollectionRecordScreen
+                key={activeMobilePrivateCollectionRecord.id}
+                collection={activeMobilePrivateCollection}
+                specimen={activeMobilePrivateCollectionRecord}
+                onBack={closePrivateCollectionRecordOnMobile}
+              />
+            )}
+
+            {step === 0 && activeMobilePrivateCollection && !activeMobilePrivateCollectionRecord && (
               <MobilePrivateCollectionScreen
                 collection={activeMobilePrivateCollection}
+                searchQuery={mobileCollectionSearchQuery}
+                onSearchQueryChange={setMobileCollectionSearchQuery}
+                onOpenRecord={openPrivateCollectionRecordOnMobile}
                 onBack={closePrivateCollectionOnMobile}
               />
             )}

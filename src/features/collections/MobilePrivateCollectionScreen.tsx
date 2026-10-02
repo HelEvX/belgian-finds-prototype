@@ -1,9 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import type { PrivateCollection, PrivateCollectionSpecimen } from "./types";
 
 type MobilePrivateCollectionScreenProps = {
   collection: PrivateCollection;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
+  onOpenRecord: (recordId: string) => void;
   onBack: () => void;
 };
 
@@ -24,9 +27,13 @@ function getImageCount(collection: PrivateCollection) {
   return collection.specimens.reduce((total, specimen) => total + specimen.images.length, 0);
 }
 
-export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePrivateCollectionScreenProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
+export function MobilePrivateCollectionScreen({
+  collection,
+  searchQuery,
+  onSearchQueryChange,
+  onOpenRecord,
+  onBack,
+}: MobilePrivateCollectionScreenProps) {
   const sortedSpecimens = useMemo(
     () =>
       [...collection.specimens].sort((firstSpecimen, secondSpecimen) =>
@@ -87,7 +94,7 @@ export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePriv
           type="search"
           value={searchQuery}
           placeholder="Catalogue number or identification"
-          onChange={(event) => setSearchQuery(event.currentTarget.value)}
+          onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
         />
       </label>
 
@@ -111,8 +118,15 @@ export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePriv
 
               const firstImage = specimen.images[0];
 
+              const title = getSpecimenTitle(specimen);
+
               return (
-                <article className="member-collection-record-card" key={specimen.id}>
+                <button
+                  className="member-collection-record-card"
+                  type="button"
+                  key={specimen.id}
+                  aria-label={`Open ${specimen.catalogueNumber}: ${title}`}
+                  onClick={() => onOpenRecord(specimen.id)}>
                   <span className="member-collection-record-media">
                     {firstImage ? (
                       <img className="member-collection-record-thumbnail" src={firstImage.previewUrl} alt="" />
@@ -129,14 +143,14 @@ export function MobilePrivateCollectionScreen({ collection, onBack }: MobilePriv
                     </small>
                   </span>
 
-                  <div>
+                  <span className="member-collection-record-copy">
                     <strong>{specimen.catalogueNumber}</strong>
 
-                    <span>{getSpecimenTitle(specimen)}</span>
+                    <span>{title}</span>
 
                     {context && <small>{context}</small>}
-                  </div>
-                </article>
+                  </span>
+                </button>
               );
             })}
           </div>
